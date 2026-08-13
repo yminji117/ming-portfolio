@@ -1,0 +1,3 @@
+- [Phase 0 Supabase review — status](project_phase0_supabase_review.md) — Critical/Medium items all verified fixed as of Phase 1 recheck; 2 low-priority items still open
+- [Phase 1 Main page review](project_phase1_main_page_review.md) — currently_limit dead setting, data.ts swallows Supabase errors, gnb focus trap severity
+- [PRD.md schema/security reference](reference_prd_schema_sections.md) — where to find DB/RLS/admin-auth requirements to cross-check migrations against

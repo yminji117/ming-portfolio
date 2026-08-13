@@ -1,69 +1,72 @@
-import Image from "next/image";
+import { AboutSummary } from "@/components/about-summary";
+import { CurrentlyDoingSection } from "@/components/currently-doing-section";
+import { Footer } from "@/components/footer";
+import { Gnb } from "@/components/gnb";
+import { Hero } from "@/components/hero";
+import { StudySection } from "@/components/study-section";
+import { WelcomeTicker } from "@/components/welcome-ticker";
+import { WorksSection } from "@/components/works-section";
+import {
+  getAbout,
+  getCareerYears,
+  getCurrentlyDoing,
+  getFeaturedProjects,
+  getFeaturedStudies,
+  getLatestCompanyCareers,
+  getPublishedProjectsCount,
+  getSiteSettings,
+} from "@/lib/data";
 
-export default function Home() {
+export default async function Home() {
+  // currently_limit이 site_settings에 있어 먼저 가져온 뒤, 그 값으로 나머지를 병렬 조회한다.
+  const settings = await getSiteSettings();
+
+  const [
+    professionalProjects,
+    sideProjects,
+    studies,
+    about,
+    careers,
+    currentlyDoing,
+    careerYears,
+    projectsCount,
+  ] = await Promise.all([
+    getFeaturedProjects("professional", 3),
+    getFeaturedProjects("side", 4),
+    getFeaturedStudies(5),
+    getAbout(),
+    getLatestCompanyCareers(3),
+    getCurrentlyDoing(settings?.currently_limit ?? 6),
+    getCareerYears(),
+    getPublishedProjectsCount(),
+  ]);
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert h-5 w-[100px]"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
+    <>
+      <Gnb />
+      <main className="flex-1">
+        <Hero about={about} careerYears={careerYears} projectsCount={projectsCount} />
+        <WelcomeTicker text={settings?.hero_title ?? "Welcome To My Home"} />
+        <WorksSection
+          theme="dark"
+          sub="professional"
+          projects={professionalProjects}
+          moreHref="/works?tab=professional"
         />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the{" "}
-            <code className="rounded bg-black/[.06] px-1.5 py-0.5 font-mono text-[0.9em] dark:bg-white/[.08]">
-              page.tsx
-            </code>{" "}
-            file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert h-[14px] w-4"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={14}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
+        <StudySection studies={studies} moreHref="/study" />
+        <WorksSection
+          theme="light"
+          sub="side"
+          projects={sideProjects}
+          moreHref="/works?tab=side"
+        />
+        <AboutSummary about={about} careers={careers} />
+        <CurrentlyDoingSection items={currentlyDoing} />
       </main>
-    </div>
+      <Footer
+        email={about?.email ?? null}
+        instagramUrl={about?.instagram_url ?? null}
+      />
+    </>
   );
 }
