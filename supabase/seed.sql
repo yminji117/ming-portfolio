@@ -12,11 +12,11 @@ values (
   true,
   '윤민지',
   'Yoon Minji',
-  '기획하고 만드는 사람',
+  'Service Planner',
   '(전문 자기소개 — 어드민에서 작성해주세요)',
   '기획과 실행을 함께 하는 것을 좋아합니다.',
-  'hello@example.com',
-  'https://instagram.com/'
+  'yminji117@gmail.com',
+  'https://instagram.com/ynmin2_'
 );
 
 -- careers
@@ -36,30 +36,42 @@ insert into skills (name, "group", "order") values
   ('Adobe Illustrator', 'sub', 6),
   ('Adobe Photoshop', 'sub', 7);
 
--- projects — Professional 3건 (Main 3영역 정원)
-insert into projects (slug, category, title, summary, company, role, tools, start_date, end_date, overview, is_featured, featured_order, status) values
-  ('professional-project-1', 'professional', 'Professional 프로젝트 1', '한 줄 요약을 입력해주세요', '회사명 A', array['기획','UX'], array['Figma','Notion'], '2024-01-01', null, '프로젝트 개요', true, 1, 'published'),
-  ('professional-project-2', 'professional', 'Professional 프로젝트 2', '한 줄 요약을 입력해주세요', '회사명 A', array['기획'], array['Figma'], '2023-06-01', '2023-12-31', '프로젝트 개요', true, 2, 'published'),
-  ('professional-project-3', 'professional', 'Professional 프로젝트 3', '한 줄 요약을 입력해주세요', '회사명 B', array['기획','운영'], array['Notion'], '2022-06-01', '2023-02-28', '프로젝트 개요', true, 3, 'published');
+-- projects — Professional 5건 (Main 노출 정원, Figma '최종' 시안 기준)
+-- industry는 Works Professional 필터 칩(all/Education/OTT/Commerce/Brand) 데모용 자유 텍스트 값
+insert into projects (slug, category, title, summary, company, role, tools, industry, start_date, end_date, overview, is_featured, featured_order, status) values
+  ('professional-project-1', 'professional', 'Professional 프로젝트 1', '한 줄 요약을 입력해주세요', '회사명 A', array['기획','UX'], array['Figma','Notion'], 'OTT', '2024-01-01', null, '프로젝트 개요', true, 1, 'published'),
+  ('professional-project-2', 'professional', 'Professional 프로젝트 2', '한 줄 요약을 입력해주세요', '회사명 A', array['기획'], array['Figma'], 'Education', '2023-06-01', '2023-12-31', '프로젝트 개요', true, 2, 'published'),
+  ('professional-project-3', 'professional', 'Professional 프로젝트 3', '한 줄 요약을 입력해주세요', '회사명 B', array['기획','운영'], array['Notion'], 'Commerce', '2022-06-01', '2023-02-28', '프로젝트 개요', true, 3, 'published'),
+  ('professional-project-4', 'professional', 'Professional 프로젝트 4', '한 줄 요약을 입력해주세요', '회사명 B', array['기획','UX'], array['Figma'], 'Education', '2022-01-01', '2022-05-31', '프로젝트 개요', true, 4, 'published'),
+  ('professional-project-5', 'professional', 'Professional 프로젝트 5', '한 줄 요약을 입력해주세요', '회사명 A', array['기획'], array['Notion'], 'Brand', '2021-06-01', '2021-12-31', '프로젝트 개요', true, 5, 'published');
 
--- projects — Side 4건 (Main 5영역 정원)
+-- projects — Side 2건 (Main 노출 정원, Figma '최종' 시안 기준) + 비노출 2건(정원 축소분, Works 리스트용으로는 유지)
 insert into projects (slug, category, title, summary, role, tools, start_date, end_date, overview, is_featured, featured_order, status) values
   ('side-project-1', 'side', 'Side 프로젝트 1', '한 줄 요약을 입력해주세요', array['기획','디자인'], array['Figma'], '2025-01-01', null, '프로젝트 개요', true, 1, 'published'),
   ('side-project-2', 'side', 'Side 프로젝트 2', '한 줄 요약을 입력해주세요', array['기획'], array['Figma'], '2024-09-01', '2024-12-01', '프로젝트 개요', true, 2, 'published'),
-  ('side-project-3', 'side', 'Side 프로젝트 3', '한 줄 요약을 입력해주세요', array['기획'], array['Notion'], '2024-03-01', '2024-06-01', '프로젝트 개요', true, 3, 'published'),
-  ('side-project-4', 'side', 'Side 프로젝트 4', '한 줄 요약을 입력해주세요', array['기획','운영'], array['Notion'], '2023-11-01', '2024-01-31', '프로젝트 개요', true, 4, 'published');
+  ('side-project-3', 'side', 'Side 프로젝트 3', '한 줄 요약을 입력해주세요', array['기획'], array['Notion'], '2024-03-01', '2024-06-01', '프로젝트 개요', false, null, 'published'),
+  ('side-project-4', 'side', 'Side 프로젝트 4', '한 줄 요약을 입력해주세요', array['기획','운영'], array['Notion'], '2023-11-01', '2024-01-31', '프로젝트 개요', false, null, 'published');
 
 -- 비노출 테스트용 draft 1건 (Works 리스트/필터 확인용)
 insert into projects (slug, category, title, summary, status) values
   ('draft-project-1', 'side', '작성중 프로젝트', '아직 게시되지 않은 항목', 'draft');
 
--- studies — 5건 (Main 4영역 정원)
-insert into studies (slug, title, summary, tags, published_at, is_featured, featured_order, status) values
-  ('study-1', 'Study 게시물 1', '한 줄 요약을 입력해주세요', array['UX'], '2026-07-01', true, 1, 'published'),
-  ('study-2', 'Study 게시물 2', '한 줄 요약을 입력해주세요', array['아티클'], '2026-06-15', true, 2, 'published'),
-  ('study-3', 'Study 게시물 3', '한 줄 요약을 입력해주세요', array['강의'], '2026-05-20', true, 3, 'published'),
-  ('study-4', 'Study 게시물 4', '한 줄 요약을 입력해주세요', array['회고'], '2026-04-10', true, 4, 'published'),
-  ('study-5', 'Study 게시물 5', '한 줄 요약을 입력해주세요', array['UX'], '2026-03-05', true, 5, 'published');
+-- studies — 4건 노출(Main 노출 정원, Figma '최종' 시안 기준) + 비노출 1건
+-- study-1의 body는 Study 로드맵 카드(단계별 입력) 데모, 나머지는 body 없이 단순 카드(summary만 입력)로 렌더링된다.
+insert into studies (slug, title, summary, tags, published_at, body, is_featured, featured_order, status) values
+  ('study-1', 'AI 시대 데이터를 읽는 방법', '한 줄 요약을 입력해주세요', array['데이터 분석'], '2026-07-01',
+    '{"steps": [
+      {"label": "1단계", "text": "데이터로 생각하기 시작하기"},
+      {"label": "2단계", "text": "측정 가능한 질문과 지표 만들기"},
+      {"label": "3단계", "text": "행동 가능한 인사이트 뽑기"},
+      {"label": "4단계", "text": "데이터 스토리텔링으로 팀 설득하기"},
+      {"label": "5단계", "text": "내 데이터 판단력 완성하기"}
+    ]}'::jsonb,
+    true, 1, 'published'),
+  ('study-2', '자동 저장 메모장', '한 줄 요약을 입력해주세요', array['Claude Code'], '2026-06-15', null, true, 2, 'published'),
+  ('study-3', 'MBTI Color Palette', '한 줄 요약을 입력해주세요', array['Claude Code'], '2026-05-20', null, true, 3, 'published'),
+  ('study-4', '핸드 트래킹 Web 서비스', '한 줄 요약을 입력해주세요', array['Claude Code'], '2026-04-10', null, true, 4, 'published'),
+  ('study-5', 'Study 게시물 5', '한 줄 요약을 입력해주세요', array['UX'], '2026-03-05', null, false, null, 'published');
 
 -- currently_doing — 6건 (Main 7영역 기본 노출 개수)
 -- "order"는 운영자가 수동 지정하기 전까지 null로 두어, PRD 5.7의 기본 자동 정렬

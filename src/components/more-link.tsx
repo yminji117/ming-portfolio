@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { ArrowRightIcon } from "@/components/icons";
 
 export function MoreLink({
   href,
@@ -16,7 +17,7 @@ export function MoreLink({
         aria-label="더보기"
         className={`arrow-btn ${className ?? ""}`}
       >
-        →
+        <ArrowRightIcon className="size-full" />
       </Link>
     );
   }

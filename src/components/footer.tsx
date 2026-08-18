@@ -20,7 +20,7 @@ export function Footer({
           <p className="text-[length:var(--fs-body)]">hello@example.com</p>
         )}
 
-        <div className="mt-6 flex flex-col gap-4 text-[length:var(--fs-caption)] text-[var(--color-text-muted)] sm:flex-row sm:items-center sm:justify-between">
+        <div className="mt-6 flex flex-col gap-4 text-[length:var(--fs-body)] text-[var(--color-text)] sm:flex-row sm:items-center sm:justify-between">
           <span>© 2026 MINJI. All rights reserved.</span>
           {instagramUrl && (
             <a

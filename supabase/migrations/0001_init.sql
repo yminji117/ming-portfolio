@@ -34,6 +34,7 @@ create table projects (
   overview text,
   result text,
   body jsonb,
+  industry text,
   is_featured boolean not null default false,
   featured_order int,
   status content_status not null default 'draft',
@@ -225,8 +226,8 @@ begin
 
   if TG_TABLE_NAME = 'projects' then
     cap := case new.category
-      when 'professional' then 3
-      when 'side' then 4
+      when 'professional' then 5
+      when 'side' then 2
       else null
     end;
     if cap is null then
@@ -238,7 +239,7 @@ begin
         and deleted_at is null
         and id <> coalesce(new.id, '00000000-0000-0000-0000-000000000000');
   elsif TG_TABLE_NAME = 'studies' then
-    cap := 5;
+    cap := 4;
     select count(*) into current_count from studies
       where is_featured = true
         and deleted_at is null

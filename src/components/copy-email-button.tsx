@@ -1,6 +1,8 @@
 "use client";
 
+import { AnimatePresence, motion } from "framer-motion";
 import { useState } from "react";
+import { createPortal } from "react-dom";
 
 export function CopyEmailButton({
   email,
@@ -24,12 +26,27 @@ export function CopyEmailButton({
   return (
     <button type="button" onClick={handleCopy} className={className}>
       {email}
-      <span
-        aria-live="polite"
-        className="ml-3 align-middle text-[length:var(--fs-caption)] text-[var(--color-text-muted)]"
-      >
-        {copied ? "복사되었습니다" : ""}
-      </span>
+      {copied &&
+        typeof document !== "undefined" &&
+        createPortal(<CopyToast />, document.body)}
     </button>
+  );
+}
+
+function CopyToast() {
+  return (
+    <AnimatePresence>
+      <motion.div
+        role="status"
+        aria-live="polite"
+        initial={{ opacity: 0, y: 8 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0, y: 8 }}
+        transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
+        className="fixed bottom-10 left-1/2 z-[100] -translate-x-1/2 whitespace-nowrap rounded-full bg-[rgba(4,4,4,0.7)] px-12 py-3 text-[16px] text-white"
+      >
+        복사되었습니다.
+      </motion.div>
+    </AnimatePresence>
   );
 }

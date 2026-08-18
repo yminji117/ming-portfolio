@@ -10,7 +10,7 @@
 
 ## 진행 현황
 
-> 마지막 업데이트: 2026.08.13. 작업이 완료될 때마다 이 표의 상태를 갱신합니다. (✅ 완료 / 🔄 진행중 / ⬜ 대기)
+> 마지막 업데이트: 2026.08.18. 작업이 완료될 때마다 이 표의 상태를 갱신합니다. (✅ 완료 / 🔄 진행중 / ⬜ 대기)
 
 | 상태 | 문서/작업 |
 | --- | --- |
@@ -28,6 +28,7 @@
 | 0-7 | Vercel 배포 연결 | ✅ 완료 | https://minji-portfolio-six.vercel.app |
 | - | 코드 리뷰 반영 | ✅ 완료 | `0003_fixes.sql`(guestbook 컬럼 잠금, 정원 체크 else, 날짜 제약), `0004_currently_doing_order_fix.sql`(시드 order 값 실수 수정) |
 | Phase 1 | Main 페이지 구현 | ✅ 완료 | 전 섹션 실데이터 렌더 + 반응형 4개 뷰포트 + 인터랙션 브라우저 검증 완료 |
+| - | Figma '최종' 메인 디자인 반영 | ✅ 완료 | 블랙/화이트+블루 톤 리뉴얼, Works Professional industry 필터(하이라이트 방식) 추가, Study 로드맵 카드(단계 입력 시) 신설, 노출 정원 변경(Professional 5/Study 4/Side 2). `0005_industry_and_caps.sql` 작성 완료 — **Supabase SQL Editor에서 아직 미적용, 적용 전까지는 필터 칩·로드맵 카드·5/4/2 정원이 화면에 나타나지 않음**(쿼리 limit은 이미 반영되어 있어 기존 데이터 내에서는 정상 축소 노출됨) |
 | Phase 2 | 하위 페이지 및 상세 페이지 | ⬜ 대기 | |
 | Phase 3 | 어드민 구현 | ⬜ 대기 | |
 
@@ -49,9 +50,8 @@ PRD 2.2의 다크 토큰을 라이트로 교체. `app/globals.css`에 CSS 변수
 나머지 타이포·spacing·motion 토큰(`--fs-*`, `--section-gap-*`, `--ease-out`, `--dur-*`)은 PRD 2.2 값을 그대로 사용.
 
 ---
-
-## Phase 0 — 프로젝트 세팅 ✅ 완료
-
+치며
+## Phase 0 — 프로젝트 세팅 ✅ 완
 | # | 상태 | 작업 | 완료 기준 |
 | --- | --- | --- | --- |
 | 0-1 | ✅ | `PORTFOLIO/` 안에 Next.js 15(App Router) + TypeScript + Tailwind v4 프로젝트 생성 | `npm run dev` 로컬 실행 |
@@ -72,9 +72,9 @@ PRD 2.2의 다크 토큰을 라이트로 교체. `app/globals.css`에 CSS 변수
 | --- | --- | --- | --- | --- |
 | 1-1 | ✅ | 공통 레이아웃: GNB(5.1, sticky+auto-hide, 반응형 햄버거) + Footer(5.8) | PRD 5.1 / 5.8 | 5개 브레이크포인트 검수 |
 | 1-2 | ✅ | Hero(5.2): `site_settings`에서 hero_title/video/image 읽기, 영상 우선순위·fallback·`prefers-reduced-motion`·`saveData` 분기 | PRD 5.2, `img/main/hi.mp4` 활용 | 저속 회선 fallback 동작 |
-| 1-3 | ✅ | Works Professional(5.3): `projects` where `category=professional AND is_featured` 최대 3, 지그재그 레이아웃 | PRD 5.3 | 3건 노출, 상세 이동(현재는 slug 라우트 미완성이므로 링크만 연결) |
-| 1-4 | ✅ | Study(5.4): 최대 5, Desktop 5열/모바일 캐러셀(스크롤 스냅) | PRD 5.4 | 5건 노출 |
-| 1-5 | ✅ | Works Side(5.5): 최대 4, 균등 그리드 | PRD 5.5 | 4건 노출 |
+| 1-3 | ✅ | Works Professional(5.3): `projects` where `category=professional AND is_featured` 최대 5, industry 필터(선택 시 매칭 카드만 화이트 하이라이트, `all`은 전체 블랙) | PRD 5.3, Figma '최종' 반영 | 5건 노출, 필터 인터랙션 동작(마이그레이션 적용 후) |
+| 1-4 | ✅ | Study(5.4): 최대 4, `body.steps` 있으면 로드맵 카드 / 없으면 플랫 행 | PRD 5.4, Figma '최종' 반영 | 4건 노출 |
+| 1-5 | ✅ | Works Side(5.5): 최대 2, 대형 카드 2열 | PRD 5.5, Figma '최종' 반영 | 2건 노출 |
 | 1-6 | ✅ | About me 요약(5.6): 사진/이름/연혁 최신 3건/cover letter 요약/이메일 복사·인스타 링크 | PRD 5.6 | 이메일 복사 토스트 동작 |
 | 1-7 | ✅ | Currently Doing(5.7): 라벨 정렬 규칙, 일자 표기 규칙, 최대 6건 | PRD 5.7 | 라벨 3종 스타일·정렬 정확 — 시드 데이터에 순서값이 잘못 들어가 있던 버그 발견·수정(`0004_currently_doing_order_fix.sql`) |
 | 1-8 | ✅ | 섹션 진입 Scroll Reveal (IntersectionObserver, stagger 60ms, 1회성) + reduced-motion 전역 가드 | PRD 2.3 | reduced-motion 시 애니메이션 비활성 확인 |
@@ -109,7 +109,7 @@ PRD 2.2의 다크 토큰을 라이트로 교체. `app/globals.css`에 CSS 변수
 | 3-2 | ⬜ | `/admin/dashboard`: 노출 정원 경고, 방명록 미읽음 수, 콘텐츠 현황 | PRD 9.3 | 위젯 데이터 정확성 |
 | 3-3 | ⬜ | `/admin/works`, `/admin/study`: 목록(필터/검색/일괄작업) + 등록·수정(리치텍스트 에디터, 자동 임시저장 30초, 이미지 업로드+리사이즈) | PRD 9.5 | 등록→Main 반영 E2E |
 | 3-4 | ⬜ | `/admin/currently`: 인라인 테이블 편집, 라벨 드롭다운 즉시저장, 종료 리마인드 배너 | PRD 9.6 | 즉시 저장 확인 |
-| 3-5 | ⬜ | `/admin/main` ⭐: Professional 3/Study 5/Side 4 정원 관리, 드래그+화살표 순서변경, draft 자동 해제, `revalidatePath('/')` | PRD 9.4 | 정원 초과 차단, 저장 즉시 반영 |
+| 3-5 | ⬜ | `/admin/main` ⭐: Professional 5/Study 4/Side 2 정원 관리, 드래그+화살표 순서변경, draft 자동 해제, `revalidatePath('/')` | PRD 9.4, Figma '최종' 반영 | 정원 초과 차단, 저장 즉시 반영 |
 | 3-6 | ⬜ | `/admin/guestbook`: 본문 전문 열람, 필터(미읽음/수정됨/보류/스팸), 수정 이력 비교, 숨김/삭제 | PRD 9.7 | 변경 전후 비교 노출 |
 | 3-7 | ⬜ | `/admin/about`, `/admin/settings`: About/연혁/스킬 CRUD, 히어로 미디어 교체, SEO 설정, 점검모드 | PRD 9.8 | 히어로 영상 교체 반영 확인 |
 | 3-8 | ⬜ | `/admin/media`, `/admin/trash`: 업로드 자산 관리, soft delete 복구 | PRD 9.2 | 복구 동작 확인 |

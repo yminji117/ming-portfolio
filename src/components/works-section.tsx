@@ -1,17 +1,14 @@
-import { MoreLink } from "@/components/more-link";
-import { ProjectCard } from "@/components/project-card";
-import { Reveal } from "@/components/reveal";
+import { SectionHeading } from "@/components/section-heading";
 import { WorksProfessionalGrid } from "@/components/works-professional-grid";
+import { WorksSideGrid } from "@/components/works-side-grid";
 import type { Project } from "@/lib/types";
 
 export function WorksSection({
   theme,
-  sub,
   projects,
   moreHref,
 }: {
   theme: "dark" | "light";
-  sub: "professional" | "side";
   projects: Project[];
   moreHref: string;
 }) {
@@ -20,18 +17,16 @@ export function WorksSection({
 
   if (theme === "dark") {
     return (
-      <section className="section-block bg-[var(--color-ink)] text-white">
-        <div className="container-app">
-          <Reveal>
-            <div className="flex items-start justify-between gap-6">
-              <h2 className="section-heading">Works</h2>
-              <div className="flex items-center gap-4">
-                <span className="eyebrow text-white/60">{sub}</span>
-                <MoreLink href={moreHref} variant="icon" className="text-white" />
-              </div>
-            </div>
-          </Reveal>
-
+      <section className="relative overflow-hidden bg-[var(--color-ink)] py-[88px] text-white lg:py-[160px]">
+        <p
+          aria-hidden="true"
+          className="pointer-events-none absolute bottom-[93px] right-[96px] hidden select-none whitespace-nowrap font-[family-name:var(--font-display)] font-extrabold text-[#1d1d1d] lg:block"
+          style={{ fontSize: "clamp(48px, 8vw, 120px)", letterSpacing: "-4px" }}
+        >
+          PROJECT
+        </p>
+        <div className="container-app relative">
+          <SectionHeading eyebrow="Woke" title="Professionel" moreHref={moreHref} theme="dark" />
           <WorksProfessionalGrid projects={projects} />
         </div>
       </section>
@@ -39,24 +34,10 @@ export function WorksSection({
   }
 
   return (
-    <section className="section">
+    <section className="border-t border-[var(--color-line)] pt-12 pb-16 lg:pt-[80px] lg:pb-[160px]">
       <div className="container-app">
-        <Reveal>
-          <div className="flex items-start justify-between gap-6">
-            <h2 className="section-heading">
-              Works <span className="ml-2 text-[length:var(--fs-sub)] font-normal text-[var(--color-text-muted)]">{sub}</span>
-            </h2>
-            <MoreLink href={moreHref} variant="icon" />
-          </div>
-        </Reveal>
-
-        <div className="mt-12 grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-4">
-          {projects.map((project, i) => (
-            <Reveal key={project.id} index={i}>
-              <ProjectCard project={project} theme="light" index={i} />
-            </Reveal>
-          ))}
-        </div>
+        <SectionHeading eyebrow="Woke" title="Side" moreHref={moreHref} theme="light" />
+        <WorksSideGrid projects={projects} />
       </div>
     </section>
   );

@@ -4,7 +4,7 @@
 :root {
   /* Color — Bold Editorial (ref/MINJI.png 적용): 라이트 그레이 베이스 + 블루 포인트,
      섹션별 블록 컬러(블랙/레드/퍼플)로 구획을 나눈다 */
-  --color-bg: #e7e9ec;
+  --color-bg: #ffffff;
   --color-surface: #ffffff;
   --color-text: #131417;
   --color-text-muted: #7c7f87;
@@ -13,18 +13,20 @@
   --color-accent-soft: #dfe6ff;
   --color-accent-ink: #ffffff;
 
-  /* 섹션 블록 컬러 */
+  /* 섹션 블록 컬러 — Figma '최종' 시안은 블랙/화이트 대비 + 블루 포인트 단일 톤이라
+     Study(레드)/About(퍼플) 전용 블록 컬러 없이 --color-ink(블랙) 하나로 통일한다 */
   --color-ink: #0a0a0a;
   --color-ink-line: rgba(255, 255, 255, 0.25);
-  --color-study: #fd3a28;
-  --color-about-bg: #4100f5;
-  --color-about-ink: #ffe382;
+  --color-about-ink: #ffffff;
 
-  /* Typography — Pretendard 단일 패밀리, 굵기로 위계를 만든다 */
-  --font-display: "Pretendard", sans-serif;
+  /* Typography — 본문은 Pretendard, 대형 헤딩은 NanumSquare Neo(--font-display, app/fonts.ts에서 주입) */
   --font-body: "Pretendard", sans-serif;
-  --fs-hero: clamp(52px, 9vw, 168px);
+  --fs-hero: clamp(52px, 10.6vw, 160px);
   --fs-section: clamp(32px, 4.5vw, 64px);
+  --fs-display-xl: clamp(36px, 6vw, 72px);
+  --fs-display-lg: clamp(28px, 3.6vw, 48px);
+  --fs-display-md: clamp(20px, 2.4vw, 32px);
+  --fs-pill: clamp(18px, 2.2vw, 30px);
   --fs-sub: clamp(14px, 1.2vw, 17px);
   --fs-body: 16px;
   --fs-caption: 13px;
@@ -33,9 +35,9 @@
   /* Spacing / Radius / Motion */
   --section-gap-pc: 140px;
   --section-gap-mobile: 88px;
-  --radius: 24px;
-  --radius-inner: 18px;
-  --radius-chip: 14px;
+  --radius: 10px;
+  --radius-inner: 10px;
+  --radius-chip: 10px;
   --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
   --dur-fast: 200ms;
   --dur-base: 500ms;
@@ -55,8 +57,6 @@
   --color-accent-soft: var(--color-accent-soft);
   --color-accent-ink: var(--color-accent-ink);
   --color-ink: var(--color-ink);
-  --color-study: var(--color-study);
-  --color-about-bg: var(--color-about-bg);
   --color-about-ink: var(--color-about-ink);
 
   --font-display: var(--font-display);
@@ -151,27 +151,43 @@ body {
 .chip {
   display: inline-flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 8px;
   border-radius: var(--radius-chip);
-  background: var(--color-surface);
-  padding: 10px 16px;
-  box-shadow: 0 8px 24px -12px rgba(19, 20, 23, 0.25);
+  background: rgba(255, 255, 255, 0.1);
+  padding: 10px 20px;
+}
+
+/* Hero 사진 위에 얹히는 정보 카드 — 유리처럼 배경이 비치도록 블러 처리한다.
+   backdrop-filter는 Tailwind의 backdrop-blur/backdrop-saturate 유틸리티로 함께 적용한다 —
+   이 프로퍼티를 순수 CSS로만 선언하면 Tailwind v4 유틸리티 레이어에 밀려 계산값이 none이 된다. */
+.glass-chip {
+  display: inline-flex;
+  flex-direction: column;
+  gap: 8px;
+  border-radius: var(--radius-chip);
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  padding: 10px 20px;
+  box-shadow: 0 8px 24px rgba(19, 20, 23, 0.08);
 }
 
 .arrow-btn {
   display: inline-flex;
-  height: 44px;
-  width: 44px;
+  height: 36px;
+  width: 36px;
   flex: none;
   align-items: center;
   justify-content: center;
-  border-radius: 999px;
-  border: 1px solid currentColor;
   transition: transform var(--dur-base) var(--ease-out);
 }
 
 .arrow-btn:hover {
   transform: translate(2px, -2px);
+}
+
+.arrow-btn-lg {
+  height: 48px;
+  width: 48px;
 }
 
 /* Welcome 티커 — 두 벌을 이어붙여 -50% 이동으로 무한 루프처럼 보이게 한다 */
@@ -188,6 +204,10 @@ body {
   display: flex;
   width: max-content;
   animation: marquee 26s linear infinite;
+}
+
+.marquee-track-reverse {
+  animation-direction: reverse;
 }
 
 /* PRD 2.3 접근성 가드 — prefers-reduced-motion 시 전체 모션 비활성 */

@@ -1,11 +1,22 @@
 "use client";
 
-import Link from "next/link";
 import { useState } from "react";
+import Link from "next/link";
+import { ExpandCircleRightIcon, StepCheckIcon } from "@/components/icons";
 import { MediaThumb } from "@/components/media-thumb";
-import { MoreLink } from "@/components/more-link";
 import { Reveal } from "@/components/reveal";
-import type { Study } from "@/lib/types";
+import { SectionHeading } from "@/components/section-heading";
+import { Tag } from "@/components/tag";
+import type { Study, StudyRoadmapStep } from "@/lib/types";
+
+// 로드맵 본문이 없는 항목을 선택해 펼쳤을 때 보여줄 임시 텍스트.
+const PLACEHOLDER_STEPS: StudyRoadmapStep[] = [
+  { label: "1단계", text: "주제 정하고 자료 모으기" },
+  { label: "2단계", text: "레퍼런스 비교하며 정리하기" },
+  { label: "3단계", text: "핵심 인사이트 뽑아내기" },
+  { label: "4단계", text: "실제 작업에 적용해보기" },
+  { label: "5단계", text: "회고하고 다음 액션 정하기" },
+];
 
 export function StudySection({
   studies,
@@ -14,31 +25,19 @@ export function StudySection({
   studies: Study[];
   moreHref: string;
 }) {
-  const [openId, setOpenId] = useState<string | null>(studies[0]?.id ?? null);
+  const [openIndex, setOpenIndex] = useState(0);
 
   if (studies.length === 0) return null;
 
   return (
-    <section className="section">
+    <section className="border-t border-[var(--color-line)] pt-16 pb-12 lg:pt-[160px] lg:pb-[80px]">
       <div className="container-app">
-        <Reveal>
-          <div className="flex items-start justify-between gap-6">
-            <h2 className="section-heading">Study</h2>
-            <MoreLink href={moreHref} variant="icon" />
-          </div>
-        </Reveal>
+        <SectionHeading title="Study" moreHref={moreHref} theme="light" />
 
-        <div className="mt-12 border-t border-[var(--color-line)]">
+        <div className="mt-12 border-t border-black">
           {studies.map((study, i) => (
             <Reveal key={study.id} index={i}>
-              <StudyAccordionRow
-                study={study}
-                index={i}
-                open={openId === study.id}
-                onToggle={() =>
-                  setOpenId((current) => (current === study.id ? null : study.id))
-                }
-              />
+              <StudyItem study={study} isOpen={i === openIndex} onSelect={() => setOpenIndex(i)} />
             </Reveal>
           ))}
         </div>
@@ -47,77 +46,113 @@ export function StudySection({
   );
 }
 
-function StudyAccordionRow({
+function studyHref(study: Study) {
+  return {
+    href: study.external_url ?? `/study/${study.slug}`,
+    isExternal: Boolean(study.external_url),
+  };
+}
+
+// 펼침/접힘은 전부 순수 CSS 트랜지션(grid-template-rows/columns 0↔1fr)으로만 처리한다.
+// framer-motion의 layout(FLIP) 애니메이션을 같이 쓰면, 위아래 다른 항목이 리플로우되는
+// 타이밍과 이 CSS 트랜지션의 타이밍이 서로 다른 엔진(JS FLIP vs 네이티브 CSS)이라
+// 어긋나면서 접힐 때 끝부분이 뚝 끊겨 보인다 — 그래서 여기서는 CSS 트랜지션 하나로 통일한다.
+function StudyItem({
   study,
-  index,
-  open,
-  onToggle,
+  isOpen,
+  onSelect,
 }: {
   study: Study;
-  index: number;
-  open: boolean;
-  onToggle: () => void;
+  isOpen: boolean;
+  onSelect: () => void;
 }) {
-  const isExternal = Boolean(study.external_url);
-  const href = study.external_url ?? `/study/${study.slug}`;
-  const number = String(index + 1).padStart(2, "0");
+  const steps =
+    study.body?.steps && study.body.steps.length > 0
+      ? study.body.steps
+      : PLACEHOLDER_STEPS;
+  const { href, isExternal } = studyHref(study);
+  const tag = study.tags[0];
 
   return (
-    <div className="border-b border-[var(--color-line)]">
-      <button
-        type="button"
-        onClick={onToggle}
-        aria-expanded={open}
-        className={`flex w-full items-center justify-between gap-4 px-2 py-5 text-left transition-colors duration-[var(--dur-fast)] ${
-          open ? "bg-[var(--color-study)] text-[var(--color-ink)]" : "hover:text-[var(--color-accent)]"
-        }`}
-      >
-        <span className="flex items-center gap-4">
-          <span className={`text-[length:var(--fs-body)] ${open ? "text-[var(--color-ink)]/70" : "text-[var(--color-text-muted)]"}`}>
-            {number}
-          </span>
-          <span className="text-[length:var(--fs-body)] font-bold tracking-tight">
-            {study.title}
-          </span>
-        </span>
-        <span
-          className={`text-2xl font-light transition-transform duration-[var(--dur-fast)] ${open ? "rotate-45" : ""}`}
-          aria-hidden="true"
+    <div
+      className={`border-y border-black px-4 py-[28px] transition-colors duration-500 ease-[var(--ease-out)] lg:px-5 ${
+        isOpen ? "bg-[var(--color-ink)] text-white" : "text-[var(--color-text)]"
+      }`}
+    >
+      <div className="flex items-start gap-4">
+        <button
+          type="button"
+          onClick={onSelect}
+          aria-expanded={isOpen}
+          className="min-w-0 flex-1 text-left"
         >
-          +
-        </span>
-      </button>
-
-      {open && (
-        <div className="grid grid-cols-1 gap-6 bg-[var(--color-study)] px-2 pb-8 text-[var(--color-ink)] lg:grid-cols-2 lg:items-center lg:gap-10">
-          <div>
-            <span className="font-[family-name:var(--font-display)] text-7xl font-black leading-none lg:text-8xl">
-              {number}
+          <div className="flex flex-wrap items-center gap-4">
+            {tag &&
+              (isOpen ? (
+                <span className="inline-flex items-center rounded-full border border-white px-[17px] py-[5px] text-[length:var(--fs-body)] text-white">
+                  {tag}
+                </span>
+              ) : (
+                <Tag>{tag}</Tag>
+              ))}
+            <span className="font-[family-name:var(--font-body)] text-[28px] font-bold tracking-tight">
+              {study.title}
             </span>
-            {study.summary && (
-              <p className="mt-4 max-w-sm text-[length:var(--fs-body)]">{study.summary}</p>
-            )}
-            {study.tags.length > 0 && (
-              <p className="mt-4 text-[length:var(--fs-caption)] font-semibold uppercase tracking-wide">
-                {study.tags.join(" / ")}
-              </p>
-            )}
-            <Link
-              href={href}
-              target={isExternal ? "_blank" : undefined}
-              rel={isExternal ? "noopener noreferrer" : undefined}
-              className="mt-6 inline-flex items-center gap-1 text-[length:var(--fs-body)] font-semibold underline underline-offset-4"
-            >
-              자세히 보기 {isExternal && "↗"}
-            </Link>
           </div>
-          <MediaThumb
-            src={study.thumbnail_url}
-            alt={study.title}
-            className="aspect-[16/10]"
-          />
+
+          <div
+            className="grid min-h-0 transition-[grid-template-rows] duration-[600ms] ease-[var(--ease-out)]"
+            style={{ gridTemplateRows: isOpen ? "1fr" : "0fr" }}
+          >
+            <div className="min-h-0 overflow-hidden">
+              <ol
+                className={`relative mt-4 flex flex-col gap-2 pl-3 transition-opacity duration-500 ${
+                  isOpen ? "opacity-100 delay-150" : "opacity-0"
+                }`}
+                aria-hidden={!isOpen}
+              >
+                {steps.map((step, i) => (
+                  <li key={step.label} className="relative flex flex-wrap gap-2 pl-9 text-[20px]">
+                    {i < steps.length - 1 && (
+                      <span className="absolute left-[11px] top-6 h-full w-px bg-white/40" aria-hidden="true" />
+                    )}
+                    <StepCheckIcon className="absolute left-0 top-0.5 size-6 shrink-0" />
+                    <span className="w-[58px] font-medium text-white">{step.label}</span>
+                    <span className="text-[#cecece]">{step.text}</span>
+                  </li>
+                ))}
+              </ol>
+            </div>
+          </div>
+        </button>
+
+        <div
+          className={`hidden overflow-hidden transition-[max-width] duration-[600ms] ease-[var(--ease-out)] lg:block lg:shrink-0 ${
+            isOpen ? "self-stretch" : "self-start"
+          }`}
+          style={{ maxWidth: isOpen ? "374px" : "0px", maxHeight: isOpen ? "none" : "0px" }}
+        >
+          <div className="h-full w-[374px] overflow-hidden">
+            <MediaThumb
+              src={study.thumbnail_url}
+              alt={study.title}
+              bare
+              theme="dark"
+              className={`h-full transition-opacity duration-500 ${isOpen ? "opacity-100 delay-150" : "opacity-0"}`}
+            />
+          </div>
         </div>
-      )}
+
+        <Link
+          href={href}
+          target={isExternal ? "_blank" : undefined}
+          rel={isExternal ? "noopener noreferrer" : undefined}
+          aria-label={`${study.title} 자세히 보기`}
+          className="group block shrink-0 transition-transform duration-[var(--dur-base)] ease-[var(--ease-out)] hover:translate-x-0.5"
+        >
+          <ExpandCircleRightIcon className="size-12 shrink-0" />
+        </Link>
+      </div>
     </div>
   );
 }

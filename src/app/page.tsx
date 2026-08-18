@@ -1,10 +1,10 @@
 import { AboutSummary } from "@/components/about-summary";
+import { CapabilitiesSection } from "@/components/capabilities-section";
 import { CurrentlyDoingSection } from "@/components/currently-doing-section";
 import { Footer } from "@/components/footer";
 import { Gnb } from "@/components/gnb";
 import { Hero } from "@/components/hero";
 import { StudySection } from "@/components/study-section";
-import { WelcomeTicker } from "@/components/welcome-ticker";
 import { WorksSection } from "@/components/works-section";
 import {
   getAbout,
@@ -31,9 +31,9 @@ export default async function Home() {
     careerYears,
     projectsCount,
   ] = await Promise.all([
-    getFeaturedProjects("professional", 3),
-    getFeaturedProjects("side", 4),
-    getFeaturedStudies(5),
+    getFeaturedProjects("professional", 5),
+    getFeaturedProjects("side", 2),
+    getFeaturedStudies(4),
     getAbout(),
     getLatestCompanyCareers(3),
     getCurrentlyDoing(settings?.currently_limit ?? 6),
@@ -46,17 +46,15 @@ export default async function Home() {
       <Gnb />
       <main className="flex-1">
         <Hero about={about} careerYears={careerYears} projectsCount={projectsCount} />
-        <WelcomeTicker text={settings?.hero_title ?? "Welcome To My Home"} />
+        <CapabilitiesSection />
         <WorksSection
           theme="dark"
-          sub="professional"
           projects={professionalProjects}
           moreHref="/works?tab=professional"
         />
         <StudySection studies={studies} moreHref="/study" />
         <WorksSection
           theme="light"
-          sub="side"
           projects={sideProjects}
           moreHref="/works?tab=side"
         />

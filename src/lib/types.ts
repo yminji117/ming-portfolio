@@ -24,9 +24,19 @@ export interface Project {
   external_url: string | null;
   overview: string | null;
   result: string | null;
+  industry: string | null;
   is_featured: boolean;
   featured_order: number | null;
   status: ContentStatus;
+}
+
+export interface StudyRoadmapStep {
+  label: string;
+  text: string;
+}
+
+export interface StudyBody {
+  steps?: StudyRoadmapStep[];
 }
 
 export interface Study {
@@ -38,6 +48,7 @@ export interface Study {
   tags: string[];
   external_url: string | null;
   published_at: string;
+  body: StudyBody | null;
   is_featured: boolean;
   featured_order: number | null;
   status: ContentStatus;

@@ -1,11 +1,12 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 
 const NAV_LINKS = [
-  { label: "Works", href: "/works", match: "/works" },
+  { label: "Work", href: "/works", match: "/works" },
   { label: "Study", href: "/study", match: "/study" },
   { label: "About me", href: "/about", match: "/about" },
 ];
@@ -42,29 +43,29 @@ export function Gnb() {
     };
   }, [menuOpen]);
 
-  useEffect(() => {
-    setMenuOpen(false);
-  }, [pathname]);
-
   return (
     <>
       <header
-        className={`fixed top-0 left-0 right-0 z-50 border-b border-[var(--color-line)] bg-[var(--color-bg)] transition-transform duration-[var(--dur-base)] ease-[var(--ease-out)] ${
+        className={`fixed top-0 left-0 right-0 z-50 border-b border-white/25 bg-white/55 backdrop-blur-xl backdrop-saturate-150 transition-transform duration-[var(--dur-base)] ease-[var(--ease-out)] ${
           hidden ? "-translate-y-full" : "translate-y-0"
-        } ${scrolled ? "shadow-[0_1px_0_rgba(19,20,23,0.04)]" : ""}`}
+        } ${scrolled ? "shadow-[0_4px_24px_rgba(19,20,23,0.06)]" : ""}`}
       >
         <nav
           aria-label="주요 메뉴"
-          className="container-app flex h-16 items-center justify-between text-[var(--color-text)] lg:h-20"
+          className="container-app grid h-16 grid-cols-2 items-center text-[var(--color-text)] lg:h-[60px] lg:grid-cols-[1fr_auto_1fr]"
         >
-          <Link
-            href="/"
-            className="font-[family-name:var(--font-display)] text-lg font-extrabold tracking-tight"
-          >
-            MINJI
+          <Link href="/" className="justify-self-start" aria-label="MINJI">
+            <Image
+              src="/brand/logo.png"
+              alt="MINJI"
+              width={177}
+              height={89}
+              priority
+              className="h-8 w-auto"
+            />
           </Link>
 
-          <div className="hidden items-center gap-8 lg:flex">
+          <div className="hidden items-center gap-8 justify-self-center lg:flex">
             {NAV_LINKS.map((link) => (
               <Link
                 key={link.href}
@@ -78,9 +79,12 @@ export function Gnb() {
                 {link.label}
               </Link>
             ))}
+          </div>
+
+          <div className="hidden justify-self-end lg:flex">
             <Link
               href="/here"
-              className="group inline-flex items-center gap-1.5 rounded-full bg-[var(--color-accent)] px-5 py-2 text-[length:var(--fs-body)] font-medium text-[var(--color-accent-ink)] transition-transform duration-[var(--dur-base)] ease-[var(--ease-out)] hover:scale-[1.02] active:scale-[0.98]"
+              className="group inline-flex items-center gap-1.5 rounded-[4px] bg-[var(--color-accent)] px-4 py-2 text-[length:var(--fs-body)] font-medium text-[var(--color-accent-ink)] transition-transform duration-[var(--dur-base)] ease-[var(--ease-out)] hover:scale-[1.02] active:scale-[0.98]"
             >
               here
               <span className="transition-transform duration-[var(--dur-base)] ease-[var(--ease-out)] group-hover:translate-x-0.5">
@@ -91,7 +95,7 @@ export function Gnb() {
 
           <button
             type="button"
-            className="flex flex-col gap-1.5 lg:hidden"
+            className="flex flex-col gap-1.5 justify-self-end lg:hidden"
             aria-expanded={menuOpen}
             aria-label={menuOpen ? "메뉴 닫기" : "메뉴 열기"}
             onClick={() => setMenuOpen((v) => !v)}
@@ -121,6 +125,7 @@ export function Gnb() {
               <Link
                 key={link.href}
                 href={link.href}
+                onClick={() => setMenuOpen(false)}
                 className="font-[family-name:var(--font-display)] text-4xl font-extrabold tracking-tight transition-colors duration-[var(--dur-fast)] hover:text-[var(--color-accent)]"
               >
                 {link.label}
@@ -128,6 +133,7 @@ export function Gnb() {
             ))}
             <Link
               href="/here"
+              onClick={() => setMenuOpen(false)}
               className="font-[family-name:var(--font-display)] text-4xl font-extrabold text-[var(--color-accent)]"
             >
               here →

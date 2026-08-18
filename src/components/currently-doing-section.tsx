@@ -1,5 +1,5 @@
-import { MoreLink } from "@/components/more-link";
 import { Reveal } from "@/components/reveal";
+import { SectionHeading } from "@/components/section-heading";
 import { formatCurrentlyRange } from "@/lib/format";
 import type { CurrentlyDoing } from "@/lib/types";
 
@@ -10,9 +10,9 @@ const LABEL_TEXT: Record<CurrentlyDoing["label"], string> = {
 };
 
 const LABEL_STYLE: Record<CurrentlyDoing["label"], string> = {
-  want: "border border-[var(--color-line)] bg-[var(--color-surface)] text-[var(--color-text)]",
-  doing: "bg-[var(--color-accent)] text-[var(--color-accent-ink)]",
-  done: "bg-[var(--color-line)] text-[var(--color-text-muted)]",
+  want: "border border-[#e3e4e7] bg-white text-[var(--color-text)]",
+  doing: "bg-black text-white",
+  done: "bg-[#cbcbcb] text-[#777777]",
 };
 
 export function CurrentlyDoingSection({ items }: { items: CurrentlyDoing[] }) {
@@ -22,14 +22,9 @@ export function CurrentlyDoingSection({ items }: { items: CurrentlyDoing[] }) {
   return (
     <section className="section">
       <div className="container-app">
-        <Reveal>
-          <div className="flex items-start justify-between gap-6">
-            <h2 className="section-heading">Currently Doing</h2>
-            <MoreLink href="/about#currently" variant="icon" />
-          </div>
-        </Reveal>
+        <SectionHeading title="Currently Doing" moreHref="/about#currently" theme="light" />
 
-        <div className="mt-12 divide-y divide-[var(--color-line)] border-t border-[var(--color-line)]">
+        <div className="mt-12 divide-y divide-[#e5e5e0] border-t border-black">
           {items.map((item, i) => (
             <Reveal key={item.id} index={i}>
               <CurrentlyRow item={item} />
@@ -46,18 +41,20 @@ function CurrentlyRow({ item }: { item: CurrentlyDoing }) {
   // Phase 2에서 projects/studies slug를 조인해 조회한 뒤 링크를 연결한다.
   return (
     <div className="flex flex-col gap-2 py-4 sm:flex-row sm:items-center sm:justify-between">
-      <div className="flex flex-wrap items-center gap-3">
-        <span className="text-[length:var(--fs-caption)] uppercase text-[var(--color-text-muted)]">
+      <div className="flex flex-wrap items-center gap-5">
+        <span className="w-20 text-[length:var(--fs-body)] uppercase text-[var(--color-text)]">
           {item.category}
         </span>
-        <span
-          className={`rounded-full px-3 py-0.5 text-[length:var(--fs-caption)] ${LABEL_STYLE[item.label]}`}
-        >
-          {LABEL_TEXT[item.label]}
+        <span className="flex flex-wrap items-center gap-4">
+          <span
+            className={`inline-flex w-[61px] items-center justify-center rounded-[4px] px-2 py-0.5 text-[length:var(--fs-body)] ${LABEL_STYLE[item.label]}`}
+          >
+            {LABEL_TEXT[item.label]}
+          </span>
+          <span className="text-[length:var(--fs-body)] font-bold text-[var(--color-text)]">{item.title}</span>
         </span>
-        <span className="text-[length:var(--fs-body)] font-semibold">{item.title}</span>
       </div>
-      <span className="text-[length:var(--fs-caption)] text-[var(--color-text-muted)]">
+      <span className="text-[length:var(--fs-body)] text-[var(--color-text)]">
         {formatCurrentlyRange(item.start_date, item.end_date)}
       </span>
     </div>
