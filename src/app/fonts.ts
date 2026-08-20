@@ -16,5 +16,10 @@ export const nanumSquareNeo = localFont({
       weight: "800",
       style: "normal",
     },
+    {
+      path: "../../node_modules/nanumsquareneo/woff2/NanumSquareNeoTTF-eHv.woff2",
+      weight: "900",
+      style: "normal",
+    },
   ],
 });

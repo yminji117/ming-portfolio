@@ -73,28 +73,60 @@ function StudyItem({
   const { href, isExternal } = studyHref(study);
   const tag = study.tags[0];
 
+  // 모바일(태그+펼치기 버튼 한 줄)과 데스크탑(태그+타이틀 한 줄) 둘 다에서 재사용.
+  const tagElement = tag ? (
+    isOpen ? (
+      <span className="inline-flex items-center rounded-full border border-white px-[17px] py-[7px] text-[length:var(--fs-body)] text-white lg:py-[5px]">
+        {tag}
+      </span>
+    ) : (
+      <Tag>{tag}</Tag>
+    )
+  ) : null;
+
   return (
     <div
-      className={`border-y border-black px-4 py-[28px] transition-colors duration-500 ease-[var(--ease-out)] lg:px-5 ${
+      className={`border-y border-black px-4 py-6 transition-colors duration-500 ease-[var(--ease-out)] lg:px-5 lg:py-[28px] ${
         isOpen ? "bg-[var(--color-ink)] text-white" : "text-[var(--color-text)]"
       }`}
     >
       <div className="flex items-start gap-4">
-        <button
-          type="button"
+        {/* Figma 모바일 시안: 펼치기 링크가 태그와 같은 줄에 있어 <button> 안에 <a>를 중첩할 수 없다 —
+            네이티브 button 대신 role="button" div + 키보드 핸들러로 토글 접근성을 유지한다. */}
+        <div
+          role="button"
+          tabIndex={0}
           onClick={onSelect}
+          onKeyDown={(event) => {
+            if (event.key === "Enter" || event.key === " ") {
+              event.preventDefault();
+              onSelect();
+            }
+          }}
           aria-expanded={isOpen}
-          className="min-w-0 flex-1 text-left"
+          className="min-w-0 flex-1 cursor-pointer text-left"
         >
-          <div className="flex flex-wrap items-center gap-4">
-            {tag &&
-              (isOpen ? (
-                <span className="inline-flex items-center rounded-full border border-white px-[17px] py-[5px] text-[length:var(--fs-body)] text-white">
-                  {tag}
-                </span>
-              ) : (
-                <Tag>{tag}</Tag>
-              ))}
+          {/* 모바일: 태그 + 펼치기 버튼 한 줄, 타이틀은 아래 줄 */}
+          <div className="flex items-center justify-between gap-4 lg:hidden">
+            {tagElement}
+            <Link
+              href={href}
+              target={isExternal ? "_blank" : undefined}
+              rel={isExternal ? "noopener noreferrer" : undefined}
+              aria-label={`${study.title} 자세히 보기`}
+              onClick={(event) => event.stopPropagation()}
+              className="group block shrink-0 transition-transform duration-[var(--dur-base)] ease-[var(--ease-out)] hover:translate-x-0.5"
+            >
+              <ExpandCircleRightIcon className="size-12 shrink-0" />
+            </Link>
+          </div>
+          <span className="mt-2 block font-[family-name:var(--font-body)] text-[24px] font-bold tracking-[-0.7px] lg:hidden">
+            {study.title}
+          </span>
+
+          {/* 데스크탑: 태그 + 타이틀 한 줄 (기존 레이아웃 그대로) */}
+          <div className="hidden lg:flex lg:flex-wrap lg:items-center lg:gap-4">
+            {tagElement}
             <span className="font-[family-name:var(--font-body)] text-[28px] font-bold tracking-tight">
               {study.title}
             </span>
@@ -105,14 +137,29 @@ function StudyItem({
             style={{ gridTemplateRows: isOpen ? "1fr" : "0fr" }}
           >
             <div className="min-h-0 overflow-hidden">
+              {/* 모바일 전용 썸네일 — 타이틀과 로드맵 사이 (Figma 모바일 시안) */}
+              <div className="mt-5 lg:hidden">
+                <div className="aspect-[295/162] w-full overflow-hidden rounded-[10px]">
+                  <MediaThumb
+                    src={study.thumbnail_url}
+                    alt={study.title}
+                    bare
+                    theme="dark"
+                    className={`h-full w-full transition-opacity duration-500 ${isOpen ? "opacity-100 delay-150" : "opacity-0"}`}
+                  />
+                </div>
+              </div>
               <ol
-                className={`relative mt-4 flex flex-col gap-2 pl-3 transition-opacity duration-500 ${
+                className={`relative mt-5 flex flex-col gap-3 pl-3 transition-opacity duration-500 lg:mt-4 lg:gap-2 ${
                   isOpen ? "opacity-100 delay-150" : "opacity-0"
                 }`}
                 aria-hidden={!isOpen}
               >
                 {steps.map((step, i) => (
-                  <li key={step.label} className="relative flex flex-wrap gap-2 pl-9 text-[20px]">
+                  <li
+                    key={step.label}
+                    className="relative flex flex-col gap-2 pl-9 text-[16px] lg:flex-row lg:flex-wrap lg:items-center lg:gap-2 lg:text-[20px]"
+                  >
                     {i < steps.length - 1 && (
                       <span className="absolute left-[11px] top-6 h-full w-px bg-white/40" aria-hidden="true" />
                     )}
@@ -124,8 +171,9 @@ function StudyItem({
               </ol>
             </div>
           </div>
-        </button>
+        </div>
 
+        {/* 데스크탑 전용 썸네일 (기존 유지) */}
         <div
           className={`hidden overflow-hidden transition-[max-width] duration-[600ms] ease-[var(--ease-out)] lg:block lg:shrink-0 ${
             isOpen ? "self-stretch" : "self-start"
@@ -143,12 +191,13 @@ function StudyItem({
           </div>
         </div>
 
+        {/* 데스크탑 전용 펼치기 링크 (기존 유지) */}
         <Link
           href={href}
           target={isExternal ? "_blank" : undefined}
           rel={isExternal ? "noopener noreferrer" : undefined}
           aria-label={`${study.title} 자세히 보기`}
-          className="group block shrink-0 transition-transform duration-[var(--dur-base)] ease-[var(--ease-out)] hover:translate-x-0.5"
+          className="group hidden shrink-0 transition-transform duration-[var(--dur-base)] ease-[var(--ease-out)] hover:translate-x-0.5 lg:block"
         >
           <ExpandCircleRightIcon className="size-12 shrink-0" />
         </Link>

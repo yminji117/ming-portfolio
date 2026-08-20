@@ -43,7 +43,7 @@ export function ProjectCard({
           </p>
         </div>
         {tags.length > 0 && (
-          <div className="flex flex-wrap gap-1">
+          <div className="flex flex-wrap gap-2">
             {tags.map((tag) => (
               <span
                 key={tag}

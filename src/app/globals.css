@@ -210,6 +210,17 @@ body {
   animation-direction: reverse;
 }
 
+/* 히어로 칩 4개에 쓰는 은은한 위아래 떠다니는 인터랙션 */
+@keyframes float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-14px);
+  }
+}
+
 /* PRD 2.3 접근성 가드 — prefers-reduced-motion 시 전체 모션 비활성 */
 @media (prefers-reduced-motion: reduce) {
   *,
@@ -220,4 +231,13 @@ body {
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
   }
+}
+
+/* 스크롤은 유지하되 네이티브 스크롤바만 숨김 (모바일 필터 칩 가로 스크롤 등) */
+.no-scrollbar {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
 }

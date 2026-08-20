@@ -45,7 +45,12 @@ export default async function Home() {
     <>
       <Gnb />
       <main className="flex-1">
-        <Hero about={about} careerYears={careerYears} projectsCount={projectsCount} />
+        <Hero
+          about={about}
+          careerYears={careerYears}
+          projectsCount={projectsCount}
+          heroTitle={settings?.hero_title ?? "Welcome To My Home"}
+        />
         <CapabilitiesSection />
         <WorksSection
           theme="dark"
@@ -61,10 +66,7 @@ export default async function Home() {
         <AboutSummary about={about} careers={careers} />
         <CurrentlyDoingSection items={currentlyDoing} />
       </main>
-      <Footer
-        email={about?.email ?? null}
-        instagramUrl={about?.instagram_url ?? null}
-      />
+      <Footer email={about?.email ?? null} />
     </>
   );
 }

@@ -23,7 +23,7 @@ const ROW_2: Capability[] = [
 
 export function CapabilitiesSection() {
   return (
-    <section className="bg-black pb-20 pt-28 lg:pb-20 lg:pt-40">
+    <section className="bg-[#090909] pb-10 pt-20 lg:pb-20 lg:pt-40">
       <div className="container-app flex flex-col items-center text-center">
         <h2
           className="font-[family-name:var(--font-display)] font-extrabold leading-none tracking-tight text-white"
@@ -35,7 +35,7 @@ export function CapabilitiesSection() {
           className="mt-5 font-[family-name:var(--font-display)] font-bold leading-tight text-white"
           style={{ fontSize: "var(--fs-display-md)" }}
         >
-          흩어진 요구사항에서, 서비스 출시까지 책임감 있게
+          흩어진 요구사항에서,<br className="lg:hidden" /> 서비스 출시까지 책임감 있게
         </p>
       </div>
 

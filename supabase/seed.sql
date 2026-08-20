@@ -7,7 +7,7 @@ insert into site_settings (id, hero_title, hero_subtitle, hero_media_type, curre
 values (true, 'Welcome To My Home', '기획하고 만드는 사람, 윤민지입니다.', 'image', 6);
 
 -- about
-insert into about (id, name_ko, name_en, tagline, cover_letter, cover_letter_summary, email, instagram_url)
+insert into about (id, name_ko, name_en, tagline, cover_letter, cover_letter_summary, email, instagram_url, photo_url)
 values (
   true,
   '윤민지',
@@ -16,15 +16,16 @@ values (
   '(전문 자기소개 — 어드민에서 작성해주세요)',
   '기획과 실행을 함께 하는 것을 좋아합니다.',
   'yminji117@gmail.com',
-  'https://instagram.com/ynmin2_'
+  'https://instagram.com/ynmin2_',
+  '/about/minji.jpg'
 );
 
--- careers
-insert into careers (type, org_name, title, start_date, end_date, "order") values
-  ('company', '회사명 A', '기획', '2024-01-01', null, 1),
-  ('company', '회사명 B', '기획', '2022-03-01', '2023-12-31', 2),
-  ('school', '학교명', '전공', '2018-03-01', '2022-02-01', 3),
-  ('language', '어학연수 기관', null, '2021-06-01', '2021-12-01', 4);
+-- careers (company 2건은 Figma '최종' 페이지 실데이터)
+insert into careers (type, org_name, title, description, industry, start_date, end_date, "order") values
+  ('company', '(주)언플러', 'Service Planner', '대리', '에이전시', '2021-12-27', '2026-05-22', 1),
+  ('company', '(주)알다', 'Product Designer', '사원', '스타트업', '2020-09-20', '2021-06-30', 2),
+  ('school', '학교명', '전공', null, null, '2018-03-01', '2022-02-01', 3),
+  ('language', '어학연수 기관', null, null, null, '2021-06-01', '2021-12-01', 4);
 
 -- skills (PRD 6.4 — Pigma는 Figma 오기로 반영, 부록 A/Open Question #1)
 insert into skills (name, "group", "order") values

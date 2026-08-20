@@ -2,11 +2,6 @@ function dotDate(isoDate: string): string {
   return isoDate.replaceAll("-", ".");
 }
 
-function yearMonth(isoDate: string): string {
-  const [y, m] = isoDate.split("-");
-  return `${y}.${m}`;
-}
-
 // PRD 5.7 — Currently Doing 일자 표기 규칙
 export function formatCurrentlyRange(
   start: string | null,
@@ -18,14 +13,20 @@ export function formatCurrentlyRange(
   return `${dotDate(start)} ~ ${dotDate(end)}`;
 }
 
-// PRD 5.6 — 연혁 표기: YYYY.MM ~ YYYY.MM
+// 일자가 없는(월까지만 아는) 경력은 저장 시 day를 01로 채워두므로, 표시할 때는 생략한다.
+function careerDate(isoDate: string): string {
+  const [y, m, d] = isoDate.split("-");
+  return d === "01" ? `${y}.${m}` : `${y}.${m}.${d}`;
+}
+
+// Figma '최종' 시안 반영 — 연혁 표기: YYYY.MM[.DD] ~ YYYY.MM[.DD]
 export function formatCareerRange(
   start: string | null,
   end: string | null,
 ): string {
   if (!start) return "";
-  if (!end) return `${yearMonth(start)} ~`;
-  return `${yearMonth(start)} ~ ${yearMonth(end)}`;
+  if (!end) return `${careerDate(start)} ~`;
+  return `${careerDate(start)} ~ ${careerDate(end)}`;
 }
 
 export function getInstagramHandle(url: string): string {

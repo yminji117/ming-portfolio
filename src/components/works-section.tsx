@@ -17,7 +17,7 @@ export function WorksSection({
 
   if (theme === "dark") {
     return (
-      <section className="relative overflow-hidden bg-[var(--color-ink)] py-[88px] text-white lg:py-[160px]">
+      <section className="relative overflow-hidden bg-[#090909] py-20 text-white lg:py-[160px]">
         <p
           aria-hidden="true"
           className="pointer-events-none absolute bottom-[93px] right-[96px] hidden select-none whitespace-nowrap font-[family-name:var(--font-display)] font-extrabold text-[#1d1d1d] lg:block"
@@ -34,7 +34,7 @@ export function WorksSection({
   }
 
   return (
-    <section className="border-t border-[var(--color-line)] pt-12 pb-16 lg:pt-[80px] lg:pb-[160px]">
+    <section className="pt-15 pb-20 lg:pt-[80px] lg:pb-[160px]">
       <div className="container-app">
         <SectionHeading eyebrow="Woke" title="Side" moreHref={moreHref} theme="light" />
         <WorksSideGrid projects={projects} />

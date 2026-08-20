@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState, type RefObject } from "react";
 import { ProjectCard } from "@/components/project-card";
 import { Reveal } from "@/components/reveal";
 import { getIndustryLabel } from "@/lib/format";
@@ -23,6 +23,8 @@ export function WorksProfessionalGrid({ projects }: { projects: Project[] }) {
   }, [projects]);
 
   const [active, setActive] = useState<string>(ALL);
+  // 모바일 가로 스크롤 필터 칩 행 — 뒤쪽 칩을 선택했을 때 해당 칩이 보이도록 스크롤한다.
+  const filterScrollRef = useRef<HTMLDivElement>(null);
 
   const hasFilters = industries.length > 0;
   const firstRow = projects.slice(0, 3);
@@ -39,17 +41,28 @@ export function WorksProfessionalGrid({ projects }: { projects: Project[] }) {
   const rowGridClass = hasFilters ? "lg:grid-cols-8" : "lg:grid-cols-6";
 
   return (
-    <div className="mt-10 flex flex-col gap-5">
+    <div className="mt-8 flex flex-col gap-5 lg:mt-10">
       <div className={`grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid lg:items-start lg:gap-5 ${rowGridClass}`}>
         {hasFilters && (
-          <div className="flex flex-wrap items-start gap-3 lg:col-span-2 lg:flex-col lg:gap-3">
-            <FilterChip label="All" selected={active === ALL} onClick={() => setActive(ALL)} />
-            {industries.map((industry) => (
+          <div
+            ref={filterScrollRef}
+            className="no-scrollbar flex items-start gap-1 overflow-x-auto lg:col-span-2 lg:flex-col lg:gap-3 lg:overflow-visible"
+          >
+            <FilterChip
+              label="All"
+              selected={active === ALL}
+              onClick={() => setActive(ALL)}
+              index={0}
+              scrollRef={filterScrollRef}
+            />
+            {industries.map((industry, i) => (
               <FilterChip
                 key={industry}
                 label={getIndustryLabel(industry)}
                 selected={active === industry}
                 onClick={() => setActive(industry)}
+                index={i + 1}
+                scrollRef={filterScrollRef}
               />
             ))}
           </div>
@@ -90,15 +103,29 @@ function FilterChip({
   label,
   selected,
   onClick,
+  index,
+  scrollRef,
 }: {
   label: string;
   selected: boolean;
   onClick: () => void;
+  index: number;
+  scrollRef: RefObject<HTMLDivElement | null>;
 }) {
   return (
     <button
       type="button"
-      onClick={onClick}
+      onClick={(event) => {
+        onClick();
+        // 2번째 칩(index 1, "All" 바로 다음)을 선택했을 때는 칩 자신의 왼쪽 끝만
+        // 뷰포트 시작에 맞추면 "All"이 화면 밖으로 밀려날 수 있다. 이 경우엔
+        // 행을 맨 처음(scrollLeft: 0)으로 되돌려 "All"도 함께 보이게 한다.
+        if (index === 1) {
+          scrollRef.current?.scrollTo({ left: 0, behavior: "smooth" });
+        } else {
+          event.currentTarget.scrollIntoView({ behavior: "smooth", inline: "start", block: "nearest" });
+        }
+      }}
       aria-pressed={selected}
       className={`inline-flex h-10 shrink-0 items-center justify-center rounded-full border px-5 text-left text-[length:var(--fs-body)] transition-colors duration-[var(--dur-fast)] ${
         selected

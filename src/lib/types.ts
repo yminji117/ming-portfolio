@@ -74,6 +74,7 @@ export interface Career {
   start_date: string | null;
   end_date: string | null;
   description: string | null;
+  industry: string | null;
 }
 
 export interface CurrentlyDoing {

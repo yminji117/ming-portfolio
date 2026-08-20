@@ -1,8 +1,9 @@
 import Image from "next/image";
+import { CareerTimeline } from "@/components/career-timeline";
 import { CopyEmailButton } from "@/components/copy-email-button";
 import { MoreLink } from "@/components/more-link";
 import { Reveal } from "@/components/reveal";
-import { formatCareerRange, getInstagramHandle } from "@/lib/format";
+import { getInstagramHandle } from "@/lib/format";
 import type { About, Career } from "@/lib/types";
 
 export function AboutSummary({
@@ -17,22 +18,95 @@ export function AboutSummary({
   const name = about.name_ko || about.name_en || "MINJI";
   const quote = about.cover_letter_summary || about.tagline;
 
+  const contactChip = (about.email || about.instagram_url) && (
+    <div className="chip w-full border border-[rgba(255,255,255,0.3)]">
+      {about.email && (
+        <div className="group flex w-full items-center justify-between gap-2">
+          <CopyEmailButton
+            email={about.email}
+            className="text-left text-[length:var(--fs-body)] text-white transition-colors duration-[var(--dur-fast)] group-hover:text-[var(--color-accent)]"
+          />
+          <span
+            aria-hidden="true"
+            className="text-[20px] font-extralight text-white transition-colors duration-[var(--dur-fast)] group-hover:text-[var(--color-accent)]"
+          >
+            →
+          </span>
+        </div>
+      )}
+      {about.instagram_url && (
+        <a
+          href={about.instagram_url}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex w-full items-center justify-between gap-2 text-[length:var(--fs-body)] text-white transition-colors duration-[var(--dur-fast)] hover:text-[var(--color-accent)]"
+        >
+          {getInstagramHandle(about.instagram_url)}
+          <span aria-hidden="true" className="text-[20px] font-extralight">→</span>
+        </a>
+      )}
+    </div>
+  );
+
   return (
-    <section className="section-block bg-[var(--color-ink)] text-white">
+    <section className="bg-[var(--color-ink)] py-20 text-white lg:py-[140px]">
       <div className="container-app">
         <div className="flex flex-col gap-10 lg:flex-row lg:items-start lg:gap-10">
           {quote && (
             <Reveal className="lg:flex-1">
-              <p
-                className="font-[family-name:var(--font-body)] font-bold leading-tight text-white"
-                style={{ fontSize: "var(--fs-display-lg)" }}
-              >
+              <p className="font-[family-name:var(--font-body)] font-bold text-[32px] leading-[50px] text-white lg:text-[40px] lg:leading-tight">
                 {quote}
               </p>
             </Reveal>
           )}
 
-          <div className="flex flex-col gap-10 lg:flex-row lg:gap-10">
+          {/* Mobile (<lg): photo sits beside name/tagline/timeline, contact chip below — per updated Figma mobile spec */}
+          <div className="flex flex-col gap-8 lg:hidden">
+            <div className="flex items-start gap-5">
+              <Reveal index={1} className="h-[132px] w-[106px] shrink-0">
+                <div className="h-full w-full overflow-hidden rounded-[var(--radius)] bg-white/10">
+                  {about.photo_url ? (
+                    <Image
+                      src={about.photo_url}
+                      alt={name}
+                      width={106}
+                      height={132}
+                      className="h-full w-full object-cover"
+                    />
+                  ) : (
+                    <div className="flex h-full w-full items-center justify-center font-[family-name:var(--font-display)] text-2xl font-black text-white/40">
+                      MJ
+                    </div>
+                  )}
+                </div>
+              </Reveal>
+
+              <Reveal index={2} className="flex min-w-0 flex-1 flex-col gap-4">
+                <div className="flex flex-col gap-2">
+                  <div className="flex items-center justify-between gap-4">
+                    <h3 className="font-[family-name:var(--font-display)] text-2xl font-extrabold leading-[32px] tracking-[-0.8px]">
+                      {name}
+                    </h3>
+                    <MoreLink href="/about" variant="icon" className="text-white" />
+                  </div>
+                  {about.tagline && (
+                    <p className="text-xl font-medium leading-[20px] text-white">{about.tagline}</p>
+                  )}
+                </div>
+
+                <CareerTimeline careers={careers} />
+              </Reveal>
+            </div>
+
+            {contactChip && (
+              <Reveal index={3} className="w-full max-w-[327px]">
+                {contactChip}
+              </Reveal>
+            )}
+          </div>
+
+          {/* Desktop (lg+): photo column beside a full sidebar column — unchanged */}
+          <div className="hidden lg:flex lg:flex-row lg:gap-10">
             <Reveal index={1} className="lg:w-[374px] lg:shrink-0">
               <div className="aspect-[374/464] w-full overflow-hidden rounded-[var(--radius)] bg-white/10">
                 {about.photo_url ? (
@@ -54,70 +128,22 @@ export function AboutSummary({
               </div>
             </Reveal>
 
-            <Reveal index={2} className="flex flex-col gap-10 lg:w-[229px] lg:shrink-0 lg:justify-between">
-              <div className="flex flex-col gap-3">
+            <Reveal index={2} className="flex flex-col gap-10 lg:w-[229px] lg:shrink-0 lg:gap-[71px]">
+              <div className="flex flex-col gap-2 lg:gap-1">
                 <div className="flex items-center justify-between gap-6">
-                  <h3 className="font-[family-name:var(--font-display)] text-[32px] font-bold tracking-tight">
+                  <h3 className="font-[family-name:var(--font-display)] text-[32px] font-extrabold leading-none tracking-tight">
                     {name}
                   </h3>
                   <MoreLink href="/about" variant="icon" className="text-white" />
                 </div>
                 {about.tagline && (
-                  <p className="text-xl font-bold text-white">{about.tagline}</p>
+                  <p className="text-xl font-bold leading-none text-white">{about.tagline}</p>
                 )}
               </div>
 
-              {careers.length > 0 && (
-                <ol className="relative flex flex-col gap-10 border-l border-white/25 pl-7">
-                  {careers.map((career, i) => (
-                    <li key={career.id} className="relative">
-                      <span
-                        className={`absolute -left-[33px] top-1 size-5 rounded-full border ${
-                          i === 0 ? "border-white/50 bg-white/30" : "border-white/20 bg-white/10"
-                        }`}
-                      />
-                      <p className="text-xs text-white">
-                        {formatCareerRange(career.start_date, career.end_date)}
-                      </p>
-                      <p className="mt-2 text-[length:var(--fs-body)] text-[#c7c7c7]">
-                        {career.org_name}
-                      </p>
-                      {career.title && (
-                        <p className="mt-1 text-[length:var(--fs-body)] font-medium text-white">
-                          {career.title}
-                        </p>
-                      )}
-                    </li>
-                  ))}
-                </ol>
-              )}
+              <CareerTimeline careers={careers} />
 
-              {(about.email || about.instagram_url) && (
-                <div className="chip w-full border border-[rgba(255,255,255,0.3)]">
-                  {about.email && (
-                    <div className="flex w-full items-center justify-between gap-2">
-                      <CopyEmailButton
-                        email={about.email}
-                        className="text-left text-[length:var(--fs-body)] text-white transition-colors duration-[var(--dur-fast)] hover:text-[var(--color-accent)]"
-                      />
-                      <span aria-hidden="true" className="text-[20px] font-extralight text-white">
-                        →
-                      </span>
-                    </div>
-                  )}
-                  {about.instagram_url && (
-                    <a
-                      href={about.instagram_url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex w-full items-center justify-between gap-2 text-[length:var(--fs-body)] text-white transition-colors duration-[var(--dur-fast)] hover:text-[var(--color-accent)]"
-                    >
-                      {getInstagramHandle(about.instagram_url)}
-                      <span aria-hidden="true" className="text-[20px] font-extralight">→</span>
-                    </a>
-                  )}
-                </div>
-              )}
+              {contactChip}
             </Reveal>
           </div>
         </div>
