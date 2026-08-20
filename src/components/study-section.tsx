@@ -7,6 +7,7 @@ import { MediaThumb } from "@/components/media-thumb";
 import { Reveal } from "@/components/reveal";
 import { SectionHeading } from "@/components/section-heading";
 import { Tag } from "@/components/tag";
+import { getStudyHref } from "@/lib/study";
 import type { Study, StudyRoadmapStep } from "@/lib/types";
 
 // 로드맵 본문이 없는 항목을 선택해 펼쳤을 때 보여줄 임시 텍스트.
@@ -46,13 +47,6 @@ export function StudySection({
   );
 }
 
-function studyHref(study: Study) {
-  return {
-    href: study.external_url ?? `/study/${study.slug}`,
-    isExternal: Boolean(study.external_url),
-  };
-}
-
 // 펼침/접힘은 전부 순수 CSS 트랜지션(grid-template-rows/columns 0↔1fr)으로만 처리한다.
 // framer-motion의 layout(FLIP) 애니메이션을 같이 쓰면, 위아래 다른 항목이 리플로우되는
 // 타이밍과 이 CSS 트랜지션의 타이밍이 서로 다른 엔진(JS FLIP vs 네이티브 CSS)이라
@@ -70,7 +64,7 @@ function StudyItem({
     study.body?.steps && study.body.steps.length > 0
       ? study.body.steps
       : PLACEHOLDER_STEPS;
-  const { href, isExternal } = studyHref(study);
+  const { href, isExternal } = getStudyHref(study);
   const tag = study.tags[0];
 
   // 모바일(태그+펼치기 버튼 한 줄)과 데스크탑(태그+타이틀 한 줄) 둘 다에서 재사용.

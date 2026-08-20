@@ -1,20 +1,28 @@
 import Link from "next/link";
 import { MediaThumb } from "@/components/media-thumb";
-import { getIndustryLabel } from "@/lib/format";
+import { formatCareerRange, getIndustryLabel } from "@/lib/format";
 import type { Project } from "@/lib/types";
 
 // Works Professional 카드 — industry 필터에 매칭되면 화이트, 아니면 블랙 상태를 유지한다(숨기지 않음).
+// metaField로 상단 보조 텍스트를 회사명(Main 기본값)/기간(/works 리스트) 중 선택한다.
 export function ProjectCard({
   project,
   active,
+  metaField = "company",
 }: {
   project: Project;
   active: boolean;
+  metaField?: "company" | "period";
 }) {
   const tags = [
     project.role[0],
     project.industry ? getIndustryLabel(project.industry) : null,
   ].filter(Boolean) as string[];
+
+  const metaText =
+    metaField === "period"
+      ? formatCareerRange(project.start_date, project.end_date)
+      : project.company;
 
   return (
     <Link
@@ -32,9 +40,9 @@ export function ProjectCard({
       />
       <div className="flex flex-col gap-4">
         <div className="flex flex-col gap-2">
-          {project.company && (
+          {metaText && (
             <p className={`text-[length:var(--fs-body)] ${active ? "text-black" : "text-white"}`}>
-              {project.company}
+              {metaText}
             </p>
           )}
           <p className="text-[20px] font-medium">{project.title}</p>

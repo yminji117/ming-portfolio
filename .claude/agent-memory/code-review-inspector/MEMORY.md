@@ -1,3 +1,5 @@
 - [Phase 0 Supabase review — status](project_phase0_supabase_review.md) — Critical/Medium items all verified fixed as of Phase 1 recheck; 2 low-priority items still open
-- [Phase 1 Main page review](project_phase1_main_page_review.md) — currently_limit dead setting, data.ts swallows Supabase errors, gnb focus trap severity
+- [Phase 1 Main page review](project_phase1_main_page_review.md) — both prior findings (currently_limit, swallowed errors) now FIXED; gnb focus trap still Medium/open
+- [Phase 2 readiness review](project_phase2_readiness_review.md) — data.ts needs slug-lookup/pagination fns for Phase 2; no XSS risk found; components mostly reusable as-is
+- [Phase 2 guestbook security review](project_phase2_guestbook_security_review.md) — 3 Critical trust-boundary bugs in 0009_guestbook_functions.sql (unapplied), blocks /here launch
 - [PRD.md schema/security reference](reference_prd_schema_sections.md) — where to find DB/RLS/admin-auth requirements to cross-check migrations against

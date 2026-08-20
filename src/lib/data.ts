@@ -3,9 +3,11 @@ import type {
   About,
   Career,
   CurrentlyDoing,
+  GuestbookEntry,
   Project,
   ProjectCategory,
   SiteSettings,
+  Skill,
   Study,
 } from "@/lib/types";
 
@@ -35,6 +37,84 @@ export async function getFeaturedProjects(
   return data ?? [];
 }
 
+export async function getProjectsPage(
+  category: ProjectCategory,
+  offset: number,
+  limit: number,
+): Promise<{ items: Project[]; total: number }> {
+  const supabase = await createClient();
+  // /works 리스트 기본 정렬: 최신순(start_date desc, 동률은 id desc로 안정 정렬)
+  const { data, error, count } = await supabase
+    .from("projects")
+    .select("*", { count: "exact" })
+    .eq("category", category)
+    .order("start_date", { ascending: false, nullsFirst: false })
+    .order("id", { ascending: false })
+    .range(offset, offset + limit - 1);
+  if (error) console.error("getProjectsPage failed:", error.message);
+  return { items: data ?? [], total: count ?? 0 };
+}
+
+export async function getProjectCategoryCounts(): Promise<
+  Record<ProjectCategory, number>
+> {
+  const supabase = await createClient();
+  const [professional, side] = await Promise.all([
+    supabase
+      .from("projects")
+      .select("id", { count: "exact", head: true })
+      .eq("category", "professional"),
+    supabase
+      .from("projects")
+      .select("id", { count: "exact", head: true })
+      .eq("category", "side"),
+  ]);
+  if (professional.error)
+    console.error("getProjectCategoryCounts(professional) failed:", professional.error.message);
+  if (side.error)
+    console.error("getProjectCategoryCounts(side) failed:", side.error.message);
+  return {
+    professional: professional.count ?? 0,
+    side: side.count ?? 0,
+  };
+}
+
+export async function getProjectBySlug(slug: string): Promise<Project | null> {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("projects")
+    .select("*")
+    .eq("slug", slug)
+    .maybeSingle();
+  if (error) console.error("getProjectBySlug failed:", error.message);
+  return data;
+}
+
+// 상세 페이지 "← 이전 / 다음 →" 네비게이션 — 리스트와 동일 정렬 기준으로 이웃 slug만 조회
+export async function getAdjacentProjects(
+  category: ProjectCategory,
+  currentSlug: string,
+): Promise<{ prev: { slug: string; title: string } | null; next: { slug: string; title: string } | null }> {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("projects")
+    .select("slug, title")
+    .eq("category", category)
+    .order("start_date", { ascending: false, nullsFirst: false })
+    .order("id", { ascending: false });
+  if (error) {
+    console.error("getAdjacentProjects failed:", error.message);
+    return { prev: null, next: null };
+  }
+  const items = data ?? [];
+  const index = items.findIndex((item) => item.slug === currentSlug);
+  if (index === -1) return { prev: null, next: null };
+  return {
+    prev: index > 0 ? items[index - 1] : null,
+    next: index < items.length - 1 ? items[index + 1] : null,
+  };
+}
+
 export async function getFeaturedStudies(limit: number): Promise<Study[]> {
   const supabase = await createClient();
   const { data, error } = await supabase
@@ -45,6 +125,54 @@ export async function getFeaturedStudies(limit: number): Promise<Study[]> {
     .limit(limit);
   if (error) console.error("getFeaturedStudies failed:", error.message);
   return data ?? [];
+}
+
+export async function getStudiesPage(
+  offset: number,
+  limit: number,
+): Promise<{ items: Study[]; total: number }> {
+  const supabase = await createClient();
+  const { data, error, count } = await supabase
+    .from("studies")
+    .select("*", { count: "exact" })
+    .order("published_at", { ascending: false })
+    .order("id", { ascending: false })
+    .range(offset, offset + limit - 1);
+  if (error) console.error("getStudiesPage failed:", error.message);
+  return { items: data ?? [], total: count ?? 0 };
+}
+
+export async function getStudyBySlug(slug: string): Promise<Study | null> {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("studies")
+    .select("*")
+    .eq("slug", slug)
+    .maybeSingle();
+  if (error) console.error("getStudyBySlug failed:", error.message);
+  return data;
+}
+
+export async function getAdjacentStudies(
+  currentSlug: string,
+): Promise<{ prev: { slug: string; title: string } | null; next: { slug: string; title: string } | null }> {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("studies")
+    .select("slug, title")
+    .order("published_at", { ascending: false })
+    .order("id", { ascending: false });
+  if (error) {
+    console.error("getAdjacentStudies failed:", error.message);
+    return { prev: null, next: null };
+  }
+  const items = data ?? [];
+  const index = items.findIndex((item) => item.slug === currentSlug);
+  if (index === -1) return { prev: null, next: null };
+  return {
+    prev: index > 0 ? items[index - 1] : null,
+    next: index < items.length - 1 ? items[index + 1] : null,
+  };
 }
 
 export async function getAbout(): Promise<About | null> {
@@ -95,13 +223,35 @@ export async function getLatestCompanyCareers(limit: number): Promise<Career[]> 
   return data ?? [];
 }
 
+// /about 연혁 타임라인 — 학교/어학연수/회사 전체, 시간 역순
+export async function getAllCareers(): Promise<Career[]> {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("careers")
+    .select("*")
+    .order("start_date", { ascending: false });
+  if (error) console.error("getAllCareers failed:", error.message);
+  return data ?? [];
+}
+
+export async function getSkills(): Promise<Skill[]> {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("skills")
+    .select("*")
+    .order("order", { ascending: true });
+  if (error) console.error("getSkills failed:", error.message);
+  return data ?? [];
+}
+
 const CURRENTLY_LABEL_PRIORITY: Record<string, number> = {
   doing: 0,
   want: 1,
   done: 2,
 };
 
-export async function getCurrentlyDoing(limit: number): Promise<CurrentlyDoing[]> {
+// limit 생략 시 전체 노출 — /about에서 재사용 (PRD 6.4)
+export async function getCurrentlyDoing(limit?: number): Promise<CurrentlyDoing[]> {
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("currently_doing")
@@ -124,5 +274,20 @@ export async function getCurrentlyDoing(limit: number): Promise<CurrentlyDoing[]
     return (b.start_date ?? "").localeCompare(a.start_date ?? "");
   });
 
-  return sorted.slice(0, limit);
+  return limit != null ? sorted.slice(0, limit) : sorted;
+}
+
+// PRD 7.3 — guestbook_public 뷰만 사용(content/password_hash 없음), 등록 일시 최신순 페이지네이션
+export async function getGuestbookPage(
+  offset: number,
+  limit: number,
+): Promise<{ items: GuestbookEntry[]; total: number }> {
+  const supabase = await createClient();
+  const { data, error, count } = await supabase
+    .from("guestbook_public")
+    .select("*", { count: "exact" })
+    .order("created_at", { ascending: false })
+    .range(offset, offset + limit - 1);
+  if (error) console.error("getGuestbookPage failed:", error.message);
+  return { items: data ?? [], total: count ?? 0 };
 }

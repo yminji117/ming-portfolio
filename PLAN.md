@@ -10,7 +10,7 @@
 
 ## 진행 현황
 
-> 마지막 업데이트: 2026.08.18. 작업이 완료될 때마다 이 표의 상태를 갱신합니다. (✅ 완료 / 🔄 진행중 / ⬜ 대기)
+> 마지막 업데이트: 2026.08.21. 작업이 완료될 때마다 이 표의 상태를 갱신합니다. (✅ 완료 / 🔄 진행중 / ⬜ 대기)
 
 | 상태 | 문서/작업 |
 | --- | --- |
@@ -29,7 +29,7 @@
 | - | 코드 리뷰 반영 | ✅ 완료 | `0003_fixes.sql`(guestbook 컬럼 잠금, 정원 체크 else, 날짜 제약), `0004_currently_doing_order_fix.sql`(시드 order 값 실수 수정) |
 | Phase 1 | Main 페이지 구현 | ✅ 완료 | 전 섹션 실데이터 렌더 + 반응형 4개 뷰포트 + 인터랙션 브라우저 검증 완료 |
 | - | Figma '최종' 메인 디자인 반영 | ✅ 완료 | 블랙/화이트+블루 톤 리뉴얼, Works Professional industry 필터(하이라이트 방식) 추가, Study 로드맵 카드(단계 입력 시) 신설, 노출 정원 변경(Professional 5/Study 4/Side 2). `0005_industry_and_caps.sql` 작성 완료 — **Supabase SQL Editor에서 아직 미적용, 적용 전까지는 필터 칩·로드맵 카드·5/4/2 정원이 화면에 나타나지 않음**(쿼리 limit은 이미 반영되어 있어 기존 데이터 내에서는 정상 축소 노출됨) |
-| Phase 2 | 하위 페이지 및 상세 페이지 | ⬜ 대기 | |
+| Phase 2 | 하위 페이지 및 상세 페이지 | 🔄 구현 완료, 마이그레이션 적용 대기 | `/works`, `/works/[slug]`, `/study`, `/study/[slug]`, `/about`, `/here`(방명록) 전부 구현·빌드·라우트 렌더링 확인 완료. **방명록 작성/인증/수정은 `0009_guestbook_functions.sql`을 Supabase SQL Editor에서 적용해야 동작**(RPC 함수 미존재 상태) — 적용 전까지는 목록 조회만 가능. `.env.local`에 `GUESTBOOK_SESSION_SECRET` 로컬용 자동 생성 완료, **Vercel에도 별도 값으로 등록 필요** |
 | Phase 3 | 어드민 구현 | ⬜ 대기 | |
 
 ---
@@ -84,20 +84,26 @@ PRD 2.2의 다크 토큰을 라이트로 교체. `app/globals.css`에 CSS 변수
 
 ---
 
-## Phase 2 — 하위 메뉴 페이지 + 상세 페이지 (PRD 6장, 7장) ⬜ 대기
+## Phase 2 — 하위 메뉴 페이지 + 상세 페이지 (PRD 6장, 7장) 🔄 구현 완료, 마이그레이션 적용 대기
 
 | # | 상태 | 작업 | 참고 | 완료 기준 |
 | --- | --- | --- | --- | --- |
-| 2-1 | ⬜ | `/works` 리스트: 탭(Professional/Side, 쿼리스트링), PC 5열 그리드, `[Load more]` 버튼 방식 | PRD 6.1 | 탭 상태 URL 공유 확인 |
-| 2-2 | ⬜ | `/works/[slug]` 상세: Hero+Meta+Overview+Body(jsonb 리치텍스트 렌더)+Result+이전/다음 네비 | PRD 6.2 | draft/미존재 slug 404 확인 |
-| 2-3 | ⬜ | `/study`, `/study/[slug]`: Works와 동일 그리드 규칙, 외부 링크형 분기 | PRD 6.3 | 외부 링크 새 탭 이동 확인 |
-| 2-4 | ⬜ | `/about`: 연혁 타임라인(학교/어학연수/회사), Skills(주사용/사용가능 2단), Cover letter 전문, Currently Doing 전체(`#currently` 앵커) | PRD 6.4 | 앵커 이동 확인 |
-| 2-5 | ⬜ | `/here` 방명록 작성(7.2): 500자 카운터, 아이디/비번 유효성, bcrypt 해시 저장 서버 액션, rate limit(60초/1건, 일 10건), 허니팟 | PRD 7.2 | 본문이 응답에 없음(네트워크 탭) ⭐ 필수 검증 |
-| 2-6 | ⬜ | `/here` 목록(7.3): 아이디/등록일시/[수정]만 노출, `guestbook_public` 뷰 사용 | PRD 7.3 | RLS로 anon SELECT 차단 재확인 |
-| 2-7 | ⬜ | `/here` 수정(7.4): 아이디+비번 서버 검증(bcrypt compare), 세션 10분 유효, 5회 실패 시 10분 잠금, `guestbook_revisions` 스냅샷 | PRD 7.4 | 오인증 시 잠금 동작 확인 |
-| 2-8 | ⬜ | 404/에러/빈 상태 공통 페이지 | PRD 12.3 | 전 경로 확인 |
+| 2-1 | ✅ | `/works` 리스트: 탭(Professional/Side, 쿼리스트링), PC 5열 그리드, `[Load more]` 버튼 방식 | PRD 6.1 | 탭 상태 URL 공유 확인 완료 |
+| 2-2 | ✅ | `/works/[slug]` 상세: Hero+Meta+Overview+Body(jsonb 리치텍스트 렌더)+Result+이전/다음 네비 | PRD 6.2 | draft/미존재 slug 접근 시 not-found UI + `noindex` 확인(Next.js 16 스트리밍 특성상 HTTP 상태 자체는 200 — 공식 문서 권장 동작, 아래 참고) |
+| 2-3 | ✅ | `/study`, `/study/[slug]`: Works와 동일 그리드 규칙, 외부 링크형 분기 | PRD 6.3 | 외부 링크형은 `/study/[slug]` 직접 접근 시 서버에서 원문으로 redirect 확인 |
+| 2-4 | ✅ | `/about`: 연혁 타임라인(학교/어학연수/회사, 라벨 필터), Skills(주사용/사용가능 2단), Cover letter 전문, Currently Doing 전체(`#currently` 앵커, 라벨 필터) | PRD 6.4 | 앵커/필터 렌더링 확인 완료 |
+| 2-5 | ✅ | `/here` 방명록 작성(7.2): 500자 카운터, 아이디/비번 유효성, bcrypt 해시 저장 서버 액션, rate limit(60초/1건, 일 10건), 허니팟 | PRD 7.2 | UI/유효성 검증 완료. **RPC(`guestbook_insert`) 미적용 상태라 실제 등록은 마이그레이션 적용 후 확인 필요** |
+| 2-6 | ✅ | `/here` 목록(7.3): 아이디/등록일시/[수정]만 노출, `guestbook_public` 뷰 사용 | PRD 7.3 | 실데이터로 본문/해시 응답에 없음(네트워크 탭) 확인 완료 ⭐ 필수 검증 통과 |
+| 2-7 | ✅ | `/here` 수정(7.4): 아이디+비번 서버 검증(pgcrypto bcrypt compare, SECURITY DEFINER RPC), 세션 10분(서명 쿠키), 5회 실패 시 10분 잠금, `guestbook_revisions` 스냅샷 | PRD 7.4 | UI 완료. **RPC(`guestbook_verify`/`guestbook_apply_update`) 미적용 상태라 실제 인증/수정은 마이그레이션 적용 후 확인 필요** |
+| 2-8 | ✅ | 404/에러/빈 상태 공통 페이지 | PRD 12.3 | 루트 `not-found.tsx`(실제 404 상태 확인)/`error.tsx` + 각 리스트 빈 상태 확인 완료 |
 
-**Phase 2 완료 기준**: 사용자 사이트 전 경로 동작 + 방명록 본문 비공개 요구사항 검증 통과.
+**⚠️ 적용 필요**: `supabase/migrations/0009_guestbook_functions.sql`을 Supabase SQL Editor에서 실행해야 방명록 작성/비밀번호 확인/수정이 동작합니다(RLS상 anon이 guestbook을 직접 읽을 수 없어 SECURITY DEFINER RPC로 우회). 로컬 `.env.local`에는 세션 서명용 `GUESTBOOK_SESSION_SECRET`을 자동 생성해 넣어뒀고, **Vercel 배포본에는 별도로(다른 값으로) Production/Preview 환경변수 등록이 필요**합니다. bcryptjs 패키지가 새로 추가되었습니다.
+
+**코드 리뷰 반영(2026.08.21)**: anon key로 RPC를 직접 호출해 도배 방지·잠금·비밀번호 검증을 우회할 수 있는 Critical 3건을 발견해 마이그레이션 미적용 상태에서 수정 완료 — ① `guestbook` 직접 INSERT RLS 정책 제거(작성은 RPC로만), ② IP를 클라이언트 파라미터 대신 서버가 요청 헤더에서 직접 추출(스푸핑으로 rate limit/잠금 우회 불가), ③ 수정 저장 시 서명 쿠키뿐 아니라 비밀번호를 DB에서 다시 검증하도록 변경.
+
+**참고**: Next.js 16에서는 `loading.tsx`(Suspense)가 걸린 라우트에서 `notFound()`를 호출하면 응답이 이미 스트리밍을 시작한 뒤라 HTTP 상태가 200으로 남고 `<meta name="robots" content="noindex">`만 자동 삽입됩니다(공식 문서상 정상 동작 — 검색엔진 색인은 차단됨). 완전히 존재하지 않는 경로(`/nonexistent-route` 등)는 라우팅 단계에서 걸러지므로 정상적으로 404 상태가 반환됩니다.
+
+**Phase 2 완료 기준**: 사용자 사이트 전 경로 동작 + 방명록 본문 비공개 요구사항 검증 통과 — **마이그레이션 적용 후 방명록 작성/수정 E2E 확인 필요**.
 
 ---
 

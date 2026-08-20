@@ -49,6 +49,17 @@ export function getIndustryLabel(industry: string): string {
   return INDUSTRY_LABELS[industry] ?? industry;
 }
 
+export function formatYear(isoDate: string | null): string {
+  return isoDate ? isoDate.slice(0, 4) : "";
+}
+
+// PRD 7.3 — 방명록 등록/수정 일시 표기: YYYY.MM.DD HH:mm
+export function formatDateTime(isoDateTime: string): string {
+  const d = new Date(isoDateTime);
+  const pad = (n: number) => String(n).padStart(2, "0");
+  return `${d.getFullYear()}.${pad(d.getMonth() + 1)}.${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
+
 export function getInitials(title: string): string {
   const trimmed = title.trim();
   if (!trimmed) return "";

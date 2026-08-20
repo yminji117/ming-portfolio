@@ -7,6 +7,16 @@ export type CurrentlyLabel = "want" | "doing" | "done";
 export type CurrentlyRefType = "project" | "study" | "none";
 export type HeroMediaType = "image" | "video";
 
+// PRD 6.2 — 프로젝트/스터디 상세 본문 블록 (텍스트/이미지/2열이미지/영상/인용/구분선/캡션)
+export type ContentBlock =
+  | { type: "text"; text: string }
+  | { type: "image"; url: string; alt?: string }
+  | { type: "image_pair"; urls: [string, string]; alt?: string }
+  | { type: "video"; url: string }
+  | { type: "quote"; text: string }
+  | { type: "divider" }
+  | { type: "caption"; text: string };
+
 export interface Project {
   id: string;
   slug: string;
@@ -24,6 +34,7 @@ export interface Project {
   external_url: string | null;
   overview: string | null;
   result: string | null;
+  body: ContentBlock[] | null;
   industry: string | null;
   is_featured: boolean;
   featured_order: number | null;
@@ -37,6 +48,7 @@ export interface StudyRoadmapStep {
 
 export interface StudyBody {
   steps?: StudyRoadmapStep[];
+  blocks?: ContentBlock[];
 }
 
 export interface Study {
@@ -87,6 +99,22 @@ export interface CurrentlyDoing {
   ref_type: CurrentlyRefType;
   ref_id: string | null;
   order: number | null;
+}
+
+// guestbook_public 뷰 — content/password_hash는 절대 포함하지 않는다 (PRD 7.3 필수 검증 항목)
+export interface GuestbookEntry {
+  id: string;
+  nickname: string;
+  created_at: string;
+  updated_at: string | null;
+}
+
+export interface Skill {
+  id: string;
+  name: string;
+  icon_url: string | null;
+  group: SkillGroup;
+  order: number;
 }
 
 export interface SiteSettings {

@@ -11,7 +11,13 @@ const ALL = "all";
 // industry 노출 순서 — 라벨은 getIndustryLabel(공용)에서 가져온다.
 const INDUSTRY_ORDER = ["Education", "OTT", "Commerce", "Brand"];
 
-export function WorksProfessionalGrid({ projects }: { projects: Project[] }) {
+export function WorksProfessionalGrid({
+  projects,
+  cardMetaField = "company",
+}: {
+  projects: Project[];
+  cardMetaField?: "company" | "period";
+}) {
   const industries = useMemo(() => {
     const unique = new Set<string>();
     projects.forEach((project) => {
@@ -74,6 +80,7 @@ export function WorksProfessionalGrid({ projects }: { projects: Project[] }) {
               <ProjectCard
                 project={project}
                 active={active !== ALL && project.industry === active}
+                metaField={cardMetaField}
               />
             </Reveal>
           </div>
@@ -89,6 +96,7 @@ export function WorksProfessionalGrid({ projects }: { projects: Project[] }) {
                 <ProjectCard
                   project={project}
                   active={active !== ALL && project.industry === active}
+                  metaField={cardMetaField}
                 />
               </Reveal>
             </div>
