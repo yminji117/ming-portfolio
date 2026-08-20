@@ -141,7 +141,7 @@ export function MobileHero({
         )}
 
         {(about?.email || about?.instagram_url) && (
-          <div className="glass-chip backdrop-blur-xl backdrop-saturate-150 w-full animate-[float_8s_ease-in-out_1.2s_infinite]">
+          <div className="glass-chip backdrop-blur-xl backdrop-saturate-150 w-full">
             <span className="text-[length:var(--fs-body)] font-bold text-[var(--color-text)]">
               Contact
             </span>
