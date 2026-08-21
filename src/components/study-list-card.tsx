@@ -1,14 +1,13 @@
+import Image from "next/image";
 import Link from "next/link";
-import { MediaThumb } from "@/components/media-thumb";
 import { Tag } from "@/components/tag";
-import { formatYear } from "@/lib/format";
 import { getStudyHref } from "@/lib/study";
 import type { Study } from "@/lib/types";
 
-// PRD 6.3 — /study 리스트 카드: Works와 동일 그리드·카드 규칙, 외부 링크형은 바로 새 탭 이동
+// Figma '최종' Study 리스트 카드 — Works와 달리 이미지-좌/본문-우 가로형, 회색 테두리
 export function StudyListCard({ study }: { study: Study }) {
   const { href, isExternal } = getStudyHref(study);
-  const year = formatYear(study.published_at);
+  const date = study.published_at.replaceAll("-", ".");
   const tags = study.tags.slice(0, 2);
 
   return (
@@ -16,32 +15,40 @@ export function StudyListCard({ study }: { study: Study }) {
       href={href}
       target={isExternal ? "_blank" : undefined}
       rel={isExternal ? "noopener noreferrer" : undefined}
-      className="group flex flex-col gap-3"
+      className="group flex gap-4 rounded-[var(--radius)] border border-[var(--color-line)] p-3 transition-colors duration-[var(--dur-fast)] hover:border-[var(--color-accent)] sm:gap-6 sm:p-4"
     >
-      <MediaThumb
-        src={study.thumbnail_url}
-        alt={study.title}
-        showOverlay
-        className="aspect-[3/4] border border-[var(--color-line)]"
-      />
-      <div className="flex flex-col gap-1.5">
-        <div className="flex items-baseline justify-between gap-2">
-          <p className="text-[length:var(--fs-body)] font-medium">{study.title}</p>
-          {year && (
-            <span className="shrink-0 text-[length:var(--fs-caption)] text-[var(--color-text-muted)]">
-              {year}
-            </span>
-          )}
-        </div>
+      <div className="relative aspect-video w-[160px] shrink-0 overflow-hidden rounded-[4px] bg-[#707070] sm:w-[240px]">
+        {study.thumbnail_url ? (
+          <Image
+            src={study.thumbnail_url}
+            alt={study.title}
+            fill
+            sizes="(min-width: 640px) 240px, 160px"
+            className="object-cover transition-transform duration-[var(--dur-base)] ease-[var(--ease-out)] group-hover:scale-[1.04]"
+          />
+        ) : (
+          <span className="absolute inset-0 flex items-center justify-center text-[16px] font-light text-[#323232]">
+            img
+          </span>
+        )}
+      </div>
+      <div className="flex min-w-0 flex-1 flex-col gap-3">
         {tags.length > 0 && (
           <div className="flex flex-wrap gap-1.5">
             {tags.map((tag) => (
-              <Tag key={tag} className="text-[length:var(--fs-caption)] text-[var(--color-text-muted)]">
+              <Tag key={tag} className="text-[var(--color-ink)]">
                 {tag}
               </Tag>
             ))}
           </div>
         )}
+        <div className="flex flex-col gap-2">
+          <p className="text-[16px] font-bold text-[var(--color-text)]">{study.title}</p>
+          {study.summary && (
+            <p className="text-[14px] text-[var(--color-ink)]">{study.summary}</p>
+          )}
+          <p className="text-[12px] text-[var(--color-text-muted)]">{date}</p>
+        </div>
       </div>
     </Link>
   );

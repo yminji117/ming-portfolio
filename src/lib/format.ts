@@ -29,6 +29,14 @@ export function formatCareerRange(
   return `${careerDate(start)} ~ ${careerDate(end)}`;
 }
 
+// Works/Study 리스트 카드에 쓰는 전체 날짜 범위 표기: YYYY.MM.DD ~ YYYY.MM.DD
+// (연혁의 formatCareerRange와 달리 day를 절대 생략하지 않는다 — Figma '최종' 리스트 카드 반영)
+export function formatProjectRange(start: string | null, end: string | null): string {
+  if (!start) return "";
+  if (!end) return `${dotDate(start)} ~`;
+  return `${dotDate(start)} ~ ${dotDate(end)}`;
+}
+
 export function getInstagramHandle(url: string): string {
   try {
     const path = new URL(url).pathname.replace(/\//g, "");
@@ -47,6 +55,28 @@ const INDUSTRY_LABELS: Record<string, string> = {
 
 export function getIndustryLabel(industry: string): string {
   return INDUSTRY_LABELS[industry] ?? industry;
+}
+
+// Figma '최종' 시안의 필터 칩 노출 순서 — 카테고리별로 고정 순서를 따르고,
+// 목록에 없는 값(향후 추가된 industry)은 정해진 순서 뒤에 그대로 이어 붙인다.
+const INDUSTRY_ORDER: Record<"professional" | "side", string[]> = {
+  professional: ["Education", "OTT", "Commerce", "Brand"],
+  side: ["Community", "Popup", "Online", "Offline"],
+};
+
+export function sortIndustries(
+  industries: string[],
+  category: "professional" | "side",
+): string[] {
+  const order = INDUSTRY_ORDER[category];
+  return [...industries].sort((a, b) => {
+    const ai = order.indexOf(a);
+    const bi = order.indexOf(b);
+    if (ai === -1 && bi === -1) return a.localeCompare(b);
+    if (ai === -1) return 1;
+    if (bi === -1) return -1;
+    return ai - bi;
+  });
 }
 
 export function formatYear(isoDate: string | null): string {

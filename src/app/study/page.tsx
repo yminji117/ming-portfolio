@@ -28,7 +28,7 @@ export default async function StudyPage() {
             Study
           </h1>
 
-          <div className="mt-8 lg:mt-10">
+          <div className="mt-10">
             <StudyListClient initialItems={items} total={total} />
           </div>
         </div>

@@ -3,13 +3,10 @@
 import { useMemo, useRef, useState, type RefObject } from "react";
 import { ProjectCard } from "@/components/project-card";
 import { Reveal } from "@/components/reveal";
-import { getIndustryLabel } from "@/lib/format";
+import { getIndustryLabel, sortIndustries } from "@/lib/format";
 import type { Project } from "@/lib/types";
 
 const ALL = "all";
-
-// industry 노출 순서 — 라벨은 getIndustryLabel(공용)에서 가져온다.
-const INDUSTRY_ORDER = ["Education", "OTT", "Commerce", "Brand"];
 
 export function WorksProfessionalGrid({
   projects,
@@ -23,9 +20,7 @@ export function WorksProfessionalGrid({
     projects.forEach((project) => {
       if (project.industry) unique.add(project.industry);
     });
-    return Array.from(unique).sort(
-      (a, b) => INDUSTRY_ORDER.indexOf(a) - INDUSTRY_ORDER.indexOf(b),
-    );
+    return sortIndustries(Array.from(unique), "professional");
   }, [projects]);
 
   const [active, setActive] = useState<string>(ALL);

@@ -7,16 +7,19 @@ import { formatCareerRange } from "@/lib/format";
 import type { Career, CareerType } from "@/lib/types";
 
 const TYPE_LABEL: Record<CareerType, string> = {
-  school: "학교",
-  language: "어학연수",
   company: "회사",
+  academy: "학원",
+  language: "어학연수",
+  school: "학교",
 };
 
+// Figma '최종' 시안 필터 순서 — 전체/회사/학원/어학연수/학교
 const FILTERS: { key: "all" | CareerType; label: string }[] = [
   { key: "all", label: "전체" },
-  { key: "school", label: TYPE_LABEL.school },
-  { key: "language", label: TYPE_LABEL.language },
   { key: "company", label: TYPE_LABEL.company },
+  { key: "academy", label: TYPE_LABEL.academy },
+  { key: "language", label: TYPE_LABEL.language },
+  { key: "school", label: TYPE_LABEL.school },
 ];
 
 // PRD 6.4 — 연혁 타임라인: 좌측 라벨 배지(학교/어학연수/회사) + 기간 + 기관명 + 설명, 라벨별 필터[선택]
@@ -63,10 +66,28 @@ export function FullCareerTimeline({ careers }: { careers: Career[] }) {
                   </span>
                 </div>
                 <p className="mt-2 text-[length:var(--fs-body)] font-medium">{career.org_name}</p>
-                {(career.title || career.description) && (
-                  <p className="mt-0.5 text-[length:var(--fs-body)] text-[var(--color-text-muted)]">
-                    {[career.title, career.description].filter(Boolean).join(" · ")}
-                  </p>
+                {career.type === "academy" ? (
+                  <div className="mt-0.5 flex flex-col gap-3">
+                    {career.title && (
+                      <p className="text-[length:var(--fs-body)] text-[var(--color-text-muted)]">
+                        {career.title}
+                      </p>
+                    )}
+                    {career.description && (
+                      <div className="flex items-center gap-2">
+                        <span className="inline-flex items-center rounded-[4px] border border-current px-[5px] py-[2.5px] text-[12px]">
+                          자격증
+                        </span>
+                        <span className="text-[length:var(--fs-body)]">{career.description}</span>
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  (career.title || career.description) && (
+                    <p className="mt-0.5 text-[length:var(--fs-body)] text-[var(--color-text-muted)]">
+                      {[career.title, career.description].filter(Boolean).join(" · ")}
+                    </p>
+                  )
                 )}
               </li>
             </Reveal>

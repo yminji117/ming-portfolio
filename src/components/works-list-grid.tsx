@@ -2,12 +2,12 @@ import { Reveal } from "@/components/reveal";
 import { WorksListCard } from "@/components/works-list-card";
 import type { Project } from "@/lib/types";
 
-// PRD 6.1 그리드 규칙 — Desktop 5열 / Laptop 4열 / Tablet 3열 / Mobile 2열, gap 24px(PC)/12px(Mobile)
+// Figma '최종' 리스트 그리드 — Mobile 1열 / Tablet 2열 / Desktop 4열, gap 20px
 export function WorksListGrid({ projects }: { projects: Project[] }) {
   return (
-    <div className="grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-4 lg:gap-6 xl:grid-cols-5">
+    <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
       {projects.map((project, i) => (
-        <Reveal key={project.id} index={i % 10}>
+        <Reveal key={project.id} index={i % 8}>
           <WorksListCard project={project} />
         </Reveal>
       ))}

@@ -105,6 +105,10 @@ PRD 2.2의 다크 토큰을 라이트로 교체. `app/globals.css`에 CSS 변수
 
 **Phase 2 완료 기준**: 사용자 사이트 전 경로 동작 + 방명록 본문 비공개 요구사항 검증 통과 — **마이그레이션 적용 후 방명록 작성/수정 E2E 확인 필요**.
 
+**Works 페이지 디자인 재작업(2026.08.22, 페이지별 병렬 리디자인 1건째)**: Figma '최종' 페이지의 `/works` 리스트(229:212/229:355 데스크탑, 229:849/231:2461 모바일)·`/works/[slug]` 상세(229:133 데스크탑) 프레임을 기준으로 카드·필터 칩·상세 레이아웃을 전면 재작업. 리스트는 Professional/Side 두 탭 모두 라이트 톤 필터 칩(흰 배경/검은 active 필)을 새로 갖췄고(기존 Main 전용 어두운 칩과는 별도 컴포넌트), 카드는 16:9 썸네일+기간+제목+요약+태그 2개로 교체. 상세는 풀블리드 히어로를 컨테이너 폭 안 200px 둥근 박스로 교체하고 "목록"(원래 "목록으로")을 상단 pill 버튼으로 이동, 이전/다음 네비를 좌우 끝 정렬로 수정. **`supabase/migrations/0010_project_detail_fields.sql`(스키마) + `0011_project_demo_content.sql`(데모 데이터)를 이미 Supabase SQL Editor에 적용 완료** — `projects`에 `contribution_percent`/`role_note`/`main_tasks`/`retrospective`/`gallery_urls` 5개 컬럼 추가, Side 프로젝트 industry(Community/Popup/Online/Offline) 백필. IMAGE 갤러리는 데스크탑 가로 캐러셀(글라스 화살표, 스와이프 가능, 더 넘길 방향에 콘텐츠 있을 때만 화살표 페이드인/아웃) / 모바일은 기본 3장+펼치기·접기 화살표로 완전히 다른 인터랙션(`src/components/project-gallery.tsx`, `lg` 기준 분기). 모바일 상세 프레임은 Figma에 없어서 dev 서버를 `generate_figma_design`으로 캡처해 새로 만들어 넣음(node-id=246-158, 데스크탑 상세 프레임 옆에 배치).
+
+**Study 페이지 디자인 재작업(2026.08.22)**: `/study` 리스트(229:443 데스크탑, 229:979 모바일)는 Works와 다른 가로형 카드(이미지 좌/본문 우, 회색 테두리)로 확정돼 있어 그대로 반영 — 그리드도 Works(최대 4~5열)와 달리 1열(모바일)/2열(태블릿 이상)까지만. 필터 칩은 태그 배열 기반(`study.tags.includes()`)이라 Works의 단일 industry 필터와 달리 다중 선택 가능한 데이터 특성을 반영. `/study/[slug]` 상세(229:539)는 **아직 Figma에서 손대지 않은, Works 상세를 복붙한 채 남은 프레임**(하단 네비에 "Professional 프로젝트 0/2" 같은 잔재 문구 확인)이라 새 필드(기여도 등)는 추가하지 않고, 이미 확정된 Works 상세의 레이아웃 수정(목록 버튼 위치·간격, 제목 크기, 이전/다음 네비 좌우 정렬)만 동일하게 적용. 대신 기존에 있던 `thumbnail_url`을 메타 컬럼 썸네일로 추가 노출(신규 필드 아님). About/방명록 페이지는 이번 작업 범위 밖.
+
 ---
 
 ## Phase 3 — 어드민 (PRD 9장) ⬜ 대기

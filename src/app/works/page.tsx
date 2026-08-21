@@ -39,7 +39,7 @@ export default async function WorksPage(props: PageProps<"/works">) {
             Works
           </h1>
 
-          <div className="mt-8 flex gap-6 border-b border-[var(--color-line)] lg:mt-10">
+          <div className="mt-10 flex gap-6 border-b border-[var(--color-line)]">
             {TABS.map(({ key, label }) => (
               <Link
                 key={key}
@@ -55,7 +55,7 @@ export default async function WorksPage(props: PageProps<"/works">) {
             ))}
           </div>
 
-          <div className="mt-8 lg:mt-10">
+          <div className="mt-10">
             <WorksListClient
               key={tab}
               category={tab}

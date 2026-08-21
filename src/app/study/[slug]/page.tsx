@@ -1,10 +1,11 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { notFound, redirect } from "next/navigation";
-import { ArrowRightIcon } from "@/components/icons";
+import { notFound } from "next/navigation";
+import { ArrowRightIcon, ExpandCircleRightIcon } from "@/components/icons";
 import { ContentBlocks } from "@/components/content-blocks";
 import { Footer } from "@/components/footer";
 import { Gnb } from "@/components/gnb";
+import { ProjectGallery } from "@/components/project-gallery";
 import { Tag } from "@/components/tag";
 import { getAbout, getAdjacentStudies, getStudyBySlug } from "@/lib/data";
 
@@ -33,115 +34,139 @@ export default async function StudyDetailPage(
   const study = await getStudyBySlug(slug);
   if (!study) notFound();
 
-  // PRD 6.3 — 외부 링크형 스터디는 상세 페이지를 만들지 않고 원문으로 바로 보낸다.
-  if (study.external_url) redirect(study.external_url);
-
   const [{ prev, next }, about] = await Promise.all([
     getAdjacentStudies(study.slug),
     getAbout(),
   ]);
 
   const publishedDate = study.published_at.replaceAll("-", ".");
+  // IMAGE 갤러리는 Roadmap이 있는 스터디(로드맵형 게시물)에만 제공한다 — Figma 시안 반영.
+  const hasRoadmap = Boolean(study.body?.steps && study.body.steps.length > 0);
+  const galleryUrls = hasRoadmap ? (study.gallery_urls ?? []) : [];
 
   return (
     <>
       <Gnb />
       <main className="flex-1 pt-16 lg:pt-[60px]">
-        <div className="container-app py-10 lg:py-16">
-          <h1
-            className="font-[family-name:var(--font-display)] font-extrabold leading-none tracking-tight"
-            style={{ fontSize: "var(--fs-display-xl)" }}
-          >
-            {study.title}
-          </h1>
+        <div className="container-app flex flex-col gap-10 py-10 lg:gap-16 lg:py-16">
+          <div className="flex flex-col gap-4">
+            <Link
+              href="/study"
+              className="inline-flex w-fit items-center rounded-[6px] border border-[var(--color-line)] px-4 py-1 text-[length:var(--fs-body)] transition-colors duration-[var(--dur-fast)] hover:border-[var(--color-accent)] hover:text-[var(--color-accent)]"
+            >
+              목록
+            </Link>
 
-          <div className="mt-10 grid grid-cols-1 gap-10 lg:grid-cols-[220px_1fr] lg:gap-16">
-            <dl className="flex flex-col gap-5 lg:border-r lg:border-[var(--color-line)] lg:pr-10">
-              <div className="flex flex-col gap-1.5">
-                <dt className="text-[length:var(--fs-caption)] text-[var(--color-text-muted)]">작성일</dt>
-                <dd className="text-[length:var(--fs-body)]">{publishedDate}</dd>
+            <div className="flex flex-col gap-10">
+              <div className="flex items-center justify-between gap-4">
+                <h1
+                  className="font-[family-name:var(--font-display)] font-extrabold leading-tight tracking-tight text-[var(--color-text)]"
+                  style={{ fontSize: "var(--fs-display-lg)" }}
+                >
+                  {study.title}
+                </h1>
+                {study.external_url && (
+                  <a
+                    href={study.external_url}
+                    target="_blank"
+                    rel="noreferrer noopener"
+                    aria-label="외부 링크로 이동"
+                    className="arrow-btn arrow-btn-lg shrink-0 text-[var(--color-text)]"
+                  >
+                    <ExpandCircleRightIcon className="size-full" />
+                  </a>
+                )}
               </div>
-              {study.tags.length > 0 && (
-                <div className="flex flex-col gap-1.5">
-                  <dt className="text-[length:var(--fs-caption)] text-[var(--color-text-muted)]">태그</dt>
-                  <dd className="flex flex-wrap gap-1.5">
-                    {study.tags.map((tag) => (
-                      <Tag key={tag}>{tag}</Tag>
-                    ))}
-                  </dd>
+
+              <div className="grid grid-cols-1 gap-10 lg:grid-cols-[260px_1fr] lg:gap-10">
+                <dl className="flex flex-col gap-5 lg:border-r lg:border-[var(--color-line)] lg:pr-8">
+                  <div className="flex flex-col gap-1.5">
+                    <dt className="text-[length:var(--fs-caption)] text-[var(--color-text-muted)]">작성일</dt>
+                    <dd className="text-[length:var(--fs-body)]">{publishedDate}</dd>
+                  </div>
+                  {study.tags.length > 0 && (
+                    <div className="flex flex-col gap-1.5">
+                      <dt className="text-[length:var(--fs-caption)] text-[var(--color-text-muted)]">태그</dt>
+                      <dd className="flex flex-wrap gap-1.5">
+                        {study.tags.map((tag) => (
+                          <Tag key={tag}>{tag}</Tag>
+                        ))}
+                      </dd>
+                    </div>
+                  )}
+                </dl>
+
+                <div className="flex flex-col gap-14 lg:gap-16">
+                  {study.summary && (
+                    <p className="whitespace-pre-line text-[length:var(--fs-body)] leading-relaxed text-[var(--color-text-muted)]">
+                      {study.summary}
+                    </p>
+                  )}
+
+                  {study.body?.steps && study.body.steps.length > 0 && (
+                    <section className="flex flex-col gap-4">
+                      <h2 className="text-[length:var(--fs-eyebrow)] font-semibold uppercase tracking-[0.15em] text-[var(--color-text-muted)]">
+                        Roadmap
+                      </h2>
+                      <ol className="flex flex-col gap-3">
+                        {study.body.steps.map((step) => (
+                          <li key={step.label} className="flex flex-wrap items-baseline gap-2">
+                            <span className="font-medium">{step.label}</span>
+                            <span className="text-[var(--color-text-muted)]">{step.text}</span>
+                          </li>
+                        ))}
+                      </ol>
+                    </section>
+                  )}
+
+                  {galleryUrls.length > 0 && (
+                    <ProjectGallery urls={galleryUrls} desktopLayout="stack" />
+                  )}
+
+                  {study.body?.blocks && study.body.blocks.length > 0 && (
+                    <ContentBlocks blocks={study.body.blocks} />
+                  )}
                 </div>
-              )}
-            </dl>
-
-            <div className="flex flex-col gap-14 lg:gap-16">
-              {study.summary && (
-                <p className="whitespace-pre-line text-[length:var(--fs-body)] leading-relaxed text-[var(--color-text-muted)]">
-                  {study.summary}
-                </p>
-              )}
-
-              {study.body?.steps && study.body.steps.length > 0 && (
-                <section className="flex flex-col gap-4">
-                  <h2 className="text-[length:var(--fs-eyebrow)] font-semibold uppercase tracking-[0.15em] text-[var(--color-text-muted)]">
-                    Roadmap
-                  </h2>
-                  <ol className="flex flex-col gap-3">
-                    {study.body.steps.map((step) => (
-                      <li key={step.label} className="flex flex-wrap items-baseline gap-2">
-                        <span className="font-medium">{step.label}</span>
-                        <span className="text-[var(--color-text-muted)]">{step.text}</span>
-                      </li>
-                    ))}
-                  </ol>
-                </section>
-              )}
-
-              {study.body?.blocks && study.body.blocks.length > 0 && (
-                <ContentBlocks blocks={study.body.blocks} />
-              )}
+              </div>
             </div>
           </div>
 
           <nav
             aria-label="스터디 이동"
-            className="mt-16 flex flex-col gap-6 border-t border-[var(--color-line)] pt-10 lg:mt-20 lg:flex-row lg:items-center lg:justify-between"
+            className="flex items-center justify-between gap-4 border-t border-[var(--color-line)] pt-5"
           >
-            <div className="flex flex-col gap-4 lg:flex-row lg:gap-10">
-              {prev && (
-                <Link
-                  href={`/study/${prev.slug}`}
-                  className="group flex items-center gap-2 text-[length:var(--fs-body)]"
-                >
-                  <ArrowRightIcon className="size-6 rotate-180 transition-transform duration-[var(--dur-fast)] group-hover:-translate-x-1" />
-                  <span>
-                    <span className="block text-[length:var(--fs-caption)] text-[var(--color-text-muted)]">
-                      이전 글
-                    </span>
-                    {prev.title}
+            {prev ? (
+              <Link
+                href={`/study/${prev.slug}`}
+                className="group flex min-w-0 flex-1 items-center gap-2 text-[length:var(--fs-body)]"
+              >
+                <ArrowRightIcon className="size-6 shrink-0 rotate-180 transition-transform duration-[var(--dur-fast)] group-hover:-translate-x-1" />
+                <span className="min-w-0">
+                  <span className="block text-[length:var(--fs-caption)] text-[var(--color-text-muted)]">
+                    이전 글
                   </span>
-                </Link>
-              )}
-              {next && (
-                <Link
-                  href={`/study/${next.slug}`}
-                  className="group flex items-center gap-2 text-right text-[length:var(--fs-body)] lg:flex-row-reverse"
-                >
-                  <ArrowRightIcon className="size-6 transition-transform duration-[var(--dur-fast)] group-hover:translate-x-1" />
-                  <span>
-                    <span className="block text-[length:var(--fs-caption)] text-[var(--color-text-muted)]">
-                      다음 글
-                    </span>
-                    {next.title}
+                  <span className="block truncate">{prev.title}</span>
+                </span>
+              </Link>
+            ) : (
+              <span aria-hidden="true" className="flex-1" />
+            )}
+            {next ? (
+              <Link
+                href={`/study/${next.slug}`}
+                className="group flex min-w-0 flex-1 flex-row-reverse items-center gap-2 text-right text-[length:var(--fs-body)]"
+              >
+                <ArrowRightIcon className="size-6 shrink-0 transition-transform duration-[var(--dur-fast)] group-hover:translate-x-1" />
+                <span className="min-w-0">
+                  <span className="block text-[length:var(--fs-caption)] text-[var(--color-text-muted)]">
+                    다음 글
                   </span>
-                </Link>
-              )}
-            </div>
-            <Link
-              href="/study"
-              className="text-[length:var(--fs-body)] text-[var(--color-text-muted)] underline underline-offset-4 hover:text-[var(--color-accent)]"
-            >
-              목록으로
-            </Link>
+                  <span className="block truncate">{next.title}</span>
+                </span>
+              </Link>
+            ) : (
+              <span aria-hidden="true" className="flex-1" />
+            )}
           </nav>
         </div>
       </main>

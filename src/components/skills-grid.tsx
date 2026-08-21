@@ -9,7 +9,7 @@ export function SkillsGrid({ skills }: { skills: Skill[] }) {
   const sub = skills.filter((skill) => skill.group === "sub");
 
   return (
-    <section className="flex flex-col gap-8">
+    <section className="flex flex-col gap-4">
       <h2 className="text-[length:var(--fs-eyebrow)] font-semibold uppercase tracking-[0.15em] text-[var(--color-text-muted)]">
         Skills
       </h2>
@@ -22,7 +22,7 @@ export function SkillsGrid({ skills }: { skills: Skill[] }) {
 function SkillGroupRow({ title, items }: { title: string; items: Skill[] }) {
   return (
     <div className="flex flex-col gap-3">
-      <p className="text-[length:var(--fs-body)] font-medium">{title}</p>
+      <p className="text-[14px] font-medium text-[var(--color-text)]">{title}</p>
       <div className="flex flex-wrap gap-3">
         {items.map((skill) => (
           <div

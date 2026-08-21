@@ -1,6 +1,6 @@
 export type ProjectCategory = "professional" | "side";
 export type ContentStatus = "draft" | "published";
-export type CareerType = "school" | "language" | "company";
+export type CareerType = "school" | "language" | "company" | "academy";
 export type SkillGroup = "main" | "sub";
 export type CurrentlyCategory = "works" | "study" | "side";
 export type CurrentlyLabel = "want" | "doing" | "done";
@@ -29,12 +29,17 @@ export interface Project {
   end_date: string | null;
   company: string | null;
   role: string[];
+  role_note: string | null;
   tools: string[];
   team: string | null;
   external_url: string | null;
   overview: string | null;
+  main_tasks: string[] | null;
   result: string | null;
+  retrospective: string | null;
   body: ContentBlock[] | null;
+  gallery_urls: string[] | null;
+  contribution_percent: number | null;
   industry: string | null;
   is_featured: boolean;
   featured_order: number | null;
@@ -61,6 +66,7 @@ export interface Study {
   external_url: string | null;
   published_at: string;
   body: StudyBody | null;
+  gallery_urls: string[] | null;
   is_featured: boolean;
   featured_order: number | null;
   status: ContentStatus;

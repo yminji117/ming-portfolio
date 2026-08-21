@@ -2,10 +2,11 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowRightIcon } from "@/components/icons";
+import { ArrowRightIcon, ExpandCircleRightIcon } from "@/components/icons";
 import { ContentBlocks } from "@/components/content-blocks";
 import { Footer } from "@/components/footer";
 import { Gnb } from "@/components/gnb";
+import { ProjectGallery } from "@/components/project-gallery";
 import { Tag } from "@/components/tag";
 import { getAbout, getAdjacentProjects, getProjectBySlug } from "@/lib/data";
 import { formatCareerRange } from "@/lib/format";
@@ -47,155 +48,212 @@ export default async function ProjectDetailPage(
     <>
       <Gnb />
       <main className="flex-1">
-        <div className="relative aspect-[16/9] w-full overflow-hidden bg-[var(--color-ink)] lg:aspect-[21/9]">
-          {project.cover_url && (
-            <Image
-              src={project.cover_url}
-              alt={project.title}
-              fill
-              priority
-              sizes="100vw"
-              className="object-cover"
-            />
-          )}
-          <div className="absolute inset-0 flex items-end bg-black/20">
-            <div className="container-app pb-8 lg:pb-12">
+        <div className="container-app flex flex-col gap-10 py-10 lg:gap-16 lg:py-16">
+          <div className="flex flex-col gap-4">
+            <Link
+              href={`/works?tab=${project.category}`}
+              className="inline-flex w-fit items-center rounded-[6px] border border-[var(--color-line)] px-4 py-1 text-[length:var(--fs-body)] transition-colors duration-[var(--dur-fast)] hover:border-[var(--color-accent)] hover:text-[var(--color-accent)]"
+            >
+              목록
+            </Link>
+
+            <div className="flex flex-col gap-10">
+            <div className="relative h-[140px] w-full overflow-hidden rounded-[var(--radius)] bg-[var(--color-ink)] sm:h-[180px] lg:h-[200px]">
+              {project.cover_url && (
+                <Image
+                  src={project.cover_url}
+                  alt=""
+                  fill
+                  priority
+                  sizes="100vw"
+                  className="object-cover"
+                />
+              )}
+            </div>
+
+            <div className="flex items-center justify-between gap-4">
               <h1
-                className="font-[family-name:var(--font-display)] font-extrabold leading-none tracking-tight text-white"
-                style={{ fontSize: "var(--fs-display-xl)" }}
+                className="font-[family-name:var(--font-display)] font-extrabold leading-tight tracking-tight text-[var(--color-text)]"
+                style={{ fontSize: "var(--fs-display-lg)" }}
               >
                 {project.title}
               </h1>
-            </div>
-          </div>
-        </div>
-
-        <div className="container-app py-10 lg:py-16">
-          <div className="grid grid-cols-1 gap-10 lg:grid-cols-[280px_1fr] lg:gap-16">
-            <dl className="flex flex-col gap-5 lg:border-r lg:border-[var(--color-line)] lg:pr-10">
-              {period && (
-                <MetaRow label="기간">
-                  <span>{period}</span>
-                </MetaRow>
-              )}
-              {project.company && (
-                <MetaRow label="소속">
-                  <span>{project.company}</span>
-                </MetaRow>
-              )}
-              {project.role.length > 0 && (
-                <MetaRow label="역할">
-                  <div className="flex flex-wrap gap-1.5">
-                    {project.role.map((role) => (
-                      <Tag key={role}>{role}</Tag>
-                    ))}
-                  </div>
-                </MetaRow>
-              )}
-              {project.tools.length > 0 && (
-                <MetaRow label="사용 툴">
-                  <div className="flex flex-wrap gap-1.5">
-                    {project.tools.map((tool) => (
-                      <Tag key={tool}>{tool}</Tag>
-                    ))}
-                  </div>
-                </MetaRow>
-              )}
-              {project.team && (
-                <MetaRow label="팀 구성">
-                  <span>{project.team}</span>
-                </MetaRow>
-              )}
               {project.external_url && (
-                <MetaRow label="링크">
-                  <a
-                    href={project.external_url}
-                    target="_blank"
-                    rel="noreferrer noopener"
-                    className="underline decoration-[var(--color-accent)] underline-offset-4 hover:text-[var(--color-accent)]"
-                  >
-                    바로가기 →
-                  </a>
-                </MetaRow>
+                <a
+                  href={project.external_url}
+                  target="_blank"
+                  rel="noreferrer noopener"
+                  aria-label="외부 링크로 이동"
+                  className="arrow-btn arrow-btn-lg shrink-0 text-[var(--color-text)]"
+                >
+                  <ExpandCircleRightIcon className="size-full" />
+                </a>
               )}
-            </dl>
+            </div>
 
-            <div className="flex flex-col gap-14 lg:gap-16">
-              {project.overview && (
-                <section className="flex flex-col gap-3">
-                  <h2 className="text-[length:var(--fs-eyebrow)] font-semibold uppercase tracking-[0.15em] text-[var(--color-text-muted)]">
-                    Overview
-                  </h2>
-                  <p className="whitespace-pre-line text-[length:var(--fs-body)] leading-relaxed">
-                    {project.overview}
-                  </p>
-                </section>
-              )}
+            <div className="grid grid-cols-1 gap-10 lg:grid-cols-[260px_1fr] lg:gap-10">
+              <dl className="flex flex-col gap-5 lg:border-r lg:border-[var(--color-line)] lg:pr-8">
+                {period && (
+                  <MetaRow label="기간">
+                    <span>{period}</span>
+                  </MetaRow>
+                )}
+                {project.company && (
+                  <MetaRow label="소속">
+                    <span>{project.company}</span>
+                  </MetaRow>
+                )}
+                {project.role.length > 0 && (
+                  <MetaRow label="역할">
+                    <div className="flex flex-col gap-1.5">
+                      <div className="flex flex-wrap gap-1.5">
+                        {project.role.map((role) => (
+                          <Tag key={role}>{role}</Tag>
+                        ))}
+                      </div>
+                      {project.role_note && (
+                        <p className="whitespace-pre-line leading-relaxed">{project.role_note}</p>
+                      )}
+                    </div>
+                  </MetaRow>
+                )}
+                {project.contribution_percent != null && (
+                  <MetaRow label={`기여도 (${project.contribution_percent}%)`}>
+                    <div className="h-1 w-full max-w-[240px] rounded-full bg-[var(--color-line)]">
+                      <div
+                        className="h-1 rounded-full bg-[var(--color-accent)]"
+                        style={{ width: `${project.contribution_percent}%` }}
+                      />
+                    </div>
+                  </MetaRow>
+                )}
+                {project.tools.length > 0 && (
+                  <MetaRow label="TOOL">
+                    <div className="flex flex-wrap gap-1.5">
+                      {project.tools.map((tool) => (
+                        <Tag key={tool}>{tool}</Tag>
+                      ))}
+                    </div>
+                  </MetaRow>
+                )}
+                {project.team && (
+                  <MetaRow label="팀 구성">
+                    <span>{project.team}</span>
+                  </MetaRow>
+                )}
+                {project.external_url && (
+                  <MetaRow label="링크">
+                    <a
+                      href={project.external_url}
+                      target="_blank"
+                      rel="noreferrer noopener"
+                      className="underline decoration-[var(--color-accent)] underline-offset-4 hover:text-[var(--color-accent)]"
+                    >
+                      바로가기 →
+                    </a>
+                  </MetaRow>
+                )}
+              </dl>
 
-              {project.body && project.body.length > 0 && (
-                <section className="flex flex-col gap-3">
+              <div className="flex flex-col gap-14 lg:gap-16">
+                {project.overview && (
+                  <DetailSection heading="Overview">
+                    <p className="whitespace-pre-line text-[length:var(--fs-body)] leading-relaxed">
+                      {project.overview}
+                    </p>
+                  </DetailSection>
+                )}
+
+                {project.main_tasks && project.main_tasks.length > 0 && (
+                  <DetailSection heading="주요 업무">
+                    <ul className="flex list-disc flex-col gap-1 pl-6 text-[length:var(--fs-body)] leading-relaxed">
+                      {project.main_tasks.map((task, i) => (
+                        <li key={i}>{task}</li>
+                      ))}
+                    </ul>
+                  </DetailSection>
+                )}
+
+                {project.body && project.body.length > 0 && (
                   <ContentBlocks blocks={project.body} />
-                </section>
-              )}
+                )}
 
-              {project.result && (
-                <section className="flex flex-col gap-3">
-                  <h2 className="text-[length:var(--fs-eyebrow)] font-semibold uppercase tracking-[0.15em] text-[var(--color-text-muted)]">
-                    Result
-                  </h2>
-                  <p className="whitespace-pre-line text-[length:var(--fs-body)] leading-relaxed">
-                    {project.result}
-                  </p>
-                </section>
-              )}
+                {project.result && (
+                  <DetailSection heading="성과 및 결과">
+                    <p className="whitespace-pre-line text-[length:var(--fs-body)] leading-relaxed">
+                      {project.result}
+                    </p>
+                  </DetailSection>
+                )}
+
+                {project.retrospective && (
+                  <DetailSection heading="회고">
+                    <p className="whitespace-pre-line text-[length:var(--fs-body)] leading-relaxed">
+                      {project.retrospective}
+                    </p>
+                  </DetailSection>
+                )}
+              </div>
+            </div>
+
+            {project.gallery_urls && project.gallery_urls.length > 0 && (
+              <ProjectGallery urls={project.gallery_urls} />
+            )}
             </div>
           </div>
 
           <nav
             aria-label="프로젝트 이동"
-            className="mt-16 flex flex-col gap-6 border-t border-[var(--color-line)] pt-10 lg:mt-20 lg:flex-row lg:items-center lg:justify-between"
+            className="flex items-center justify-between gap-4 border-t border-[var(--color-line)] pt-5"
           >
-            <div className="flex flex-col gap-4 lg:flex-row lg:gap-10">
-              {prev && (
-                <Link
-                  href={`/works/${prev.slug}`}
-                  className="group flex items-center gap-2 text-[length:var(--fs-body)]"
-                >
-                  <ArrowRightIcon className="size-6 rotate-180 transition-transform duration-[var(--dur-fast)] group-hover:-translate-x-1" />
-                  <span>
-                    <span className="block text-[length:var(--fs-caption)] text-[var(--color-text-muted)]">
-                      이전 프로젝트
-                    </span>
-                    {prev.title}
+            {prev ? (
+              <Link
+                href={`/works/${prev.slug}`}
+                className="group flex min-w-0 flex-1 items-center gap-2 text-[length:var(--fs-body)]"
+              >
+                <ArrowRightIcon className="size-6 shrink-0 rotate-180 transition-transform duration-[var(--dur-fast)] group-hover:-translate-x-1" />
+                <span className="min-w-0">
+                  <span className="block text-[length:var(--fs-caption)] text-[var(--color-text-muted)]">
+                    이전 프로젝트
                   </span>
-                </Link>
-              )}
-              {next && (
-                <Link
-                  href={`/works/${next.slug}`}
-                  className="group flex items-center gap-2 text-right text-[length:var(--fs-body)] lg:flex-row-reverse"
-                >
-                  <ArrowRightIcon className="size-6 transition-transform duration-[var(--dur-fast)] group-hover:translate-x-1" />
-                  <span>
-                    <span className="block text-[length:var(--fs-caption)] text-[var(--color-text-muted)]">
-                      다음 프로젝트
-                    </span>
-                    {next.title}
+                  <span className="block truncate">{prev.title}</span>
+                </span>
+              </Link>
+            ) : (
+              <span aria-hidden="true" className="flex-1" />
+            )}
+            {next ? (
+              <Link
+                href={`/works/${next.slug}`}
+                className="group flex min-w-0 flex-1 flex-row-reverse items-center gap-2 text-right text-[length:var(--fs-body)]"
+              >
+                <ArrowRightIcon className="size-6 shrink-0 transition-transform duration-[var(--dur-fast)] group-hover:translate-x-1" />
+                <span className="min-w-0">
+                  <span className="block text-[length:var(--fs-caption)] text-[var(--color-text-muted)]">
+                    다음 프로젝트
                   </span>
-                </Link>
-              )}
-            </div>
-            <Link
-              href={`/works?tab=${project.category}`}
-              className="text-[length:var(--fs-body)] text-[var(--color-text-muted)] underline underline-offset-4 hover:text-[var(--color-accent)]"
-            >
-              목록으로
-            </Link>
+                  <span className="block truncate">{next.title}</span>
+                </span>
+              </Link>
+            ) : (
+              <span aria-hidden="true" className="flex-1" />
+            )}
           </nav>
         </div>
       </main>
       <Footer email={about?.email ?? null} />
     </>
+  );
+}
+
+function DetailSection({ heading, children }: { heading: string; children: React.ReactNode }) {
+  return (
+    <section className="flex flex-col gap-3">
+      <h2 className="text-[length:var(--fs-eyebrow)] font-semibold uppercase tracking-[0.15em] text-[var(--color-text-muted)]">
+        {heading}
+      </h2>
+      {children}
+    </section>
   );
 }
 

@@ -55,57 +55,56 @@ export default async function AboutPage() {
             </div>
 
             <div className="flex flex-1 flex-col gap-10">
-              <div className="flex flex-col gap-2">
-                <h1
-                  className="font-[family-name:var(--font-display)] font-extrabold leading-none tracking-tight"
-                  style={{ fontSize: "var(--fs-display-xl)" }}
-                >
-                  {name}
-                </h1>
-                {about?.name_en && about?.name_ko && (
-                  <p className="text-[length:var(--fs-body)] text-[var(--color-text-muted)]">
-                    {about.name_en}
-                  </p>
-                )}
-                {about?.tagline && (
-                  <p className="text-[length:var(--fs-display-md)] font-medium">{about.tagline}</p>
-                )}
-              </div>
-
-              {(about?.email || about?.instagram_url) && (
-                <div className="flex flex-wrap items-center gap-4">
-                  {about?.email && (
-                    <CopyEmailButton
-                      email={about.email}
-                      className="inline-flex h-11 items-center rounded-full border border-[var(--color-line)] px-5 text-[length:var(--fs-body)] transition-colors duration-[var(--dur-fast)] hover:border-[var(--color-accent)] hover:text-[var(--color-accent)]"
-                    />
-                  )}
-                  {about?.instagram_url && (
-                    <a
-                      href={about.instagram_url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex h-11 items-center rounded-full border border-[var(--color-line)] px-5 text-[length:var(--fs-body)] transition-colors duration-[var(--dur-fast)] hover:border-[var(--color-accent)] hover:text-[var(--color-accent)]"
+              <div className="flex flex-col gap-3">
+                <div className="flex flex-col gap-2">
+                  <div className="flex flex-wrap items-end gap-5">
+                    <h1
+                      className="font-[family-name:var(--font-display)] font-extrabold leading-none tracking-tight text-[40px]"
                     >
-                      {getInstagramHandle(about.instagram_url)}
-                    </a>
-                  )}
-                  {about?.resume_url && (
-                    <a
-                      href={about.resume_url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex h-11 items-center rounded-full bg-[var(--color-accent)] px-5 text-[length:var(--fs-body)] font-medium text-[var(--color-accent-ink)] transition-transform duration-[var(--dur-fast)] hover:scale-[1.02]"
-                    >
-                      Resume ↓
-                    </a>
+                      {name}
+                    </h1>
+                    {about?.name_en && about?.name_ko && (
+                      <p className="text-[length:var(--fs-body)] text-[var(--color-text-muted)]">
+                        {about.name_en}
+                      </p>
+                    )}
+                  </div>
+                  {about?.tagline && (
+                    <p className="text-[length:var(--fs-display-md)] font-medium">{about.tagline}</p>
                   )}
                 </div>
-              )}
 
-              <FullCareerTimeline careers={careers} />
-
-              <SkillsGrid skills={skills} />
+                {(about?.email || about?.instagram_url) && (
+                  <div className="flex flex-wrap items-center gap-4">
+                    {about?.email && (
+                      <CopyEmailButton
+                        email={about.email}
+                        className="inline-flex h-9 items-center rounded-full border border-[var(--color-line)] px-4 text-[length:var(--fs-body)] transition-colors duration-[var(--dur-fast)] hover:border-[var(--color-accent)] hover:text-[var(--color-accent)]"
+                      />
+                    )}
+                    {about?.instagram_url && (
+                      <a
+                        href={about.instagram_url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex h-9 items-center rounded-full border border-[var(--color-line)] px-4 text-[length:var(--fs-body)] transition-colors duration-[var(--dur-fast)] hover:border-[var(--color-accent)] hover:text-[var(--color-accent)]"
+                      >
+                        {getInstagramHandle(about.instagram_url)}
+                      </a>
+                    )}
+                    {about?.resume_url && (
+                      <a
+                        href={about.resume_url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex h-9 items-center rounded-full bg-[var(--color-accent)] px-4 text-[length:var(--fs-body)] font-medium text-[var(--color-accent-ink)] transition-transform duration-[var(--dur-fast)] hover:scale-[1.02]"
+                      >
+                        Resume ↓
+                      </a>
+                    )}
+                  </div>
+                )}
+              </div>
 
               {about?.cover_letter && (
                 <section className="flex flex-col gap-4">
@@ -117,6 +116,10 @@ export default async function AboutPage() {
                   </p>
                 </section>
               )}
+
+              <FullCareerTimeline careers={careers} />
+
+              <SkillsGrid skills={skills} />
             </div>
           </div>
         </div>

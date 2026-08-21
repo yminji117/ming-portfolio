@@ -1,9 +1,15 @@
 ---
 name: project_phase2_guestbook_security_review
-description: "Phase 2 review (2026-08-21) of guestbook RPCs (0009_guestbook_functions.sql, not yet applied to Supabase) — found 3 Critical trust-boundary bugs"
+description: "Phase 2 review (2026-08-21) of guestbook RPCs (0009_guestbook_functions.sql) — 3 Critical trust-boundary bugs found, all confirmed FIXED as of the Phase 2 launch commit (0a68375, 2026-08-21 recheck)"
 metadata:
   type: project
 ---
+
+**Update (2026-08-21, post-launch-commit recheck):** All 3 Critical findings below are confirmed fixed in the applied `0009_guestbook_functions.sql` + `src/app/here/actions.ts`: (1) `drop policy if exists "anyone can insert guestbook entry" on guestbook;` at line 12 removes the anon direct-INSERT bypass (the policy still exists in `0002_rls.sql` but migrations apply in numeric order, so 0009's drop wins — this is correct, not a leftover bug), (2) `guestbook_apply_update` now calls `guestbook_verify(p_id, p_password)` internally and raises `invalid_credentials` if not ok, (3) `guestbook_client_ip_hash()` derives IP server-side from the `request.headers` Postgres GUC rather than accepting a client-supplied `p_ip_hash` param; `src/app/here/actions.ts` no longer passes that param anywhere.
+
+**New nuance found on recheck (not yet a confirmed bug, worth revisiting):** `guestbook_client_ip_hash()` (0009_guestbook_functions.sql:16-34) takes `split_part(x-forwarded-for, ',', 1)` — the *first* (leftmost) hop in the XFF chain. Standard XFF convention is that each proxy *appends* to the end of the list, so the leftmost value is whatever the original caller sent — which is attacker-controlled unless Supabase's own edge/gateway (Kong) is verified to strip or overwrite any client-supplied XFF before PostgREST sees it, rather than appending to it. If it appends, an attacker calling the RPC directly (bypassing the Next.js app, per this file's original trust-boundary premise) could set an arbitrary first XFF hop per request and cycle the derived IP hash, defeating the same rate-limit/lockout logic finding #3 was meant to fix. Could not verify Supabase's exact Kong XFF handling from the codebase alone — flag for the user to confirm directly (e.g. by testing what `request.headers ->> 'x-forwarded-for'` actually contains in a real request from an external caller), rather than assuming fixed.
+
+Original findings (historical, kept for context):
 
 Reviewed 2026-08-21, before `0009_guestbook_functions.sql` is applied to Supabase (user confirmed migration not yet run). Root cause across all three Critical findings: **the Next.js Server Action layer is not the real trust boundary — Supabase auto-exposes every function granted to `anon` via PostgREST using the public anon key, so any external caller can invoke these RPCs directly with fabricated parameters, bypassing the app entirely.**
 

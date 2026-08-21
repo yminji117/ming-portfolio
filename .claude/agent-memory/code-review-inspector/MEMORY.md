@@ -1,5 +1,6 @@
 - [Phase 0 Supabase review — status](project_phase0_supabase_review.md) — Critical/Medium items all verified fixed as of Phase 1 recheck; 2 low-priority items still open
 - [Phase 1 Main page review](project_phase1_main_page_review.md) — both prior findings (currently_limit, swallowed errors) now FIXED; gnb focus trap still Medium/open
-- [Phase 2 readiness review](project_phase2_readiness_review.md) — data.ts needs slug-lookup/pagination fns for Phase 2; no XSS risk found; components mostly reusable as-is
-- [Phase 2 guestbook security review](project_phase2_guestbook_security_review.md) — 3 Critical trust-boundary bugs in 0009_guestbook_functions.sql (unapplied), blocks /here launch
+- [Phase 2 readiness review](project_phase2_readiness_review.md) — data.ts gaps now filled (2026-08-21); Currently Doing→Works/Study slug link STILL not wired, 2 cycles running
+- [Phase 2 guestbook security review](project_phase2_guestbook_security_review.md) — 3 Critical bugs CONFIRMED FIXED (2026-08-21); new open question: XFF split_part(,1) may still be spoofable
+- [Phase 2 code review](project_phase2_code_review.md) — consolidated summary of the two rows above, plus content-blocks.tsx XSS-clean confirmation and minor defense-in-depth notes
 - [PRD.md schema/security reference](reference_prd_schema_sections.md) — where to find DB/RLS/admin-auth requirements to cross-check migrations against
