@@ -2,8 +2,9 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
+import { ArrowRightIcon } from "@/components/icons";
 
 const NAV_LINKS = [
   { label: "Work", href: "/works", match: "/works" },
@@ -11,8 +12,13 @@ const NAV_LINKS = [
   { label: "About me", href: "/about", match: "/about" },
 ];
 
+// Works/Study 상세 페이지에서는 모바일 GNB의 로고를 Back 버튼으로 대체한다.
+const DETAIL_PAGE_PATTERN = /^\/(works|study)\/[^/]+$/;
+
 export function Gnb() {
   const pathname = usePathname();
+  const router = useRouter();
+  const isDetailPage = DETAIL_PAGE_PATTERN.test(pathname);
   const [hidden, setHidden] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
@@ -54,16 +60,32 @@ export function Gnb() {
           aria-label="주요 메뉴"
           className="container-app grid h-16 grid-cols-2 items-center text-[var(--color-text)] lg:h-[60px] lg:grid-cols-[1fr_auto_1fr]"
         >
-          <Link href="/" className="justify-self-start" aria-label="MINJI">
-            <Image
-              src="/brand/logo.png"
-              alt="MINJI"
-              width={177}
-              height={89}
-              priority
-              className="h-8 w-auto"
-            />
-          </Link>
+          <div className="justify-self-start">
+            {isDetailPage && (
+              <button
+                type="button"
+                onClick={() => router.back()}
+                aria-label="뒤로 가기"
+                className="lg:hidden"
+              >
+                <ArrowRightIcon className="size-6 rotate-180" />
+              </button>
+            )}
+            <Link
+              href="/"
+              aria-label="MINJI"
+              className={isDetailPage ? "hidden lg:block" : undefined}
+            >
+              <Image
+                src="/brand/logo.png"
+                alt="MINJI"
+                width={177}
+                height={89}
+                priority
+                className="h-8 w-auto"
+              />
+            </Link>
+          </div>
 
           <div className="hidden items-center gap-8 justify-self-center lg:flex">
             {NAV_LINKS.map((link) => (

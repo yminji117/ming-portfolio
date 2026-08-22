@@ -21,18 +21,18 @@ export default async function HerePage() {
     <>
       <Gnb />
       <main className="flex-1 pt-16 lg:pt-[60px]">
-        <div className="container-app max-w-[720px] py-10 lg:py-16">
+        <div className="container-app py-10 lg:py-16">
           <h1
             className="font-[family-name:var(--font-display)] font-extrabold leading-none tracking-tight"
             style={{ fontSize: "var(--fs-display-xl)" }}
           >
-            here →
+            Review
           </h1>
           <p className="mt-3 text-[length:var(--fs-body)] text-[var(--color-text-muted)]">
-            하고 싶은 말을 남겨주세요. 저만 볼게요.
+            하고 싶은 말 또는 피드백/오류 사항을 남겨주세요!
           </p>
 
-          <div className="mt-10 lg:mt-14">
+          <div className="mt-10">
             <GuestbookBoard initialItems={items} initialTotal={total} />
           </div>
         </div>

@@ -29,13 +29,19 @@ export default async function AboutPage() {
 
   const name = about?.name_ko || about?.name_en || "MINJI";
 
+  // TEMP: 더보기 버튼 동작 확인용 — 실 데이터를 복제해 12개로 늘림. 확인 끝나면 이 블록 제거.
+  const currentlyDoingForTest = [
+    ...currentlyDoing,
+    ...currentlyDoing.map((item, i) => ({ ...item, id: `${item.id}-dup${i}` })),
+  ].slice(0, 12);
+
   return (
     <>
       <Gnb />
       <main className="flex-1 pt-16 lg:pt-[60px]">
         <div className="container-app py-10 lg:py-16">
-          <div className="flex flex-col gap-8 lg:flex-row lg:items-start lg:gap-16">
-            <div className="w-full max-w-[280px] shrink-0">
+          <div className="mx-auto flex max-w-[480px] flex-col gap-8 lg:max-w-[859px] lg:flex-row lg:items-start lg:gap-10">
+            <div className="mx-auto w-full max-w-[280px] shrink-0 lg:mx-0">
               <div className="aspect-[280/350] w-full overflow-hidden rounded-[var(--radius)] bg-[var(--color-bg)]">
                 {about?.photo_url ? (
                   <Image
@@ -54,7 +60,7 @@ export default async function AboutPage() {
               </div>
             </div>
 
-            <div className="flex flex-1 flex-col gap-10">
+            <div className="flex flex-1 flex-col gap-[60px] lg:max-w-[539px]">
               <div className="flex flex-col gap-3">
                 <div className="flex flex-col gap-2">
                   <div className="flex flex-wrap items-end gap-5">
@@ -126,9 +132,10 @@ export default async function AboutPage() {
 
         <CurrentlyDoingSection
           id="currently"
-          items={currentlyDoing}
+          items={currentlyDoingForTest}
           filterable
           moreHref="/about#currently"
+          showTopBorder={false}
         />
       </main>
       <Footer email={about?.email ?? null} />

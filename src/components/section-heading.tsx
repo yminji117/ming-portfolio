@@ -9,7 +9,7 @@ export function SectionHeading({
 }: {
   eyebrow?: string;
   title: string;
-  moreHref: string;
+  moreHref?: string;
   theme?: "dark" | "light";
 }) {
   return (
@@ -22,11 +22,13 @@ export function SectionHeading({
           >
             {eyebrow ?? title}
           </span>
-          <MoreLink
-            href={moreHref}
-            variant="icon"
-            className={theme === "dark" ? "text-white" : undefined}
-          />
+          {moreHref && (
+            <MoreLink
+              href={moreHref}
+              variant="icon"
+              className={theme === "dark" ? "text-white" : undefined}
+            />
+          )}
         </div>
       </Reveal>
       {eyebrow && (

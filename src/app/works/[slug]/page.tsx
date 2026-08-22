@@ -16,7 +16,7 @@ export async function generateMetadata(
 ): Promise<Metadata> {
   const { slug } = await props.params;
   const project = await getProjectBySlug(slug);
-  if (!project) return { title: "Works | MINJI" };
+  if (!project) return { title: "Work | MINJI" };
 
   const image = project.cover_url ?? project.thumbnail_url ?? undefined;
   return {
@@ -47,8 +47,11 @@ export default async function ProjectDetailPage(
   return (
     <>
       <Gnb />
-      <main className="flex-1">
-        <div className="container-app flex flex-col gap-10 py-10 lg:gap-16 lg:py-16">
+      {/* Study 상세 페이지와 동일하게 고정 GNB만큼 클리어한다(모바일 h-16 / 데스크톱 60px). */}
+      <main className="flex-1 pt-16 lg:pt-[60px]">
+        {/* Figma '최종' node 229:142(desktop)/246:162(mobile) — 목록 버튼은 GNB 바로 아래
+            16px만 띄우고 붙는다(모바일/데스크톱 동일), 하단은 기존 유지. */}
+        <div className="container-app flex flex-col gap-10 pt-4 pb-10 lg:gap-16 lg:pb-16">
           <div className="flex flex-col gap-4">
             <Link
               href={`/works?tab=${project.category}`}

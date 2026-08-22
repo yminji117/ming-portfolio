@@ -48,7 +48,9 @@ export default async function StudyDetailPage(
     <>
       <Gnb />
       <main className="flex-1 pt-16 lg:pt-[60px]">
-        <div className="container-app flex flex-col gap-10 py-10 lg:gap-16 lg:py-16">
+        {/* Figma '최종' node 229:142(desktop)/246:162(mobile) — 목록 버튼은 GNB 바로 아래
+            16px만 띄우고 붙는다(모바일/데스크톱 동일), 하단은 기존 유지. */}
+        <div className="container-app flex flex-col gap-10 pt-4 pb-10 lg:gap-16 lg:pb-16">
           <div className="flex flex-col gap-4">
             <Link
               href="/study"

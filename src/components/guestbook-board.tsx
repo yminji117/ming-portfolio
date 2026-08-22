@@ -42,6 +42,12 @@ export function GuestbookBoard({
           setItems((prev) =>
             prev.map((item) => (item.id === id ? { ...item, updated_at: updatedAt } : item)),
           );
+          setToast("수정 되었어요!");
+        }}
+        onEntryDeleted={(id) => {
+          setItems((prev) => prev.filter((item) => item.id !== id));
+          setTotal((prev) => Math.max(0, prev - 1));
+          setToast("삭제 완료 되었어요..😭");
         }}
       />
 
@@ -56,7 +62,7 @@ export function GuestbookBoard({
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: 8 }}
               transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
-              className="fixed bottom-10 left-1/2 z-[100] -translate-x-1/2 whitespace-nowrap rounded-full bg-[rgba(4,4,4,0.7)] px-8 py-3 text-[16px] text-white"
+              className="fixed bottom-10 left-1/2 z-[100] -translate-x-1/2 whitespace-nowrap rounded-full bg-[rgba(4,4,4,0.7)] px-12 py-3 text-[16px] text-white"
             >
               {toast}
             </motion.div>

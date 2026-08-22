@@ -23,6 +23,17 @@ export function ExpandCircleRightIcon({ className }: { className?: string }) {
   );
 }
 
+export function ChevronRightIcon({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" className={className} aria-hidden="true">
+      <path
+        d="M12.9462 12L8.34625 7.4L9.4 6.34625L15.0538 12L9.4 17.6537L8.34625 16.6L12.9462 12Z"
+        fill="currentColor"
+      />
+    </svg>
+  );
+}
+
 export function StepCheckIcon({ className }: { className?: string }) {
   return (
     <svg viewBox="0 0 24 24" fill="none" className={className} aria-hidden="true">

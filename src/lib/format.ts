@@ -90,6 +90,20 @@ export function formatDateTime(isoDateTime: string): string {
   return `${d.getFullYear()}.${pad(d.getMonth() + 1)}.${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
 }
 
+// Figma '최종' Work 카드 '결과 요약 + 남은 개수' 배지 — project.result는 줄바꿈으로
+// 구분된 여러 성과 항목을 담는다. 첫 줄만 미리보기로 보여주고, 나머지 개수를 배지로 표시한다.
+export function getResultPreview(
+  result: string | null,
+): { text: string; remainingCount: number } | null {
+  if (!result) return null;
+  const lines = result
+    .split("\n")
+    .map((line) => line.trim())
+    .filter(Boolean);
+  if (lines.length === 0) return null;
+  return { text: lines[0], remainingCount: lines.length - 1 };
+}
+
 export function getInitials(title: string): string {
   const trimmed = title.trim();
   if (!trimmed) return "";

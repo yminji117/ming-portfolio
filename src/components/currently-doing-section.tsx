@@ -10,19 +10,28 @@ export function CurrentlyDoingSection({
   filterable = false,
   moreHref = "/about#currently",
   id,
+  showTopBorder = true,
 }: {
   items: CurrentlyDoing[];
   filterable?: boolean;
   moreHref?: string;
   id?: string;
+  showTopBorder?: boolean;
 }) {
   // PRD 5.0 — 0건이면 섹션 비노출
   if (items.length === 0) return null;
 
   return (
-    <section id={id} className="border-t border-[var(--color-line)] py-20 lg:py-[140px]">
+    <section
+      id={id}
+      className={`py-20 lg:py-[140px] ${showTopBorder ? "border-t border-[var(--color-line)]" : ""}`}
+    >
       <div className="container-app">
-        <SectionHeading title="Currently Doing" moreHref={moreHref} theme="light" />
+        <SectionHeading
+          title="Currently Doing"
+          moreHref={filterable ? undefined : moreHref}
+          theme="light"
+        />
 
         {filterable ? (
           <CurrentlyDoingFilterableList items={items} />

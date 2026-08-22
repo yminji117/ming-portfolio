@@ -8,7 +8,7 @@ import { LIST_PAGE_SIZE } from "@/lib/constants";
 import type { ProjectCategory } from "@/lib/types";
 
 export const metadata: Metadata = {
-  title: "Works | MINJI",
+  title: "Work | MINJI",
   description: "MINJI의 Professional/Side 프로젝트 목록",
 };
 
@@ -36,7 +36,7 @@ export default async function WorksPage(props: PageProps<"/works">) {
             className="font-[family-name:var(--font-display)] font-extrabold leading-none tracking-tight"
             style={{ fontSize: "var(--fs-display-xl)" }}
           >
-            Works
+            Work
           </h1>
 
           <div className="mt-10 flex gap-6 border-b border-[var(--color-line)]">

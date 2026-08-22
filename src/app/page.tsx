@@ -41,6 +41,11 @@ export default async function Home() {
     getPublishedProjectsCount(),
   ]);
 
+  // TEMP: '+N' 배지 예시 확인용 — 확인 끝나면 제거
+  const professionalProjectsForDemo = professionalProjects.map((p, i) =>
+    i === 0 ? { ...p, result: "성과 요약 1\n성과 요약 2\n성과 요약 3" } : p,
+  );
+
   return (
     <>
       <Gnb />
@@ -54,7 +59,7 @@ export default async function Home() {
         <CapabilitiesSection />
         <WorksSection
           theme="dark"
-          projects={professionalProjects}
+          projects={professionalProjectsForDemo}
           moreHref="/works?tab=professional"
         />
         <StudySection studies={studies} moreHref="/study" />

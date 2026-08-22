@@ -1,7 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
-import { Tag } from "@/components/tag";
-import { formatProjectRange, getIndustryLabel } from "@/lib/format";
+import { formatProjectRange, getIndustryLabel, getResultPreview } from "@/lib/format";
 import type { Project } from "@/lib/types";
 
 // Figma '최종' Works 리스트 카드: 16:9 썸네일 + 기간 + 제목 + 한 줄 요약 + 태그 2개, 흰 배경 + 검은 테두리
@@ -11,6 +10,7 @@ export function WorksListCard({ project }: { project: Project }) {
     project.role[0],
     project.industry ? getIndustryLabel(project.industry) : null,
   ].filter(Boolean) as string[];
+  const resultPreview = getResultPreview(project.result);
 
   return (
     <Link
@@ -31,24 +31,44 @@ export function WorksListCard({ project }: { project: Project }) {
             img
           </span>
         )}
+        {tags.length > 0 && (
+          <div className="absolute left-2 top-2 flex flex-wrap gap-1">
+            {tags.slice(0, 2).map((tag) => (
+              <span
+                key={tag}
+                className="inline-flex h-[24px] items-center justify-center rounded-full border border-[#d2d5db] bg-white/20 px-[13px] text-[12px] text-[#0a0a0a] backdrop-blur-xl"
+              >
+                {tag}
+              </span>
+            ))}
+          </div>
+        )}
       </div>
-      <div className="flex flex-col gap-3">
+      <div className="flex flex-col gap-4">
         <div className="flex flex-col gap-2">
-          {period && (
-            <p className="text-[12px] text-[var(--color-text-muted)]">{period}</p>
+          {(project.company || period) && (
+            <div className="flex items-center justify-between gap-2">
+              {project.company && (
+                <p className="truncate text-[14px] text-[var(--color-text)]">{project.company}</p>
+              )}
+              {period && (
+                <p className="shrink-0 text-[10px] text-[var(--color-text-muted)]">{period}</p>
+              )}
+            </div>
           )}
           <p className="text-[16px] font-bold text-[var(--color-text)]">{project.title}</p>
           {project.summary && (
             <p className="text-[14px] text-[var(--color-ink)]">{project.summary}</p>
           )}
         </div>
-        {tags.length > 0 && (
-          <div className="flex flex-wrap gap-1.5">
-            {tags.slice(0, 2).map((tag) => (
-              <Tag key={tag} className="text-[var(--color-ink)]">
-                {tag}
-              </Tag>
-            ))}
+        {resultPreview && (
+          <div className="flex items-center justify-between gap-2">
+            <p className="truncate text-[16px] text-[var(--color-text)]">{resultPreview.text}</p>
+            {resultPreview.remainingCount > 0 && (
+              <span className="shrink-0 rounded-[4px] bg-[#0a0a0a] px-[4px] py-[2px] text-[12px] text-white">
+                +{resultPreview.remainingCount}
+              </span>
+            )}
           </div>
         )}
       </div>

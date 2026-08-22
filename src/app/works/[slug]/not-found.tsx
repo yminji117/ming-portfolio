@@ -14,7 +14,7 @@ export default async function ProjectNotFound() {
           title="존재하지 않는 프로젝트예요"
           description="삭제되었거나 아직 공개되지 않은 프로젝트예요."
           ctaHref="/works"
-          ctaLabel="Works 목록으로"
+          ctaLabel="Work 목록으로"
         />
       </main>
       <Footer email={about?.email ?? null} />

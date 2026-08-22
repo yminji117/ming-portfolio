@@ -46,7 +46,10 @@ export function GuestbookForm({ onCreated }: { onCreated: (entry: GuestbookEntry
   const nearLimit = remaining <= 10;
 
   return (
-    <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+    <form
+      onSubmit={handleSubmit}
+      className="flex flex-col gap-4 rounded-[8px] border border-[#cecece] bg-[#fafbfd] px-[25px] py-[37px]"
+    >
       {/* 허니팟 — 실제 방문자에게는 보이지 않는 필드. 봇이 채우면 서버에서 조용히 거부한다. */}
       <input
         type="text"
@@ -58,40 +61,22 @@ export function GuestbookForm({ onCreated }: { onCreated: (entry: GuestbookEntry
         className="absolute -left-[9999px] h-0 w-0 opacity-0"
       />
 
-      <div className="flex flex-col gap-1">
-        <textarea
-          value={content}
-          onChange={(event) => setContent(event.target.value.slice(0, CONTENT_MAX))}
-          maxLength={CONTENT_MAX}
-          rows={4}
-          placeholder="하고 싶은 말을 남겨주세요. 저만 볼게요."
-          className="w-full resize-none rounded-[var(--radius)] border border-[var(--color-line)] p-4 text-[length:var(--fs-body)] outline-none focus:border-[var(--color-accent)]"
-        />
-        <span
-          className={`self-end text-[length:var(--fs-caption)] ${
-            nearLimit ? "text-red-500" : "text-[var(--color-text-muted)]"
-          }`}
-        >
-          {content.length} / {CONTENT_MAX}
-        </span>
-      </div>
-
       <div className="flex flex-col gap-3 sm:flex-row">
         <input
           value={nickname}
           onChange={(event) => setNickname(event.target.value)}
           placeholder="아이디 (2~12자)"
           maxLength={12}
-          className="h-11 flex-1 rounded-[var(--radius)] border border-[var(--color-line)] px-4 text-[length:var(--fs-body)] outline-none focus:border-[var(--color-accent)]"
+          className="h-11 flex-1 rounded-[10px] border border-[var(--color-line)] bg-white px-4 text-[length:var(--fs-body)] outline-none placeholder:text-[rgba(19,20,23,0.5)] focus:border-[var(--color-accent)]"
         />
         <div className="relative flex-1">
           <input
             type={showPassword ? "text" : "password"}
             value={password}
             onChange={(event) => setPassword(event.target.value)}
-            placeholder="비밀번호 (4자리 숫자)"
+            placeholder="비밀번호 작성 (4~12자)"
             maxLength={16}
-            className="h-11 w-full rounded-[var(--radius)] border border-[var(--color-line)] px-4 pr-14 text-[length:var(--fs-body)] outline-none focus:border-[var(--color-accent)]"
+            className="h-11 w-full rounded-[10px] border border-[var(--color-line)] bg-white px-4 pr-14 text-[length:var(--fs-body)] outline-none placeholder:text-[rgba(19,20,23,0.5)] focus:border-[var(--color-accent)]"
           />
           <button
             type="button"
@@ -103,9 +88,23 @@ export function GuestbookForm({ onCreated }: { onCreated: (entry: GuestbookEntry
         </div>
       </div>
 
-      <p className="text-[length:var(--fs-caption)] text-[var(--color-text-muted)]">
-        비밀번호를 잊으면 수정할 수 없어요.
-      </p>
+      <div className="flex flex-col gap-1">
+        <textarea
+          value={content}
+          onChange={(event) => setContent(event.target.value.slice(0, CONTENT_MAX))}
+          maxLength={CONTENT_MAX}
+          rows={4}
+          placeholder="피드백을 남겨주세요 :-)"
+          className="h-[129px] w-full resize-none rounded-[10px] border border-[var(--color-line)] bg-white p-4 text-[length:var(--fs-body)] outline-none placeholder:text-[rgba(19,20,23,0.5)] focus:border-[var(--color-accent)]"
+        />
+        <span
+          className={`self-end text-[length:var(--fs-caption)] ${
+            nearLimit ? "text-red-500" : "text-[#d5d5d5]"
+          }`}
+        >
+          {content.length} / {CONTENT_MAX}
+        </span>
+      </div>
 
       {error && (
         <p role="alert" aria-live="polite" className="text-[length:var(--fs-caption)] text-red-500">
@@ -113,13 +112,19 @@ export function GuestbookForm({ onCreated }: { onCreated: (entry: GuestbookEntry
         </p>
       )}
 
-      <button
-        type="submit"
-        disabled={!isValid || isPending}
-        className="self-end inline-flex h-11 items-center justify-center rounded-full bg-[var(--color-accent)] px-8 text-[length:var(--fs-body)] font-medium text-[var(--color-accent-ink)] transition-transform duration-[var(--dur-fast)] hover:scale-[1.02] disabled:opacity-40 disabled:hover:scale-100"
-      >
-        {isPending ? "등록 중..." : "등록"}
-      </button>
+      <div className="flex items-start justify-between gap-4">
+        <ul className="min-w-0 flex-1 list-disc space-y-0.5 pl-5 text-[length:var(--fs-caption)] text-[var(--color-text-muted)]">
+          <li>비밀번호를 잊으면 수정/삭제할 수 없어요.</li>
+          <li>모든 게시글은 주인장만 확인할 수 있도록 비밀글로 작성돼요.</li>
+        </ul>
+        <button
+          type="submit"
+          disabled={!isValid || isPending}
+          className="inline-flex h-11 shrink-0 items-center justify-center rounded-full bg-[var(--color-accent)] px-8 text-[length:var(--fs-body)] font-medium text-[var(--color-accent-ink)] transition-transform duration-[var(--dur-fast)] hover:scale-[1.02] disabled:opacity-40 disabled:hover:scale-100"
+        >
+          {isPending ? "등록 중..." : "등록"}
+        </button>
+      </div>
     </form>
   );
 }
