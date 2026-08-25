@@ -283,14 +283,14 @@ function GuestbookRow({
               {actionError}
             </p>
           )}
-          <div className="flex gap-2">
+          <div className="flex w-full gap-2 sm:w-auto">
             <button
               type="button"
               onClick={() => {
                 setStage("closed");
                 setVerifiedPassword("");
               }}
-              className="inline-flex h-10 items-center justify-center rounded-full border border-[var(--color-line)] px-6 text-[length:var(--fs-body)]"
+              className="inline-flex h-10 flex-1 items-center justify-center rounded-full border border-[var(--color-line)] px-6 text-[length:var(--fs-body)] sm:flex-none"
             >
               취소
             </button>
@@ -298,7 +298,7 @@ function GuestbookRow({
               type="button"
               onClick={handleSave}
               disabled={isPending || content.trim().length === 0}
-              className="inline-flex h-10 items-center justify-center rounded-full bg-[var(--color-accent)] px-6 text-[length:var(--fs-body)] font-medium text-[var(--color-accent-ink)] disabled:opacity-40"
+              className="inline-flex h-10 flex-1 items-center justify-center rounded-full bg-[var(--color-accent)] px-6 text-[length:var(--fs-body)] font-medium text-[var(--color-accent-ink)] disabled:opacity-40 sm:flex-none"
             >
               {isPending ? "저장 중..." : "수정"}
             </button>

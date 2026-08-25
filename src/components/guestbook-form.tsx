@@ -51,7 +51,7 @@ export function GuestbookForm({ onCreated }: { onCreated: (entry: GuestbookEntry
   return (
     <form
       onSubmit={handleSubmit}
-      className="flex flex-col gap-4 rounded-[8px] border border-[#cecece] bg-[#fafbfd] p-[25px]"
+      className="flex flex-col gap-4 rounded-[8px] border border-[#cecece] bg-[#fafbfd] px-[17px] py-[25px] sm:p-[25px]"
     >
       {/* 허니팟 — 실제 방문자에게는 보이지 않는 필드. 봇이 채우면 서버에서 조용히 거부한다. */}
       <input
@@ -70,7 +70,7 @@ export function GuestbookForm({ onCreated }: { onCreated: (entry: GuestbookEntry
           onChange={(event) => setNickname(event.target.value)}
           placeholder="아이디 (2~12자)"
           maxLength={12}
-          className="h-11 flex-1 rounded-[10px] border border-[var(--color-line)] bg-white px-4 text-[length:var(--fs-body)] outline-none placeholder:text-[rgba(19,20,23,0.5)] focus:border-[var(--color-accent)]"
+          className="h-11 w-full rounded-[10px] border border-[var(--color-line)] bg-white px-4 text-[length:var(--fs-body)] outline-none placeholder:text-[rgba(19,20,23,0.5)] focus:border-[var(--color-accent)] sm:flex-1"
         />
         <div className="relative flex-1">
           <input
@@ -131,14 +131,14 @@ export function GuestbookForm({ onCreated }: { onCreated: (entry: GuestbookEntry
         </p>
       )}
 
-      <div className="flex items-start justify-between gap-4">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
         <ul className="min-w-0 flex-1 list-disc space-y-0.5 pl-5 text-[length:var(--fs-caption)] text-[var(--color-text-muted)]">
           <li>비밀번호를 잊으면 수정/삭제할 수 없어요.</li>
         </ul>
         <button
           type="submit"
           disabled={!isValid || isPending}
-          className="inline-flex h-[40px] shrink-0 items-center justify-center rounded-full bg-[var(--color-accent)] px-8 text-[length:var(--fs-body)] font-medium text-[var(--color-accent-ink)] transition-transform duration-[var(--dur-fast)] hover:scale-[1.02] disabled:opacity-40 disabled:hover:scale-100"
+          className="inline-flex h-[40px] w-full shrink-0 items-center justify-center rounded-full bg-[var(--color-accent)] px-8 text-[length:var(--fs-body)] font-medium text-[var(--color-accent-ink)] transition-transform duration-[var(--dur-fast)] hover:scale-[1.02] disabled:opacity-40 disabled:hover:scale-100 sm:w-auto"
         >
           {isPending ? "등록 중..." : "등록"}
         </button>

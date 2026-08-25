@@ -20,14 +20,12 @@ export function Gnb() {
   const router = useRouter();
   const isDetailPage = DETAIL_PAGE_PATTERN.test(pathname);
   const [hidden, setHidden] = useState(false);
-  const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const lastY = useRef(0);
 
   useEffect(() => {
     function onScroll() {
       const y = window.scrollY;
-      setScrolled(y > 8);
       setHidden(y > lastY.current && y > 80);
       lastY.current = y;
     }
@@ -52,9 +50,9 @@ export function Gnb() {
   return (
     <>
       <header
-        className={`fixed top-0 left-0 right-0 z-50 border-b border-white/25 bg-white/55 backdrop-blur-xl backdrop-saturate-150 transition-transform duration-[var(--dur-base)] ease-[var(--ease-out)] ${
+        className={`fixed top-0 left-0 right-0 z-50 border-b border-white/25 bg-white/55 shadow-[0px_2px_4px_rgba(0,0,0,0.04)] backdrop-blur-xl backdrop-saturate-150 transition-transform duration-[var(--dur-base)] ease-[var(--ease-out)] ${
           hidden ? "-translate-y-full" : "translate-y-0"
-        } ${scrolled ? "shadow-[0_4px_24px_rgba(19,20,23,0.06)]" : ""}`}
+        }`}
       >
         <nav
           aria-label="주요 메뉴"
