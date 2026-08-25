@@ -1,15 +1,20 @@
 import Image from "next/image";
 import Link from "next/link";
-import { formatProjectRange, getIndustryLabel, getResultPreview } from "@/lib/format";
+import {
+  formatProjectRange,
+  getIndustryLabel,
+  getResultPreview,
+  normalizeIndustry,
+  sortIndustries,
+} from "@/lib/format";
 import type { Project } from "@/lib/types";
 
 // Figma '최종' Works 리스트 카드: 16:9 썸네일 + 기간 + 제목 + 한 줄 요약 + 태그 2개, 흰 배경 + 검은 테두리
 export function WorksListCard({ project }: { project: Project }) {
   const period = formatProjectRange(project.start_date, project.end_date);
-  const tags = [
-    project.role[0],
-    project.industry ? getIndustryLabel(project.industry) : null,
-  ].filter(Boolean) as string[];
+  const tags = sortIndustries(normalizeIndustry(project.industry), project.category).map(
+    getIndustryLabel,
+  );
   const resultPreview = getResultPreview(project.result);
 
   return (
@@ -17,7 +22,7 @@ export function WorksListCard({ project }: { project: Project }) {
       href={`/works/${project.slug}`}
       className="group flex flex-col gap-4 rounded-[var(--radius)] border border-[var(--color-ink)] p-4 transition-colors duration-[var(--dur-fast)] hover:border-[var(--color-accent)]"
     >
-      <div className="relative aspect-video w-full overflow-hidden rounded-[4px] bg-[#707070]">
+      <div className="relative aspect-video w-full overflow-hidden rounded-[4px] border border-solid border-[#EBEEF5] bg-[#707070]">
         {project.thumbnail_url ? (
           <Image
             src={project.thumbnail_url}
@@ -46,19 +51,23 @@ export function WorksListCard({ project }: { project: Project }) {
       </div>
       <div className="flex flex-col gap-4">
         <div className="flex flex-col gap-2">
-          {(project.company || period) && (
-            <div className="flex items-center justify-between gap-2">
-              {project.company && (
-                <p className="truncate text-[14px] text-[var(--color-text)]">{project.company}</p>
-              )}
-              {period && (
-                <p className="shrink-0 text-[10px] text-[var(--color-text-muted)]">{period}</p>
-              )}
-            </div>
-          )}
-          <p className="text-[16px] font-bold text-[var(--color-text)]">{project.title}</p>
+          <div className="flex flex-col gap-[2px]">
+            {(project.company || period) && (
+              <div className="flex items-center justify-between gap-2">
+                {project.company && (
+                  <p className="truncate text-[14px] text-[var(--color-text-muted)]">{project.company}</p>
+                )}
+                {period && (
+                  <p className="shrink-0 text-[10px] text-[var(--color-text-muted)]">{period}</p>
+                )}
+              </div>
+            )}
+            <p className="text-[20px] font-bold text-[var(--color-text)]">{project.title}</p>
+          </div>
           {project.summary && (
-            <p className="text-[14px] text-[var(--color-ink)]">{project.summary}</p>
+            <p className="line-clamp-2 min-h-[2.75em] text-[14px] leading-snug text-[var(--color-text-muted)]">
+              {project.summary}
+            </p>
           )}
         </div>
         {resultPreview && (

@@ -72,7 +72,12 @@ export function PageLoadGate({ children }: { children: ReactNode }) {
   return (
     <>
       {!ready && <LoadingScreen />}
-      <div className={ready ? "" : "invisible"}>{children}</div>
+      {/* body(min-h-full flex flex-col)의 flex 체인이 여기서 끊기지 않게 해야
+          각 페이지의 <main className="flex-1">가 실제로 늘어나 푸터를 화면 하단에
+          붙인다(콘텐츠가 뷰포트보다 길면 자연스럽게 콘텐츠 아래로 밀려난다). */}
+      <div className={`flex min-h-full flex-1 flex-col ${ready ? "" : "invisible"}`}>
+        {children}
+      </div>
     </>
   );
 }

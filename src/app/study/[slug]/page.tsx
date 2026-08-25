@@ -3,11 +3,13 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowRightIcon, ExpandCircleRightIcon } from "@/components/icons";
 import { ContentBlocks } from "@/components/content-blocks";
+import { ContentProtect } from "@/components/content-protect";
 import { Footer } from "@/components/footer";
 import { Gnb } from "@/components/gnb";
 import { ProjectGallery } from "@/components/project-gallery";
 import { Tag } from "@/components/tag";
 import { getAbout, getAdjacentStudies, getStudyBySlug } from "@/lib/data";
+import { formatCareerRange, getStudyCategoryLabel, sortStudyTagsForDisplay } from "@/lib/format";
 
 export async function generateMetadata(
   props: PageProps<"/study/[slug]">,
@@ -39,7 +41,7 @@ export default async function StudyDetailPage(
     getAbout(),
   ]);
 
-  const publishedDate = study.published_at.replaceAll("-", ".");
+  const period = formatCareerRange(study.start_date, study.end_date);
   // IMAGE 갤러리는 Roadmap이 있는 스터디(로드맵형 게시물)에만 제공한다 — Figma 시안 반영.
   const hasRoadmap = Boolean(study.body?.steps && study.body.steps.length > 0);
   const galleryUrls = hasRoadmap ? (study.gallery_urls ?? []) : [];
@@ -50,7 +52,7 @@ export default async function StudyDetailPage(
       <main className="flex-1 pt-16 lg:pt-[60px]">
         {/* Figma '최종' node 229:142(desktop)/246:162(mobile) — 목록 버튼은 GNB 바로 아래
             16px만 띄우고 붙는다(모바일/데스크톱 동일), 하단은 기존 유지. */}
-        <div className="container-app flex flex-col gap-10 pt-4 pb-10 lg:gap-16 lg:pb-16">
+        <ContentProtect className="container-app flex flex-col gap-10 pt-4 pb-10 lg:gap-16 lg:pb-16">
           <div className="flex flex-col gap-4">
             <Link
               href="/study"
@@ -80,28 +82,54 @@ export default async function StudyDetailPage(
                 )}
               </div>
 
-              <div className="grid grid-cols-1 gap-10 lg:grid-cols-[260px_1fr] lg:gap-10">
+              <div className="grid grid-cols-1 gap-10 lg:grid-cols-[360px_1fr] lg:gap-10">
                 <dl className="flex flex-col gap-5 lg:border-r lg:border-[var(--color-line)] lg:pr-8">
-                  <div className="flex flex-col gap-1.5">
-                    <dt className="text-[length:var(--fs-caption)] text-[var(--color-text-muted)]">작성일</dt>
-                    <dd className="text-[length:var(--fs-body)]">{publishedDate}</dd>
-                  </div>
+                  {study.org_name && (
+                    <div className="flex flex-col gap-1.5">
+                      <dt className="text-[length:var(--fs-caption)] text-[var(--color-text-muted)]">소속</dt>
+                      <dd className="text-[length:var(--fs-body)]">{study.org_name}</dd>
+                    </div>
+                  )}
+                  {period && (
+                    <div className="flex flex-col gap-1.5">
+                      <dt className="text-[length:var(--fs-caption)] text-[var(--color-text-muted)]">기간</dt>
+                      <dd className="text-[length:var(--fs-body)]">{period}</dd>
+                    </div>
+                  )}
                   {study.tags.length > 0 && (
                     <div className="flex flex-col gap-1.5">
-                      <dt className="text-[length:var(--fs-caption)] text-[var(--color-text-muted)]">태그</dt>
+                      <dt className="text-[length:var(--fs-caption)] text-[var(--color-text-muted)]">카테고리</dt>
                       <dd className="flex flex-wrap gap-1.5">
-                        {study.tags.map((tag) => (
-                          <Tag key={tag}>{tag}</Tag>
+                        {sortStudyTagsForDisplay(study.tags).map((tag) => (
+                          <Tag key={tag}>{getStudyCategoryLabel(tag)}</Tag>
                         ))}
+                      </dd>
+                    </div>
+                  )}
+                  {study.related_url && (
+                    <div className="flex flex-col gap-1.5">
+                      <dt className="text-[length:var(--fs-caption)] text-[var(--color-text-muted)]">관련 URL</dt>
+                      <dd>
+                        <a
+                          href={study.related_url}
+                          target="_blank"
+                          rel="noreferrer noopener"
+                          className="group inline-flex w-fit items-center gap-1 text-[length:var(--fs-body)] transition-colors duration-[var(--dur-fast)] hover:text-[var(--color-accent)]"
+                        >
+                          바로 가기
+                          <span className="inline-block transition-transform duration-[var(--dur-base)] ease-[var(--ease-out)] group-hover:translate-x-1">
+                            →
+                          </span>
+                        </a>
                       </dd>
                     </div>
                   )}
                 </dl>
 
                 <div className="flex flex-col gap-14 lg:gap-16">
-                  {study.summary && (
+                  {(study.overview ?? study.summary) && (
                     <p className="whitespace-pre-line text-[length:var(--fs-body)] leading-relaxed text-[var(--color-text-muted)]">
-                      {study.summary}
+                      {study.overview ?? study.summary}
                     </p>
                   )}
 
@@ -170,7 +198,7 @@ export default async function StudyDetailPage(
               <span aria-hidden="true" className="flex-1" />
             )}
           </nav>
-        </div>
+        </ContentProtect>
       </main>
       <Footer email={about?.email ?? null} />
     </>

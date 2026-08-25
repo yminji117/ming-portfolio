@@ -135,7 +135,7 @@ export async function getStudiesPage(
   const { data, error, count } = await supabase
     .from("studies")
     .select("*", { count: "exact" })
-    .order("published_at", { ascending: false })
+    .order("start_date", { ascending: false, nullsFirst: false })
     .order("id", { ascending: false })
     .range(offset, offset + limit - 1);
   if (error) console.error("getStudiesPage failed:", error.message);
@@ -160,7 +160,7 @@ export async function getAdjacentStudies(
   const { data, error } = await supabase
     .from("studies")
     .select("slug, title")
-    .order("published_at", { ascending: false })
+    .order("start_date", { ascending: false, nullsFirst: false })
     .order("id", { ascending: false });
   if (error) {
     console.error("getAdjacentStudies failed:", error.message);

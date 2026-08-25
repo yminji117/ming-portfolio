@@ -241,3 +241,14 @@ body {
 .no-scrollbar::-webkit-scrollbar {
   display: none;
 }
+
+/* Works/Study 상세 페이지 본문 보호 — 텍스트 선택/드래그·롱프레스 콜아웃 차단.
+   완벽한 복사 방지는 웹에서 불가능하지만(개발자도구 등) 일반적인 드래그 선택·우클릭 복사는 막는다. */
+.content-protect {
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+}
+.content-protect img {
+  -webkit-user-drag: none;
+}

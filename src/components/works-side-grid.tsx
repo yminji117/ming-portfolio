@@ -1,7 +1,6 @@
 import Link from "next/link";
 import { MediaThumb } from "@/components/media-thumb";
 import { Reveal } from "@/components/reveal";
-import { Tag } from "@/components/tag";
 import type { Project } from "@/lib/types";
 
 export function WorksSideGrid({ projects }: { projects: Project[] }) {
@@ -13,11 +12,10 @@ export function WorksSideGrid({ projects }: { projects: Project[] }) {
             <MediaThumb
               src={project.thumbnail_url}
               alt={project.title}
-              className="aspect-[650/453] border border-[#e5e5e0]"
+              className="aspect-[650/453] border border-solid border-[#EBEEF5]"
             />
             <div className="mt-[10px] flex flex-col gap-2 border-t border-black pt-[18px]">
               <div className="flex flex-wrap items-center gap-2">
-                {project.role[0] && <Tag>{project.role[0]}</Tag>}
                 <h3 className="text-2xl">{project.title}</h3>
               </div>
               <p className="text-[length:var(--fs-body)] text-[var(--color-text-muted)]">

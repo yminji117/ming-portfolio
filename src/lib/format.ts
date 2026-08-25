@@ -57,12 +57,25 @@ export function getIndustryLabel(industry: string): string {
   return INDUSTRY_LABELS[industry] ?? industry;
 }
 
+// projects.industry는 0032_project_industry_array.sql 적용 전엔 DB에 아직 단일 문자열(text)로
+// 남아있을 수 있다 — 마이그레이션 적용 전에도 카드/필터가 죽지 않도록 방어적으로 배열화한다.
+export function normalizeIndustry(value: unknown): string[] {
+  if (Array.isArray(value)) return value as string[];
+  if (typeof value === "string" && value.length > 0) return [value];
+  return [];
+}
+
 // Figma '최종' 시안의 필터 칩 노출 순서 — 카테고리별로 고정 순서를 따르고,
 // 목록에 없는 값(향후 추가된 industry)은 정해진 순서 뒤에 그대로 이어 붙인다.
 const INDUSTRY_ORDER: Record<"professional" | "side", string[]> = {
   professional: ["Education", "OTT", "Commerce", "Brand"],
   side: ["Community", "Popup", "Online", "Offline"],
 };
+
+// 어드민 업종 선택 필드용 — 카테고리별 정해진 옵션 순서 그대로 노출한다.
+export function getIndustryOptions(category: "professional" | "side"): string[] {
+  return INDUSTRY_ORDER[category];
+}
 
 export function sortIndustries(
   industries: string[],
@@ -77,6 +90,50 @@ export function sortIndustries(
     if (bi === -1) return -1;
     return ai - bi;
   });
+}
+
+// Study "카테고리"(구 태그) — 실제 DB 원본 값은 Works의 industry와 동일하게 영문으로 저장되고
+// (예: studies.tags에 "Data"), 필터 칩/어드민 선택지에는 Figma 시안(node 355:1062)의 한글
+// 라벨로 번역해 보여준다. "Talk"는 Figma 시안의 "말하기"에 대응하는 원본 값 — 아직 실제
+// 데이터가 없어 확정값이 아니니, 다른 값을 쓰고 싶으면 알려주세요.
+const STUDY_CATEGORY_LABELS: Record<string, string> = {
+  Data: "데이터 분석",
+  Talk: "말하기",
+};
+
+export function getStudyCategoryLabel(category: string): string {
+  return STUDY_CATEGORY_LABELS[category] ?? category;
+}
+
+// Study는 "카테고리"(주제 — Figma node 355:1062)와 "형태"(Online/Offline — node 355:999)가
+// 별개 개념이지만, DB엔 이 둘을 나누는 컬럼이 따로 없고 studies.tags 배열 하나뿐이다.
+// 어드민에서 두 필드로 분리해 보여주고 저장은 같은 tags 배열에 합쳐서 한다.
+const STUDY_CATEGORY_OPTIONS = ["AI", "Data", "Talk"];
+const STUDY_FORMAT_OPTIONS = ["Online", "Offline"];
+
+// 카테고리 — Works의 업종과 동일한 기능(고정 목록 다중 선택 + 직접 입력). /study 필터 칩도
+// 이 목록을 그대로 쓴다(Figma 'Study | MINJI' 그대로, 실제 콘텐츠 태그와 무관하게 고정).
+export function getStudyCategoryOptions(): string[] {
+  return STUDY_CATEGORY_OPTIONS;
+}
+
+// 형태 — Online/Offline 중 선택. 카테고리와 달리 고정된 2개뿐이라 직접 입력은 없다.
+export function getStudyFormatOptions(): string[] {
+  return STUDY_FORMAT_OPTIONS;
+}
+
+// Front에 노출되는 Study 태그 배지 순서 — 카테고리(AI/데이터 분석/말하기)가 항상 형태
+// (Online/Offline)보다 앞에 오도록 정렬한다. 어드민에서 어떤 순서로 선택했는지와 무관하다.
+// 목록에 없는 커스텀 값은 맨 뒤로 보낸다.
+export function sortStudyTagsForDisplay(tags: string[]): string[] {
+  const rank = (tag: string) => {
+    const categoryIndex = STUDY_CATEGORY_OPTIONS.indexOf(tag);
+    if (categoryIndex !== -1) return categoryIndex;
+    const formatIndex = STUDY_FORMAT_OPTIONS.indexOf(tag);
+    if (formatIndex !== -1) return STUDY_CATEGORY_OPTIONS.length + formatIndex;
+    return STUDY_CATEGORY_OPTIONS.length + STUDY_FORMAT_OPTIONS.length;
+  };
+  return [...tags].sort((a, b) => rank(a) - rank(b));
 }
 
 export function formatYear(isoDate: string | null): string {

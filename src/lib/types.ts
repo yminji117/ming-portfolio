@@ -40,7 +40,7 @@ export interface Project {
   body: ContentBlock[] | null;
   gallery_urls: string[] | null;
   contribution_percent: number | null;
-  industry: string | null;
+  industry: string[] | null;
   is_featured: boolean;
   featured_order: number | null;
   status: ContentStatus;
@@ -60,11 +60,16 @@ export interface Study {
   id: string;
   slug: string;
   title: string;
+  org_name: string | null;
   summary: string | null;
+  overview: string | null;
   thumbnail_url: string | null;
+  main_thumbnail_url: string | null;
   tags: string[];
   external_url: string | null;
-  published_at: string;
+  related_url: string | null;
+  start_date: string | null;
+  end_date: string | null;
   body: StudyBody | null;
   gallery_urls: string[] | null;
   is_featured: boolean;
@@ -116,6 +121,23 @@ export interface GuestbookEntry {
   updated_at: string | null;
   is_private: boolean;
   content: string | null;
+}
+
+export type GuestbookFlag = "normal" | "hold" | "spam";
+
+// guestbook 원본 테이블 — password_hash는 절대 select하지 않는다.
+// authenticated(어드민) RLS로만 접근 가능(0002_rls.sql "admin full access guestbook").
+export interface GuestbookEntryAdmin {
+  id: string;
+  nickname: string;
+  content: string;
+  created_at: string;
+  updated_at: string | null;
+  is_private: boolean;
+  is_read: boolean;
+  is_hidden: boolean;
+  flag: GuestbookFlag;
+  admin_memo: string | null;
 }
 
 export interface Skill {

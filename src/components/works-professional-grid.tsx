@@ -3,7 +3,7 @@
 import { useMemo, useRef, useState, type RefObject } from "react";
 import { ProjectCard } from "@/components/project-card";
 import { Reveal } from "@/components/reveal";
-import { getIndustryLabel, sortIndustries } from "@/lib/format";
+import { getIndustryLabel, normalizeIndustry, sortIndustries } from "@/lib/format";
 import type { Project } from "@/lib/types";
 
 const ALL = "all";
@@ -18,7 +18,7 @@ export function WorksProfessionalGrid({
   const industries = useMemo(() => {
     const unique = new Set<string>();
     projects.forEach((project) => {
-      if (project.industry) unique.add(project.industry);
+      normalizeIndustry(project.industry).forEach((industry) => unique.add(industry));
     });
     return sortIndustries(Array.from(unique), "professional");
   }, [projects]);
@@ -74,7 +74,7 @@ export function WorksProfessionalGrid({
             <Reveal index={i}>
               <ProjectCard
                 project={project}
-                active={active !== ALL && project.industry === active}
+                active={active !== ALL && normalizeIndustry(project.industry).includes(active)}
                 metaField={cardMetaField}
               />
             </Reveal>
@@ -90,7 +90,7 @@ export function WorksProfessionalGrid({
               <Reveal index={i + firstRow.length}>
                 <ProjectCard
                   project={project}
-                  active={active !== ALL && project.industry === active}
+                  active={active !== ALL && normalizeIndustry(project.industry).includes(active)}
                   metaField={cardMetaField}
                 />
               </Reveal>

@@ -111,21 +111,41 @@ PRD 2.2의 다크 토큰을 라이트로 교체. `app/globals.css`에 CSS 변수
 
 ---
 
-## Phase 3 — 어드민 (PRD 9장) ⬜ 대기
+## Phase 3 — 어드민 (PRD 9장) 🔄 진행 중 — 3a 완료, 3b 진행 중
+
+**설계 확정(2026.08.25)**: DB `0002_rls.sql`이 이미 `authenticated` 롤에 전 테이블 `for all` 권한을 부여해 "단일 관리자 계정" 전제로 설계돼 있었음(지금까지는 로그인 로직이 없어 도달 불가능했던 정책) — 이걸 그대로 살려 Supabase Auth(email/password, 계정 1개, Supabase 대시보드에서 직접 생성, 회원가입 플로우 없음)로 로그인만 새로 구현. Works/Study/About/Careers/Skills/Currently&nbsp;Doing/Site&nbsp;Settings/방명록 CRUD는 **새 RPC나 마이그레이션 없이** `supabase.from(table).update(...)` 로 authenticated 세션에서 직접 처리(RLS가 이미 커버). 유일하게 새 마이그레이션이 필요한 곳은 ① 어드민 로그인 브루트포스 잠금(3-1, `guestbook_client_ip_hash()` 재사용)과 ② 3-8 미디어 업로드용 Storage 버킷(아직 없음, 3d에서 처리). Next.js 16에서 `middleware.ts`가 `proxy.ts`로 개명됐고 이 저장소엔 미들웨어가 전혀 없었어서 `src/proxy.ts`가 이 프로젝트 최초의 proxy 파일 — 세션 쿠키 갱신만 담당하고, 실제 인증 재검증은 Server Action이 proxy matcher를 우회할 수 있다는 Next.js 공식 권고에 따라 `/admin/(protected)/layout.tsx` + 각 서버 액션 내부에서 이중으로 수행.
+
+작업량이 많아 하위 단계로 쪼개 순차 진행: **3a**(인증 뼈대 + 방명록 모더레이션, 컬럼 이미 준비돼 있어 마이그레이션 거의 없음) → **3b**(Works/Studies CRUD + 공용 컴포넌트) → **3c**(About/Careers/Skills/Currently Doing/Site Settings) → **3d**(Storage 마이그레이션 + 미디어 업로드).
 
 | # | 상태 | 작업 | 참고 | 완료 기준 |
 | --- | --- | --- | --- | --- |
-| 3-1 | ⬜ | Supabase Auth 단일 계정 로그인 + `/admin/*` 미들웨어 보호 + 5회 실패 15분 잠금 | PRD 9.1 | 미인증 리다이렉트 확인 |
-| 3-2 | ⬜ | `/admin/dashboard`: 노출 정원 경고, 방명록 미읽음 수, 콘텐츠 현황 | PRD 9.3 | 위젯 데이터 정확성 |
-| 3-3 | ⬜ | `/admin/works`, `/admin/study`: 목록(필터/검색/일괄작업) + 등록·수정(리치텍스트 에디터, 자동 임시저장 30초, 이미지 업로드+리사이즈) | PRD 9.5 | 등록→Main 반영 E2E |
-| 3-4 | ⬜ | `/admin/currently`: 인라인 테이블 편집, 라벨 드롭다운 즉시저장, 종료 리마인드 배너 | PRD 9.6 | 즉시 저장 확인 |
-| 3-5 | ⬜ | `/admin/main` ⭐: Professional 5/Study 4/Side 2 정원 관리, 드래그+화살표 순서변경, draft 자동 해제, `revalidatePath('/')` | PRD 9.4, Figma '최종' 반영 | 정원 초과 차단, 저장 즉시 반영 |
-| 3-6 | ⬜ | `/admin/guestbook`: 본문 전문 열람, 필터(미읽음/수정됨/보류/스팸), 수정 이력 비교, 숨김/삭제 | PRD 9.7 | 변경 전후 비교 노출 |
-| 3-7 | ⬜ | `/admin/about`, `/admin/settings`: About/연혁/스킬 CRUD, 히어로 미디어 교체, SEO 설정, 점검모드 | PRD 9.8 | 히어로 영상 교체 반영 확인 |
-| 3-8 | ⬜ | `/admin/media`, `/admin/trash`: 업로드 자산 관리, soft delete 복구 | PRD 9.2 | 복구 동작 확인 |
+| 3-1 | ✅ | **[3a]** Supabase Auth 단일 계정 로그인(`/admin/(auth)/login`) + `src/proxy.ts`(세션 갱신) + `/admin/(protected)/layout.tsx`(서버 재검증) + 5회 실패 15분 잠금(`0030_admin_login_lockout.sql`, IP 기준) | PRD 9.1 | 미인증 리다이렉트 확인 완료(빌드+실제 요청 검증). **마이그레이션 적용 + 관리자 계정 생성 + 실로그인 완료(2026.08.25)** |
+| 3-2 | 🔄 | **[3a/3b]** `/admin`(대시보드): 미확인 방명록 수·보류 수·전체 게시글 수 + Draft 프로젝트/스터디 수 + 노출 정원(N/5, N/2, N/4) 위젯 | PRD 9.3 | 위젯 데이터 정확성 |
+| 3-3 | 🔄 | **[3b]** `/admin/works`, `/admin/studies`: 목록(카테고리/상태 탭) + 등록·수정(블록 에디터로 `body` 편집, `role`/`tools`/`tags`/`gallery_urls` 배열 필드 편집, slug 자동 제안) — 공용 `admin-form-field`/`content-block-editor`/`study-steps-editor` 컴포넌트 구축. **검색·일괄작업·30초 자동 임시저장은 다음 이터레이션으로 이연**(수동 저장 버튼은 있음), 이미지는 3d 전까지 URL 직접 입력 | PRD 9.5 | 등록→Main 반영 E2E — 코드/빌드 검증 완료, 실사용 CRUD 확인 필요 |
+| 3-4 | ⬜ | **[3c]** `/admin/currently-doing`: 인라인 테이블 편집, 라벨 드롭다운 즉시저장, 종료 리마인드 배너 | PRD 9.6 | 즉시 저장 확인 |
+| 3-5 | 🔄 | **[3b]** `/admin/main` ⭐: Professional 5/Study 4/Side 2 정원 관리, 화살표 순서변경(드래그는 dnd 라이브러리 미도입으로 이연), draft는 DB 트리거(`enforce_featured_cap`)가 노출 자체를 차단, `revalidatePath('/')` | PRD 9.4, Figma '최종' 반영 | 정원 초과 차단(트리거가 최종 방어선, UI는 cap 도달 시 버튼 비활성화로 선제 차단) — 코드/빌드 검증 완료, 실사용 확인 필요 |
+| 3-6 | ✅ | **[3a]** `/admin/guestbook`: 본문 전문 열람, 필터(전체/미확인/보류/스팸/숨김), 읽음 처리·flag·운영 메모·숨김·삭제(soft delete). **수정 이력(`guestbook_revisions`) 비교 UI는 다음 이터레이션으로 이연** | PRD 9.7 | 변경 전후 비교 노출 — 리다이렉트/RLS 이중 방어까지 실측 확인 완료(2026.08.25) |
+| 3-7 | ⬜ | **[3c]** `/admin/about`, `/admin/site-settings`: About/연혁/스킬 CRUD, 히어로 미디어 교체, SEO 설정, 점검모드 | PRD 9.8 | 히어로 영상 교체 반영 확인 |
+| 3-8 | ⬜ | **[3d]** `/admin/media`, `/admin/trash`: `0030_admin_storage.sql`(Storage 버킷 신설, 유일하게 신규 마이그레이션 필요한 항목) + 업로드 자산 관리, soft delete 복구 | PRD 9.2 | 복구 동작 확인 |
 | 3-9 | ⬜ | 1024px 미만 접속 시 안내 화면(방명록 열람만 예외) | PRD 9.9 | 모바일 접속 시 안내 노출 |
 
 **Phase 3 완료 기준**: 개발자 개입 없이 신규 프로젝트 1건 등록 → Main 노출까지 10분 이내(PRD 1.2 성공지표).
+
+**3a 적용 완료(2026.08.25)**: `0030_admin_login_lockout.sql` 적용 + 관리자 계정 생성 + 실제 로그인 성공까지 확인했습니다.
+
+**3b 진행 메모**: Works/Studies CRUD와 `/admin/main` 노출 정원 관리를 새 마이그레이션 없이 붙였습니다(RLS `authenticated for-all` + 기존 `enforce_featured_cap` 트리거를 그대로 재사용). 이번에 새로 만든 파일: `src/app/admin/(protected)/works/**`, `src/app/admin/(protected)/studies/**`, `src/app/admin/(protected)/main/**`, `src/components/admin/{project-form,study-form,study-steps-editor,content-block-editor,featured-manager}.tsx`, `src/lib/slugify.ts`. `tsc`/`eslint`/`next build` 통과 + 개발 서버로 미인증 리다이렉트까지 확인했으나, 실제 프로젝트/스터디 등록→메인 노출 E2E는 아직 브라우저로 직접 확인 전입니다. 이연한 항목: 목록 검색·일괄작업, 30초 자동 임시저장(수동 저장 버튼으로 대체), 정원 관리의 드래그 정렬(화살표로 대체), 이미지 업로드(Storage 버킷 없어 3d까지 URL 직접 입력).
+
+**업종 필드 개선(2026.08.25)**: 자유 텍스트였던 `industry`를 분류(Professional/Side)별 Figma 고정 목록(`getIndustryOptions`) 선택 + "+ 직접 입력"으로 변경(`src/components/admin/industry-field.tsx`) — 오타로 `/works` 필터 칩이 어지러워지는 걸 막는다.
+
+**등록 폼에 메인 노출 컨트롤 추가(2026.08.25)**: `/admin/main`에서만 하던 "메인에 노출·몇 번째" 설정을 Works/Studies 등록·수정 폼에도 바로 넣었다(`FeaturedControl` 컴포넌트, `main/actions.ts`의 `setFeaturedPosition` 재사용 — 원하는 순번에 끼워 넣고 같은 그룹을 1..N으로 재정렬). 정원 캡 상수는 `src/lib/featured-caps.ts`로 뽑아 `/admin/main`과 공유. draft 상태는 체크박스 자체를 비활성화해 트리거 예외를 사전에 막는다.
+
+**Works 미디어 업로드로 전환, Phase 3d Storage 조기 착수(2026.08.25)**: 썸네일/커버/갤러리를 URL 붙여넣기 대신 실제 파일 업로드로 바꿨다. `0031_admin_media_storage.sql`로 공개 `media` 버킷을 새로 만들고(파일당 5MB, jpg/png/webp만 버킷 레벨에서 강제), `next.config.ts`엔 이미 `/storage/v1/object/public/**` remotePattern이 준비돼 있어 추가 설정 없이 바로 `next/image`로 렌더된다. 업로드는 서버 액션이 아니라 브라우저에서 `@supabase/ssr` 클라이언트로 직접 Storage에 올린다(로그인 세션 쿠키를 그대로 타므로 `authenticated` RLS로 보호됨). `src/lib/upload-image.ts`(공용 업로드 함수) + `src/components/admin/{image-upload-field,gallery-upload-field}.tsx`. 각 필드 아래에 권장 사이즈/용량/확장자 안내 문구를 넣었다. **아직 Study 폼은 그대로 URL 입력** — 요청 범위가 Works였어서 우선 여기까지만.
+
+**⚠️ 적용 필요**: `supabase/migrations/0031_admin_media_storage.sql`을 Supabase SQL Editor에서 실행해야 업로드가 동작합니다(버킷 자체가 없으면 업로드 시 에러).
+
+**업종 다중 선택 + Front 라벨 정리, 본문 빈 블록 정리(2026.08.25)**: `projects.industry`를 `text` → `text[]`로 변경(`0032_project_industry_array.sql`, 기존 값은 1개짜리 배열로 자동 이관). 어드민 `IndustriesField`(`industry-field.tsx`)가 pill 토글 다중 선택 + 직접 입력으로 바뀌었고, `/works` 카드·필터 칩도 배열 기준으로 갱신(`project-card.tsx`/`works-list-card.tsx`/`works-list-client.tsx`/`works-professional-grid.tsx`). 카드에 노출되는 라벨은 이제 role 없이 **업종만**으로 구성(요청 반영). 본문 블록(Works `body`, Study `body.blocks`)과 로드맵 단계(Study `body.steps`)는 텍스트/URL을 하나도 안 채운 빈 항목을 저장 시 걸러내도록 `src/lib/clean-content-blocks.ts`를 만들어 양쪽 폼에 적용 — 작성한 게 없으면 Front(`ContentBlocks`)에 해당 섹션 자체가 노출되지 않는다(원래도 배열이 완전히 비어 있으면 노출 안 됐지만, "빈 블록 하나만 추가"한 경우까지 걸러내도록 보강).
+
+**⚠️ 적용 필요**: `supabase/migrations/0032_project_industry_array.sql`을 Supabase SQL Editor에서 실행해야 합니다(실행 전엔 `industry` 컬럼이 여전히 단일 값이라 다중 선택 UI가 저장 시 타입 에러를 냅니다).
 
 ---
 

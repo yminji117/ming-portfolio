@@ -2,7 +2,7 @@ import { Reveal } from "@/components/reveal";
 import { StudyListCard } from "@/components/study-list-card";
 import type { Study } from "@/lib/types";
 
-// Figma '최종' Study 리스트 그리드 — 가로형 카드라 Works와 달리 1열/2열까지만 (Mobile 1 / Tablet+ 2)
+// 가로형 카드 리스트 그리드 — Mobile 1열 / Tablet 이상 2열(요청에 따라 Desktop도 3열 대신 2열 유지)
 export function StudyListGrid({ studies }: { studies: Study[] }) {
   return (
     <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">

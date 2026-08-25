@@ -3,7 +3,7 @@
 import { useMemo, useRef, useState, useTransition, type RefObject } from "react";
 import { loadMoreProjects } from "@/app/works/actions";
 import { WorksListGrid } from "@/components/works-list-grid";
-import { getIndustryLabel, sortIndustries } from "@/lib/format";
+import { getIndustryLabel, normalizeIndustry, sortIndustries } from "@/lib/format";
 import type { Project, ProjectCategory } from "@/lib/types";
 
 const ALL = "all";
@@ -27,7 +27,7 @@ export function WorksListClient({
   const industries = useMemo(() => {
     const unique = new Set<string>();
     items.forEach((project) => {
-      if (project.industry) unique.add(project.industry);
+      normalizeIndustry(project.industry).forEach((industry) => unique.add(industry));
     });
     return sortIndustries(Array.from(unique), category);
   }, [items, category]);
@@ -40,7 +40,8 @@ export function WorksListClient({
     );
   }
 
-  const filtered = active === ALL ? items : items.filter((p) => p.industry === active);
+  const filtered =
+    active === ALL ? items : items.filter((p) => normalizeIndustry(p.industry).includes(active));
   const hasMore = items.length < total;
 
   function handleLoadMore() {

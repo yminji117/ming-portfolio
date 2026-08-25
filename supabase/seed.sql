@@ -62,7 +62,7 @@ insert into projects (slug, category, title, summary, status) values
 -- studies — 4건 노출(Main 노출 정원, Figma '최종' 시안 기준) + 비노출 1건
 -- study-1의 body는 Study 로드맵 카드(단계별 입력) 데모, 나머지는 body 없이 단순 카드(summary만 입력)로 렌더링된다.
 -- tags는 Study 필터 칩(all/AI/Data/Online/Offline) 데모용 자유 텍스트 값 — Figma '최종' 시안 예시 조합
-insert into studies (slug, title, summary, tags, published_at, body, is_featured, featured_order, status) values
+insert into studies (slug, title, summary, tags, start_date, body, is_featured, featured_order, status) values
   ('study-1', 'AI 시대 데이터를 읽는 방법', '한 줄 요약을 입력해주세요', array['AI', 'Online'], '2026-07-01',
     '{"steps": [
       {"label": "1단계", "text": "데이터로 생각하기 시작하기"},

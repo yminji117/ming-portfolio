@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { MediaThumb } from "@/components/media-thumb";
-import { formatCareerRange, getIndustryLabel, getResultPreview } from "@/lib/format";
+import { formatCareerRange, getIndustryLabel, normalizeIndustry, sortIndustries } from "@/lib/format";
 import type { Project } from "@/lib/types";
 
 // Works Professional 카드 — industry 필터에 매칭되면 화이트, 아니면 블랙 상태를 유지한다(숨기지 않음).
@@ -14,17 +14,14 @@ export function ProjectCard({
   active: boolean;
   metaField?: "company" | "period";
 }) {
-  const tags = [
-    project.role[0],
-    project.industry ? getIndustryLabel(project.industry) : null,
-  ].filter(Boolean) as string[];
+  const tags = sortIndustries(normalizeIndustry(project.industry), project.category).map(
+    getIndustryLabel,
+  );
 
   const metaText =
     metaField === "period"
       ? formatCareerRange(project.start_date, project.end_date)
       : project.company;
-
-  const resultPreview = getResultPreview(project.result);
 
   return (
     <Link
@@ -33,7 +30,7 @@ export function ProjectCard({
         active ? "border-black bg-white text-black" : "border-white bg-black text-white"
       }`}
     >
-      <div className="relative aspect-[285/160]">
+      <div className="relative aspect-[285/160] rounded-[var(--radius-inner)] border border-solid border-[#EBEEF5]">
         <MediaThumb
           src={project.thumbnail_url}
           alt={project.title}
@@ -56,32 +53,18 @@ export function ProjectCard({
       </div>
       <div className="flex flex-col gap-3">
         <div className="flex flex-col gap-2">
-          {metaText && (
-            <p className={`text-[14px] ${active ? "text-black" : "text-white"}`}>
-              {metaText}
-            </p>
-          )}
-          <p className="text-[20px] font-bold">{project.title}</p>
-          <p className={`text-[14px] ${active ? "text-[#6b6b6b]" : "text-[#a9a9a9]"}`}>
+          <div className="flex flex-col gap-[2px]">
+            {metaText && (
+              <p className="text-[14px] text-[var(--color-text-muted)]">{metaText}</p>
+            )}
+            <p className="text-[20px] font-bold">{project.title}</p>
+          </div>
+          <p
+            className={`line-clamp-2 min-h-[2.75em] text-[14px] leading-snug ${active ? "text-[#6b6b6b]" : "text-[#a9a9a9]"}`}
+          >
             {project.summary}
           </p>
         </div>
-        {resultPreview && (
-          <div className="flex items-center justify-between gap-2">
-            <p className={`truncate text-[16px] ${active ? "text-black" : "text-white"}`}>
-              {resultPreview.text}
-            </p>
-            {resultPreview.remainingCount > 0 && (
-              <span
-                className={`shrink-0 rounded-[4px] px-[4px] py-[2px] text-[12px] ${
-                  active ? "bg-[#0a0a0a] text-white" : "bg-white text-black"
-                }`}
-              >
-                +{resultPreview.remainingCount}
-              </span>
-            )}
-          </div>
-        )}
       </div>
     </Link>
   );

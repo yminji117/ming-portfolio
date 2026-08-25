@@ -4,6 +4,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowRightIcon, ExpandCircleRightIcon } from "@/components/icons";
 import { ContentBlocks } from "@/components/content-blocks";
+import { ContentProtect } from "@/components/content-protect";
 import { Footer } from "@/components/footer";
 import { Gnb } from "@/components/gnb";
 import { ProjectGallery } from "@/components/project-gallery";
@@ -51,7 +52,7 @@ export default async function ProjectDetailPage(
       <main className="flex-1 pt-16 lg:pt-[60px]">
         {/* Figma '최종' node 229:142(desktop)/246:162(mobile) — 목록 버튼은 GNB 바로 아래
             16px만 띄우고 붙는다(모바일/데스크톱 동일), 하단은 기존 유지. */}
-        <div className="container-app flex flex-col gap-10 pt-4 pb-10 lg:gap-16 lg:pb-16">
+        <ContentProtect className="container-app flex flex-col gap-10 pt-4 pb-10 lg:gap-16 lg:pb-16">
           <div className="flex flex-col gap-4">
             <Link
               href={`/works?tab=${project.category}`}
@@ -94,30 +95,21 @@ export default async function ProjectDetailPage(
               )}
             </div>
 
-            <div className="grid grid-cols-1 gap-10 lg:grid-cols-[260px_1fr] lg:gap-10">
+            <div className="grid grid-cols-1 gap-10 lg:grid-cols-[360px_1fr] lg:gap-10">
               <dl className="flex flex-col gap-5 lg:border-r lg:border-[var(--color-line)] lg:pr-8">
-                {period && (
-                  <MetaRow label="기간">
-                    <span>{period}</span>
-                  </MetaRow>
-                )}
                 {project.company && (
                   <MetaRow label="소속">
                     <span>{project.company}</span>
                   </MetaRow>
                 )}
-                {project.role.length > 0 && (
+                {period && (
+                  <MetaRow label="기간">
+                    <span>{period}</span>
+                  </MetaRow>
+                )}
+                {project.role_note && (
                   <MetaRow label="역할">
-                    <div className="flex flex-col gap-1.5">
-                      <div className="flex flex-wrap gap-1.5">
-                        {project.role.map((role) => (
-                          <Tag key={role}>{role}</Tag>
-                        ))}
-                      </div>
-                      {project.role_note && (
-                        <p className="whitespace-pre-line leading-relaxed">{project.role_note}</p>
-                      )}
-                    </div>
+                    <p className="whitespace-pre-line leading-relaxed">{project.role_note}</p>
                   </MetaRow>
                 )}
                 {project.contribution_percent != null && (
@@ -130,6 +122,11 @@ export default async function ProjectDetailPage(
                     </div>
                   </MetaRow>
                 )}
+                {project.team && (
+                  <MetaRow label="팀 구성">
+                    <span>{project.team}</span>
+                  </MetaRow>
+                )}
                 {project.tools.length > 0 && (
                   <MetaRow label="TOOL">
                     <div className="flex flex-wrap gap-1.5">
@@ -137,23 +134,6 @@ export default async function ProjectDetailPage(
                         <Tag key={tool}>{tool}</Tag>
                       ))}
                     </div>
-                  </MetaRow>
-                )}
-                {project.team && (
-                  <MetaRow label="팀 구성">
-                    <span>{project.team}</span>
-                  </MetaRow>
-                )}
-                {project.external_url && (
-                  <MetaRow label="링크">
-                    <a
-                      href={project.external_url}
-                      target="_blank"
-                      rel="noreferrer noopener"
-                      className="underline decoration-[var(--color-accent)] underline-offset-4 hover:text-[var(--color-accent)]"
-                    >
-                      바로가기 →
-                    </a>
                   </MetaRow>
                 )}
               </dl>
@@ -183,9 +163,15 @@ export default async function ProjectDetailPage(
 
                 {project.result && (
                   <DetailSection heading="성과 및 결과">
-                    <p className="whitespace-pre-line text-[length:var(--fs-body)] leading-relaxed">
-                      {project.result}
-                    </p>
+                    <ul className="flex list-disc flex-col gap-1 pl-6 text-[length:var(--fs-body)] leading-relaxed">
+                      {project.result
+                        .split("\n")
+                        .map((line) => line.trim())
+                        .filter(Boolean)
+                        .map((line, i) => (
+                          <li key={i}>{line}</li>
+                        ))}
+                    </ul>
                   </DetailSection>
                 )}
 
@@ -242,7 +228,7 @@ export default async function ProjectDetailPage(
               <span aria-hidden="true" className="flex-1" />
             )}
           </nav>
-        </div>
+        </ContentProtect>
       </main>
       <Footer email={about?.email ?? null} />
     </>

@@ -7,6 +7,7 @@ import { MediaThumb } from "@/components/media-thumb";
 import { Reveal } from "@/components/reveal";
 import { SectionHeading } from "@/components/section-heading";
 import { Tag } from "@/components/tag";
+import { getStudyCategoryLabel, sortStudyTagsForDisplay } from "@/lib/format";
 import { getStudyHref } from "@/lib/study";
 import type { Study, StudyRoadmapStep } from "@/lib/types";
 
@@ -65,7 +66,8 @@ function StudyItem({
       ? study.body.steps
       : PLACEHOLDER_STEPS;
   const { href, isExternal } = getStudyHref(study);
-  const tag = study.tags[0];
+  const rawTag = sortStudyTagsForDisplay(study.tags)[0];
+  const tag = rawTag ? getStudyCategoryLabel(rawTag) : undefined;
 
   // 모바일(태그+펼치기 버튼 한 줄)과 데스크탑(태그+타이틀 한 줄) 둘 다에서 재사용.
   const tagElement = tag ? (
@@ -135,7 +137,7 @@ function StudyItem({
               <div className="mt-5 lg:hidden">
                 <div className="aspect-[295/162] w-full overflow-hidden rounded-[10px]">
                   <MediaThumb
-                    src={study.thumbnail_url}
+                    src={study.main_thumbnail_url ?? study.thumbnail_url}
                     alt={study.title}
                     bare
                     theme="dark"
@@ -176,7 +178,7 @@ function StudyItem({
         >
           <div className="h-full w-[374px] overflow-hidden">
             <MediaThumb
-              src={study.thumbnail_url}
+              src={study.main_thumbnail_url ?? study.thumbnail_url}
               alt={study.title}
               bare
               theme="dark"
