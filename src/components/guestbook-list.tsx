@@ -402,7 +402,7 @@ function GuestbookRow({
               type="button"
               onClick={handleDelete}
               disabled={isPending}
-              className="flex-1 rounded-[4px] border border-[#013dff] bg-[#0a0a0a] px-7 py-[6px] text-[16px] text-white disabled:opacity-60"
+              className="flex-1 whitespace-nowrap rounded-[4px] border border-[#013dff] bg-[#0a0a0a] px-7 py-[6px] text-[16px] text-white disabled:opacity-60"
             >
               {isPending ? "삭제 중..." : "삭제"}
             </button>
