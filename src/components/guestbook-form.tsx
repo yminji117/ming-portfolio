@@ -2,6 +2,7 @@
 
 import { useState, useTransition, type FormEvent } from "react";
 import { createGuestbookEntry } from "@/app/here/actions";
+import { CheckboxCheckedIcon, CheckboxUncheckedIcon } from "@/components/icons";
 import type { GuestbookEntry } from "@/lib/types";
 
 const CONTENT_MAX = 500;
@@ -15,6 +16,7 @@ export function GuestbookForm({ onCreated }: { onCreated: (entry: GuestbookEntry
   const [password, setPassword] = useState("");
   const [honeypot, setHoneypot] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [isPrivate, setIsPrivate] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
 
@@ -30,7 +32,7 @@ export function GuestbookForm({ onCreated }: { onCreated: (entry: GuestbookEntry
     setError(null);
 
     startTransition(async () => {
-      const result = await createGuestbookEntry({ nickname, content, password, honeypot });
+      const result = await createGuestbookEntry({ nickname, content, password, honeypot, isPrivate });
       if (!result.ok) {
         setError(result.message);
         return;
@@ -39,6 +41,7 @@ export function GuestbookForm({ onCreated }: { onCreated: (entry: GuestbookEntry
       setContent("");
       setNickname("");
       setPassword("");
+      setIsPrivate(true);
     });
   }
 
@@ -48,7 +51,7 @@ export function GuestbookForm({ onCreated }: { onCreated: (entry: GuestbookEntry
   return (
     <form
       onSubmit={handleSubmit}
-      className="flex flex-col gap-4 rounded-[8px] border border-[#cecece] bg-[#fafbfd] px-[25px] py-[37px]"
+      className="flex flex-col gap-4 rounded-[8px] border border-[#cecece] bg-[#fafbfd] p-[25px]"
     >
       {/* 허니팟 — 실제 방문자에게는 보이지 않는 필드. 봇이 채우면 서버에서 조용히 거부한다. */}
       <input
@@ -88,7 +91,7 @@ export function GuestbookForm({ onCreated }: { onCreated: (entry: GuestbookEntry
         </div>
       </div>
 
-      <div className="flex flex-col gap-1">
+      <div className="flex flex-col gap-2">
         <textarea
           value={content}
           onChange={(event) => setContent(event.target.value.slice(0, CONTENT_MAX))}
@@ -97,13 +100,29 @@ export function GuestbookForm({ onCreated }: { onCreated: (entry: GuestbookEntry
           placeholder="피드백을 남겨주세요 :-)"
           className="h-[129px] w-full resize-none rounded-[10px] border border-[var(--color-line)] bg-white p-4 text-[length:var(--fs-body)] outline-none placeholder:text-[rgba(19,20,23,0.5)] focus:border-[var(--color-accent)]"
         />
-        <span
-          className={`self-end text-[length:var(--fs-caption)] ${
-            nearLimit ? "text-red-500" : "text-[#d5d5d5]"
-          }`}
-        >
-          {content.length} / {CONTENT_MAX}
-        </span>
+        <div className="flex items-center justify-between">
+          <label className="flex items-center gap-1 text-[13px] text-black">
+            <input
+              type="checkbox"
+              checked={isPrivate}
+              onChange={(event) => setIsPrivate(event.target.checked)}
+              className="sr-only"
+            />
+            {isPrivate ? (
+              <CheckboxCheckedIcon className="size-6" />
+            ) : (
+              <CheckboxUncheckedIcon className="size-6" />
+            )}
+            비공개로 작성
+          </label>
+          <span
+            className={`text-[length:var(--fs-caption)] ${
+              nearLimit ? "text-red-500" : "text-[#d5d5d5]"
+            }`}
+          >
+            {content.length} / {CONTENT_MAX}
+          </span>
+        </div>
       </div>
 
       {error && (
@@ -115,12 +134,11 @@ export function GuestbookForm({ onCreated }: { onCreated: (entry: GuestbookEntry
       <div className="flex items-start justify-between gap-4">
         <ul className="min-w-0 flex-1 list-disc space-y-0.5 pl-5 text-[length:var(--fs-caption)] text-[var(--color-text-muted)]">
           <li>비밀번호를 잊으면 수정/삭제할 수 없어요.</li>
-          <li>모든 게시글은 주인장만 확인할 수 있도록 비밀글로 작성돼요.</li>
         </ul>
         <button
           type="submit"
           disabled={!isValid || isPending}
-          className="inline-flex h-11 shrink-0 items-center justify-center rounded-full bg-[var(--color-accent)] px-8 text-[length:var(--fs-body)] font-medium text-[var(--color-accent-ink)] transition-transform duration-[var(--dur-fast)] hover:scale-[1.02] disabled:opacity-40 disabled:hover:scale-100"
+          className="inline-flex h-[40px] shrink-0 items-center justify-center rounded-full bg-[var(--color-accent)] px-8 text-[length:var(--fs-body)] font-medium text-[var(--color-accent-ink)] transition-transform duration-[var(--dur-fast)] hover:scale-[1.02] disabled:opacity-40 disabled:hover:scale-100"
         >
           {isPending ? "등록 중..." : "등록"}
         </button>

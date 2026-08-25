@@ -25,10 +25,10 @@ const PASSWORD_PATTERN = /^(\d{4}|[a-zA-Z0-9_]{4,16})$/;
 
 const GENERIC_ERROR = "등록에 실패했어요. 다시 시도해 주세요.";
 
-type NewEntry = { id: string; nickname: string; created_at: string };
+type NewEntry = { id: string; nickname: string; created_at: string; is_private: boolean };
 
 export type CreateGuestbookResult =
-  | { ok: true; entry: NewEntry }
+  | { ok: true; entry: NewEntry & { content: string | null } }
   | { ok: false; message: string };
 
 // 도배 방지(IP 기준 rate limit)와 비밀번호 재검증은 전부 DB 함수(0009_guestbook_functions.sql)
@@ -39,6 +39,7 @@ export async function createGuestbookEntry(input: {
   content: string;
   password: string;
   honeypot: string;
+  isPrivate: boolean;
 }): Promise<CreateGuestbookResult> {
   // 허니팟 — 봇이 채웠다면 조용히 실패 처리(등록되지 않음을 사용자에게 굳이 구분해 알리지 않는다)
   if (input.honeypot) {
@@ -68,6 +69,7 @@ export async function createGuestbookEntry(input: {
     p_content: content,
     p_password_hash: passwordHash,
     p_user_agent: userAgent,
+    p_is_private: input.isPrivate,
   });
 
   if (error) {
@@ -81,7 +83,7 @@ export async function createGuestbookEntry(input: {
   const entry = (data as NewEntry[] | null)?.[0];
   if (!entry) return { ok: false, message: GENERIC_ERROR };
 
-  return { ok: true, entry };
+  return { ok: true, entry: { ...entry, content: entry.is_private ? null : content } };
 }
 
 export type VerifyGuestbookResult =

@@ -30,7 +30,7 @@ export function GuestbookBoard({
         onCreated={(entry) => {
           setItems((prev) => [entry, ...prev]);
           setTotal((prev) => prev + 1);
-          setToast("남겨주셔서 고마워요 :)");
+          setToast("등록 완료되었어요! 정말 감사합니다 :)💙");
         }}
       />
 
@@ -38,9 +38,13 @@ export function GuestbookBoard({
         items={items}
         total={total}
         onItemsChange={setItems}
-        onEntryUpdated={(id, updatedAt) => {
+        onEntryUpdated={(id, updatedAt, content) => {
           setItems((prev) =>
-            prev.map((item) => (item.id === id ? { ...item, updated_at: updatedAt } : item)),
+            prev.map((item) =>
+              item.id === id
+                ? { ...item, updated_at: updatedAt, content: item.is_private ? null : content }
+                : item,
+            ),
           );
           setToast("수정 되었어요!");
         }}

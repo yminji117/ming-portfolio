@@ -10,6 +10,7 @@ import {
   verifyGuestbookPassword,
 } from "@/app/here/actions";
 import { formatDateTime } from "@/lib/format";
+import { LockIcon } from "@/components/icons";
 import type { GuestbookEntry } from "@/lib/types";
 
 export function GuestbookList({
@@ -22,7 +23,7 @@ export function GuestbookList({
   items: GuestbookEntry[];
   total: number;
   onItemsChange: (items: GuestbookEntry[]) => void;
-  onEntryUpdated: (id: string, updatedAt: string) => void;
+  onEntryUpdated: (id: string, updatedAt: string, content: string) => void;
   onEntryDeleted: (id: string) => void;
 }) {
   const [isPending, startTransition] = useTransition();
@@ -51,7 +52,7 @@ export function GuestbookList({
           <GuestbookRow
             key={item.id}
             item={item}
-            onUpdated={(updatedAt) => onEntryUpdated(item.id, updatedAt)}
+            onUpdated={(updatedAt, content) => onEntryUpdated(item.id, updatedAt, content)}
             onDeleted={() => onEntryDeleted(item.id)}
           />
         ))}
@@ -122,12 +123,15 @@ function GuestbookRow({
   onDeleted,
 }: {
   item: GuestbookEntry;
-  onUpdated: (updatedAt: string) => void;
+  onUpdated: (updatedAt: string, content: string) => void;
   onDeleted: () => void;
 }) {
   const [action, setAction] = useState<"edit" | "delete">("edit");
   const [stage, setStage] = useState<Stage>("closed");
   const [password, setPassword] = useState("");
+  // 수정 화면 진입 시 검증됐던 비밀번호 — 그 상태에서 삭제를 시도하다 취소했을 때
+  // 수정 화면(content 포함)으로 되돌아가기 위해 별도로 보관해둔다.
+  const [verifiedPassword, setVerifiedPassword] = useState("");
   const [content, setContent] = useState("");
   const [passwordEmpty, setPasswordEmpty] = useState(false);
   const [shakeCount, setShakeCount] = useState(0);
@@ -135,19 +139,33 @@ function GuestbookRow({
   const [isPending, startTransition] = useTransition();
 
   function openAction(next: "edit" | "delete") {
-    if (stage === "edit" && action === "edit" && next === "edit") {
-      setStage("closed");
+    if (stage === "edit") {
+      // 수정 화면에서는 상단에 삭제 버튼만 남아있으므로 next는 항상 "delete"다.
+      // 편집 중인 content/verifiedPassword는 그대로 두고 삭제 비밀번호만 새로 받는다.
+      setAction("delete");
+      setStage("password");
+      setPassword("");
+      setPasswordEmpty(false);
+      setActionError(null);
       return;
     }
     setAction(next);
     setStage("password");
     setPassword("");
     setContent("");
+    setVerifiedPassword("");
     setPasswordEmpty(false);
     setActionError(null);
   }
 
   function closeModal() {
+    if (verifiedPassword) {
+      // 수정 화면에서 삭제를 시도하다 취소한 경우 — 수정 중이던 내용을 그대로 유지한다.
+      setStage("edit");
+      setPassword(verifiedPassword);
+      setActionError(null);
+      return;
+    }
     setStage("closed");
   }
 
@@ -167,6 +185,7 @@ function GuestbookRow({
       }
       if (action === "edit") {
         setContent(result.content);
+        setVerifiedPassword(password);
         setStage("edit");
       } else {
         setStage("delete-confirm");
@@ -185,7 +204,8 @@ function GuestbookRow({
         setActionError(result.message);
         return;
       }
-      onUpdated(result.entry.updated_at);
+      onUpdated(result.entry.updated_at, content.trim());
+      setVerifiedPassword("");
       setStage("closed");
     });
   }
@@ -210,22 +230,37 @@ function GuestbookRow({
     <div className="py-4">
       <div className="flex items-center justify-between gap-4">
         <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
-          <span className="text-[length:var(--fs-body)] font-medium">{item.nickname}</span>
+          <span className="inline-flex items-center gap-1 text-[length:var(--fs-body)] font-medium">
+            {item.nickname}
+            {item.is_private && <LockIcon className="size-5" />}
+          </span>
           <span className="text-[length:var(--fs-caption)] text-[var(--color-text-muted)]">
             {formatDateTime(item.created_at)}
             {item.updated_at && ` (수정됨 ${formatDateTime(item.updated_at)})`}
           </span>
         </div>
         <div className="flex shrink-0 items-center gap-3 text-[length:var(--fs-caption)] text-[var(--color-text-muted)]">
-          <button type="button" onClick={() => openAction("edit")} className="hover:text-[var(--color-accent)]">
-            수정
-          </button>
-          <span aria-hidden="true">|</span>
+          {stage !== "edit" && (
+            <>
+              <button type="button" onClick={() => openAction("edit")} className="hover:text-[var(--color-accent)]">
+                수정
+              </button>
+              <span aria-hidden="true">|</span>
+            </>
+          )}
           <button type="button" onClick={() => openAction("delete")} className="hover:text-red-500">
             삭제
           </button>
         </div>
       </div>
+
+      {stage !== "edit" && !item.is_private && item.content && (
+        <div className="mt-2 w-full rounded-[10px] bg-white p-4">
+          <p className="whitespace-pre-wrap text-[16px] font-medium leading-[24px] text-[#131417]">
+            {item.content}
+          </p>
+        </div>
+      )}
 
       {stage === "edit" && (
         <div className="mt-2 flex flex-col items-end gap-2">
@@ -251,7 +286,10 @@ function GuestbookRow({
           <div className="flex gap-2">
             <button
               type="button"
-              onClick={() => setStage("closed")}
+              onClick={() => {
+                setStage("closed");
+                setVerifiedPassword("");
+              }}
               className="inline-flex h-10 items-center justify-center rounded-full border border-[var(--color-line)] px-6 text-[length:var(--fs-body)]"
             >
               취소
@@ -262,7 +300,7 @@ function GuestbookRow({
               disabled={isPending || content.trim().length === 0}
               className="inline-flex h-10 items-center justify-center rounded-full bg-[var(--color-accent)] px-6 text-[length:var(--fs-body)] font-medium text-[var(--color-accent-ink)] disabled:opacity-40"
             >
-              {isPending ? "저장 중..." : "등록"}
+              {isPending ? "저장 중..." : "수정"}
             </button>
           </div>
           <span className="sr-only" aria-live="polite">

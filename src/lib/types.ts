@@ -107,12 +107,15 @@ export interface CurrentlyDoing {
   order: number | null;
 }
 
-// guestbook_public 뷰 — content/password_hash는 절대 포함하지 않는다 (PRD 7.3 필수 검증 항목)
+// guestbook_public 뷰 — password_hash는 절대 포함하지 않는다 (PRD 7.3 필수 검증 항목).
+// content는 is_private=false(공개로 작성)인 글만 값이 채워지고, 그 외엔 항상 null이다.
 export interface GuestbookEntry {
   id: string;
   nickname: string;
   created_at: string;
   updated_at: string | null;
+  is_private: boolean;
+  content: string | null;
 }
 
 export interface Skill {

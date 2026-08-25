@@ -1,6 +1,8 @@
 - [Phase 0 Supabase review — status](project_phase0_supabase_review.md) — Critical/Medium items all verified fixed as of Phase 1 recheck; 2 low-priority items still open
 - [Phase 1 Main page review](project_phase1_main_page_review.md) — both prior findings (currently_limit, swallowed errors) now FIXED; gnb focus trap still Medium/open
 - [Phase 2 readiness review](project_phase2_readiness_review.md) — data.ts gaps now filled (2026-08-21); Currently Doing→Works/Study slug link STILL not wired, 2 cycles running
-- [Phase 2 guestbook security review](project_phase2_guestbook_security_review.md) — 3 Critical bugs CONFIRMED FIXED (2026-08-21); new open question: XFF split_part(,1) may still be spoofable
+- [Phase 2 guestbook security review](project_phase2_guestbook_security_review.md) — original 3 Criticals fixed at 0a68375; NEW Critical reopened at 5ce49c7 (2026-08-25): guestbook_verify lockout fully removed, unlimited brute force — user accepted risk, see below
 - [Phase 2 code review](project_phase2_code_review.md) — consolidated summary of the two rows above, plus content-blocks.tsx XSS-clean confirmation and minor defense-in-depth notes
+- [Commit 5ce49c7 review](project_commit_5ce49c7_review.md) — 2026-08-25 short pointer summary: 1 new Critical (brute force), rest of guestbook fixes verified correct, Currently Doing slug-link gap still open (3rd cycle)
+- [Guestbook lockout removed — accepted risk](project_guestbook_lockout_accepted_risk.md) — user explicitly declined restoring brute-force lockout (2026-08-25); do NOT re-flag as blocking Critical
 - [PRD.md schema/security reference](reference_prd_schema_sections.md) — where to find DB/RLS/admin-auth requirements to cross-check migrations against
