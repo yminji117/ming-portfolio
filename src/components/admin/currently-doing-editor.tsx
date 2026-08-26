@@ -133,7 +133,10 @@ export function CurrentlyDoingEditor({
     [next[index], next[target]] = [next[target], next[index]];
     setRows(next);
     startTransition(async () => {
-      const result = await reorderCurrentlyDoing(next.map((r) => r.id));
+      // 아직 등록 안 된(new-<uuid>) 행은 DB에 없는 id라 reorder 대상에서 제외한다 —
+      // 안 그러면 그 항목만 update가 실패하면서 나머지는 이미 반영돼 부분 반영 상태가 된다.
+      const persistedIds = next.filter((r) => !r.isNew).map((r) => r.id);
+      const result = await reorderCurrentlyDoing(persistedIds);
       if (!result.ok) setErrors((prev) => ({ ...prev, _reorder: result.message }));
     });
   }
@@ -306,7 +309,7 @@ export function CurrentlyDoingEditor({
                       <div className="flex items-center gap-0.5">
                         <button
                           type="button"
-                          disabled={isPending || index === 0}
+                          disabled={isPending || index === 0 || row.isNew}
                           onClick={() => move(index, -1)}
                           className="h-7 w-7 rounded-full text-[13px] text-[var(--color-text-muted)] hover:bg-[#f3f4f7] disabled:opacity-30"
                         >
@@ -314,7 +317,7 @@ export function CurrentlyDoingEditor({
                         </button>
                         <button
                           type="button"
-                          disabled={isPending || index === rows.length - 1}
+                          disabled={isPending || index === rows.length - 1 || row.isNew}
                           onClick={() => move(index, 1)}
                           className="h-7 w-7 rounded-full text-[13px] text-[var(--color-text-muted)] hover:bg-[#f3f4f7] disabled:opacity-30"
                         >
