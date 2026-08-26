@@ -111,7 +111,7 @@ PRD 2.2의 다크 토큰을 라이트로 교체. `app/globals.css`에 CSS 변수
 
 ---
 
-## Phase 3 — 어드민 (PRD 9장) 🔄 진행 중 — 3a 완료, 3b 진행 중
+## Phase 3 — 어드민 (PRD 9장) ✅ 구현 완료 (실사용 브라우저 검증 일부 대기)
 
 **설계 확정(2026.08.25)**: DB `0002_rls.sql`이 이미 `authenticated` 롤에 전 테이블 `for all` 권한을 부여해 "단일 관리자 계정" 전제로 설계돼 있었음(지금까지는 로그인 로직이 없어 도달 불가능했던 정책) — 이걸 그대로 살려 Supabase Auth(email/password, 계정 1개, Supabase 대시보드에서 직접 생성, 회원가입 플로우 없음)로 로그인만 새로 구현. Works/Study/About/Careers/Skills/Currently&nbsp;Doing/Site&nbsp;Settings/방명록 CRUD는 **새 RPC나 마이그레이션 없이** `supabase.from(table).update(...)` 로 authenticated 세션에서 직접 처리(RLS가 이미 커버). 유일하게 새 마이그레이션이 필요한 곳은 ① 어드민 로그인 브루트포스 잠금(3-1, `guestbook_client_ip_hash()` 재사용)과 ② 3-8 미디어 업로드용 Storage 버킷(아직 없음, 3d에서 처리). Next.js 16에서 `middleware.ts`가 `proxy.ts`로 개명됐고 이 저장소엔 미들웨어가 전혀 없었어서 `src/proxy.ts`가 이 프로젝트 최초의 proxy 파일 — 세션 쿠키 갱신만 담당하고, 실제 인증 재검증은 Server Action이 proxy matcher를 우회할 수 있다는 Next.js 공식 권고에 따라 `/admin/(protected)/layout.tsx` + 각 서버 액션 내부에서 이중으로 수행.
 
@@ -121,13 +121,13 @@ PRD 2.2의 다크 토큰을 라이트로 교체. `app/globals.css`에 CSS 변수
 | --- | --- | --- | --- | --- |
 | 3-1 | ✅ | **[3a]** Supabase Auth 단일 계정 로그인(`/admin/(auth)/login`) + `src/proxy.ts`(세션 갱신) + `/admin/(protected)/layout.tsx`(서버 재검증) + 5회 실패 15분 잠금(`0030_admin_login_lockout.sql`, IP 기준) | PRD 9.1 | 미인증 리다이렉트 확인 완료(빌드+실제 요청 검증). **마이그레이션 적용 + 관리자 계정 생성 + 실로그인 완료(2026.08.25)** |
 | 3-2 | 🔄 | **[3a/3b]** `/admin`(대시보드): 미확인 방명록 수·보류 수·전체 게시글 수 + Draft 프로젝트/스터디 수 + 노출 정원(N/5, N/2, N/4) 위젯 | PRD 9.3 | 위젯 데이터 정확성 |
-| 3-3 | 🔄 | **[3b]** `/admin/works`, `/admin/studies`: 목록(카테고리/상태 탭) + 등록·수정(블록 에디터로 `body` 편집, `role`/`tools`/`tags`/`gallery_urls` 배열 필드 편집, slug 자동 제안) — 공용 `admin-form-field`/`content-block-editor`/`study-steps-editor` 컴포넌트 구축. **검색·일괄작업·30초 자동 임시저장은 다음 이터레이션으로 이연**(수동 저장 버튼은 있음), 이미지는 3d 전까지 URL 직접 입력 | PRD 9.5 | 등록→Main 반영 E2E — 코드/빌드 검증 완료, 실사용 CRUD 확인 필요 |
-| 3-4 | ⬜ | **[3c]** `/admin/currently-doing`: 인라인 테이블 편집, 라벨 드롭다운 즉시저장, 종료 리마인드 배너 | PRD 9.6 | 즉시 저장 확인 |
-| 3-5 | 🔄 | **[3b]** `/admin/main` ⭐: Professional 5/Study 4/Side 2 정원 관리, 화살표 순서변경(드래그는 dnd 라이브러리 미도입으로 이연), draft는 DB 트리거(`enforce_featured_cap`)가 노출 자체를 차단, `revalidatePath('/')` | PRD 9.4, Figma '최종' 반영 | 정원 초과 차단(트리거가 최종 방어선, UI는 cap 도달 시 버튼 비활성화로 선제 차단) — 코드/빌드 검증 완료, 실사용 확인 필요 |
+| 3-3 | ✅ | **[3b]** `/admin/works`, `/admin/studies`: 목록(카테고리/상태 탭) + 등록·수정(블록 에디터로 `body` 편집, `role`/`tools`/`tags`/`gallery_urls` 배열 필드 편집, slug 자동 제안) — 공용 `admin-form-field`/`content-block-editor`/`study-steps-editor` 컴포넌트 구축. **검색·일괄작업·30초 자동 임시저장은 다음 이터레이션으로 이연**(수동 저장 버튼은 있음), 이미지는 Works는 실제 업로드로 전환 완료(Study는 아직 URL 입력) | PRD 9.5 | 등록→Main 반영 E2E **실사용 검증 완료(2026.08.26)** |
+| 3-4 | ✅ | **[3c]** `/admin/currently-doing`: 인라인 테이블(카테고리/리스트명/라벨/시작일/종료일/노출/연결/순서), 라벨·노출·연결은 즉시저장, 텍스트·날짜는 blur 시 저장, 종료일 지났는데 진행중이면 노란 배경+"완료로 변경할까요?" 버튼, 화살표 순서변경 | PRD 9.6 | 코드/빌드 검증 완료, 실사용 확인 필요 |
+| 3-5 | ✅ | **[3b]** `/admin/main` ⭐: Professional 5/Study 4/Side 2 정원 관리, 화살표 순서변경(드래그는 dnd 라이브러리 미도입으로 이연), draft는 DB 트리거(`enforce_featured_cap`)가 노출 자체를 차단, `revalidatePath('/')` | PRD 9.4, Figma '최종' 반영 | 정원 초과 차단(트리거가 최종 방어선, UI는 cap 도달 시 버튼 비활성화로 선제 차단) **실사용 검증 완료(2026.08.26)** |
 | 3-6 | ✅ | **[3a]** `/admin/guestbook`: 본문 전문 열람, 필터(전체/미확인/보류/스팸/숨김), 읽음 처리·flag·운영 메모·숨김·삭제(soft delete). **수정 이력(`guestbook_revisions`) 비교 UI는 다음 이터레이션으로 이연** | PRD 9.7 | 변경 전후 비교 노출 — 리다이렉트/RLS 이중 방어까지 실측 확인 완료(2026.08.25) |
-| 3-7 | ⬜ | **[3c]** `/admin/about`, `/admin/site-settings`: About/연혁/스킬 CRUD, 히어로 미디어 교체, SEO 설정, 점검모드 | PRD 9.8 | 히어로 영상 교체 반영 확인 |
-| 3-8 | ⬜ | **[3d]** `/admin/media`, `/admin/trash`: `0030_admin_storage.sql`(Storage 버킷 신설, 유일하게 신규 마이그레이션 필요한 항목) + 업로드 자산 관리, soft delete 복구 | PRD 9.2 | 복구 동작 확인 |
-| 3-9 | ⬜ | 1024px 미만 접속 시 안내 화면(방명록 열람만 예외) | PRD 9.9 | 모바일 접속 시 안내 노출 |
+| 3-7 | ✅ | **[3c]** `/admin/about`: About 자기소개·연혁·Skills CRUD. `/admin/site-settings`: 히어로 미디어(이미지/영상 토글)·Currently Doing 노출 개수·푸터 문구·SEO 대표 이미지(OG)·점검모드 — 전부 Front까지 실제로 연결 완료(아래 참고) | PRD 9.8 | 코드/빌드 검증 완료, 실사용 확인 필요 |
+| 3-8 | ✅ | **[3d]** `/admin/media`: 업로드 자산(폴더별 그룹, 썸네일·용량·URL 복사·삭제). `/admin/trash`: Works/Study/방명록 soft delete 복구·완전 삭제 — 아래 참고 | PRD 9.2 | 코드/빌드 통과, 미디어는 Storage API로 직접 검증(2026.08.27). 둘 다 브라우저 실사용 확인 필요 |
+| 3-9 | ✅ | 1024px 미만 접속 시 안내 화면(방명록만 예외) — `admin-shell.tsx` CSS 분기(`lg:hidden`/`hidden lg:flex`), 방명록은 사이드바+콘텐츠를 세로 스택으로 반응형 전환 | PRD 9.9 | 코드/빌드 통과, 로그인 세션 없이는 실화면 확인 불가해 브라우저 실사용 확인 필요 |
 
 **Phase 3 완료 기준**: 개발자 개입 없이 신규 프로젝트 1건 등록 → Main 노출까지 10분 이내(PRD 1.2 성공지표).
 
@@ -146,6 +146,22 @@ PRD 2.2의 다크 토큰을 라이트로 교체. `app/globals.css`에 CSS 변수
 **업종 다중 선택 + Front 라벨 정리, 본문 빈 블록 정리(2026.08.25)**: `projects.industry`를 `text` → `text[]`로 변경(`0032_project_industry_array.sql`, 기존 값은 1개짜리 배열로 자동 이관). 어드민 `IndustriesField`(`industry-field.tsx`)가 pill 토글 다중 선택 + 직접 입력으로 바뀌었고, `/works` 카드·필터 칩도 배열 기준으로 갱신(`project-card.tsx`/`works-list-card.tsx`/`works-list-client.tsx`/`works-professional-grid.tsx`). 카드에 노출되는 라벨은 이제 role 없이 **업종만**으로 구성(요청 반영). 본문 블록(Works `body`, Study `body.blocks`)과 로드맵 단계(Study `body.steps`)는 텍스트/URL을 하나도 안 채운 빈 항목을 저장 시 걸러내도록 `src/lib/clean-content-blocks.ts`를 만들어 양쪽 폼에 적용 — 작성한 게 없으면 Front(`ContentBlocks`)에 해당 섹션 자체가 노출되지 않는다(원래도 배열이 완전히 비어 있으면 노출 안 됐지만, "빈 블록 하나만 추가"한 경우까지 걸러내도록 보강).
 
 **⚠️ 적용 필요**: `supabase/migrations/0032_project_industry_array.sql`을 Supabase SQL Editor에서 실행해야 합니다(실행 전엔 `industry` 컬럼이 여전히 단일 값이라 다중 선택 UI가 저장 시 타입 에러를 냅니다).
+
+**업종/카테고리 재사용 선택지 + 3c 착수: `/admin/about`(2026.08.27)**: Works 업종·Study 카테고리 필드에 "+ 직접 입력"으로 한 번 추가한 값이 다른 프로젝트/스터디에서도 pill로 재사용되도록 개선(`getKnownIndustries`/`getKnownStudyCategories` — `src/lib/data.ts`, `IndustriesField`/`StudyCategoryField`의 `extraOptions` prop). Study 필터 칩도 Works처럼 고정 목록이 아니라 실제 데이터 기반으로 동적 계산하도록 변경(`sortStudyCategories` 추가), 라벨 정렬(`sortStudyTagsForDisplay`)에서 커스텀 카테고리가 형태(Online/Offline)보다 뒤로 밀리던 버그도 수정. `/works` Side 탭 필터 칩에서만 Online/Offline 제외(`getFilterableIndustries`, 카드 라벨·데이터는 그대로 유지).
+
+이어서 **3c 첫 항목 `/admin/about` 구현**(새 마이그레이션 없이 기존 RLS로 처리): About 자기소개(사진 업로드·이름·태그라인·이메일·인스타그램·이력서 URL·cover letter 요약/전문), 연혁(회사/학원/어학연수/학교 — 추가·수정·삭제, Front가 `start_date` 기준 정렬이라 순서변경 UI는 없음), Skills(주 사용/사용 가능 그룹별 추가·수정(이름 인라인 수정)·삭제·화살표 순서변경). 새 파일: `src/app/admin/(protected)/about/{page,actions}.tsx`, `src/components/admin/{about-info-form,career-list-editor,skill-list-editor}.tsx`. 저장은 섹션별로 독립적(About 정보는 저장 버튼, 연혁/Skills는 행 단위 즉시 처리). `tsc`/`eslint`/`next build` 통과 + 미인증 리다이렉트 확인했으나, 실사용 CRUD(사진 업로드 포함)는 아직 브라우저로 직접 확인 전.
+
+**3c 마무리: `/admin/site-settings`(2026.08.27)**: 폼만 만들지 않고 Front까지 실제로 연결했다 — 그동안 `site_settings.hero_image_url`/`hero_video_url`/`hero_media_type`/`footer_text`가 DB엔 있었지만 Hero/MobileHero는 `/hero/hi.mp4`를 하드코딩해서 쓰고 Footer도 카피라이트 문구를 하드코딩하고 있어(둘 다 실제로는 어디서도 안 읽힘), 어드민에서 값을 바꿔도 Front에 반영 안 되는 상태였다. 공용 `src/components/hero-media.tsx`(이미지/영상 분기, 값 없으면 기존 기본 영상 fallback)를 만들어 `hero.tsx`/`mobile-hero.tsx`/`src/app/page.tsx`에 연결했고, `footer.tsx`는 각 호출부(10곳) 대신 컴포넌트 자체를 async로 바꿔 내부에서 `getSiteSettings()`를 직접 조회하도록 했다(`footer_text` 없으면 기존 문구 fallback). `og_image_url`은 `src/app/layout.tsx`를 `generateMetadata`로 바꿔 OG 대표 이미지로 연결. `is_maintenance`는 `src/proxy.ts`를 확장해 실제로 동작하게 만들었다 — matcher를 `/admin` 외 전 경로로 넓히고, `/admin`은 기존 세션 갱신 로직 그대로, 그 외 경로는 익명 키로 `site_settings.is_maintenance`만 가볍게 조회해 켜져 있으면 `/maintenance`(새 페이지)로 rewrite한다(URL은 안 바뀜). `SiteSettings` 타입에 `og_image_url`/`is_maintenance` 필드 추가(DB엔 이미 있었는데 TS 타입에서 빠져 있었음). `hero_subtitle`은 Front 어디에도 노출 자리가 없어서 — 안 쓰이는 설정을 보여주는 게 오히려 혼란스러워서 — 이번 폼에는 넣지 않았다(필요하면 알려주세요). 히어로 영상은 업로드가 아니라 URL 직접 입력(Storage 용량 제한상 영상 업로드는 범위 밖). `tsc`/`eslint`/`next build` 통과, `is_maintenance=false`인 현재 상태에서 REST로 직접 값도 확인했으나 점검모드를 실제로 켜서 `/maintenance` rewrite가 동작하는지는 아직 브라우저로 확인 전.
+
+**3d 착수: `/admin/media`(2026.08.27)**: `media` 테이블(PRD 8.2 스펙, `alt`/`width`/`height` 등)이 애초에 코드 어디서도 안 쓰이고 있었다는 걸 발견했다 — 업로드가 서버 액션이 아니라 브라우저에서 Storage로 직접 올라가서(`upload-image.ts`) DB에 기록하는 곳 자체가 없다. 이제 와서 그 테이블에 맞춰 새로 짓기보다, **Storage 버킷 자체를 진실 공급원으로 삼는** 쪽을 택했다 — 새 업로드 코드 변경 없이 기존에 이미 올라간 파일까지 전부 보여줄 수 있고(테이블 기반이었으면 지금까지 업로드분은 안 보이는 반쪽짜리가 됨), 리스크·범위 모두 더 작다. `src/lib/list-media.ts`(`listAllMediaFiles`)가 `media` 버킷을 폴더 깊이 상관없이 재귀 순회(Storage `list()`는 폴더를 `id: null`로 반환하는 걸로 파일과 구분)해서 실제 파일 전체를 모은다 — 이 판별 로직은 실제 Storage REST API로 직접 호출해 폴더(`id:null`)/파일(`id`+`metadata.size`/`mimetype`) 응답 형태를 확인했다. `/admin/media`는 폴더별로 묶어 썸네일 그리드로 보여주고, 파일당 URL 복사·삭제를 제공한다. **주의**: 사용처 추적이 없어서(테이블이 없으니) 여기서 삭제하면 다른 콘텐츠에서 그 URL을 쓰고 있어도 그대로 깨진다 — 화면에 경고 문구를 넣어뒀다. 새 파일: `src/lib/list-media.ts`, `src/app/admin/(protected)/media/{page,actions}.tsx`, `src/components/admin/media-library.tsx`.
+
+**3d 마무리: `/admin/trash`(2026.08.27)**: soft delete 대상은 `projects`/`studies`/`guestbook` 3개 테이블뿐이라(`deleted_at` 컬럼 보유), 각 테이블별로 복구(`deleted_at = null`)·완전 삭제(실제 row delete) 액션을 기존 `works/studies/guestbook`의 `actions.ts`에 추가하고 `/admin/trash`에서 세 섹션(Works/Study/방명록)으로 묶어 보여준다. **30일 후 자동 영구삭제는 구현 안 함** — cron 같은 스케줄 인프라가 새로 필요한 별개 작업이라 범위 밖으로 두고, 화면에 "자동 삭제 기능은 아직 없다"고 명시했다. 경과일만 표시하고 완전 삭제는 수동 버튼으로.
+
+작업 중 실제 버그를 하나 발견해서 같이 고쳤다: `getFeaturedProjects`/`getFeaturedStudies`(Main 페이지가 쓰는 함수)가 `deleted_at` 필터가 없어서, **is_featured 상태로 소프트 삭제된(휴지통에 있는) 프로젝트/스터디가 Main에 계속 노출될 수 있는 상태**였다(지금까지 아무도 featured 상태인 걸 삭제해본 적이 없어서 안 드러났을 뿐). `deleteProject`/`deleteStudy`가 삭제 시점에 `is_featured`/`featured_order`도 같이 끄도록 고치고, `getFeaturedProjects`/`getFeaturedStudies`에도 방어적으로 `deleted_at is null` 필터를 추가했다. 이 김에 `Project`/`Study`/`GuestbookEntryAdmin` TS 타입에도 빠져있던 `deleted_at` 필드를 추가했다(DB엔 있었는데 타입엔 없던 이번 세션 반복 패턴). 새 파일: `src/app/admin/(protected)/trash/page.tsx`, `src/components/admin/trash-section.tsx`.
+
+**3-9 완료, Phase 3 구현 전 항목 완료(2026.08.27)**: `admin-shell.tsx`를 client component로 바꿔 `usePathname()`으로 현재 경로가 `/admin/guestbook`인지 확인한다. 아닌 경로는 1024px 미만에서 안내 화면만 보이고(`lg:hidden`) 실제 admin shell은 `hidden lg:flex`로 완전히 안 그려진다. 방명록만 예외로 shell을 그대로 그리되, 좁은 화면에서도 안 깨지도록 shell 레이아웃 자체를 반응형으로 바꿨다(사이드바+콘텐츠가 `flex-col`→`lg:flex-row`로, nav는 모바일에서 가로 스크롤). 방명록 관리 UI 자체가 이미 카드 리스트(`flex flex-col`)라 `<table>`처럼 뻑뻑하게 안 깨져서 별도 읽기 전용 모바일 UI는 새로 안 만들었다 — PRD가 말한 "읽기 전용"까지는 아니고 기존 액션 버튼도 그대로 쓸 수 있는 수준. `tsc`/`eslint`/`next build` 통과했지만, 미인증 상태에선 `/admin/(protected)/layout.tsx`가 로그인 전 리다이렉트시켜서 실제 화면은 로그인 세션 없이 볼 수 없었다 — 실브라우저에서 좁은 창으로 로그인 후 확인 필요.
+
+**Phase 3(어드민) 구현은 여기서 전부 끝났다.** 남은 건 전 항목의 "실사용 브라우저 검증"뿐 — 특히 로컬에서만 작업했고 아직 커밋/배포는 안 한 상태(2026.08.27 세션 전체)라는 걸 잊지 말 것.
 
 ---
 

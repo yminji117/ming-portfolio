@@ -92,6 +92,21 @@ export function sortIndustries(
   });
 }
 
+// /works Side 탭 필터 칩에서만 제외할 값 — 카드 라벨·데이터·어드민 선택지는 그대로 두고
+// 필터 칩 노출에서만 뺀다(요청: "Online, Offline은 필터에만 삭제, 다른 곳은 유지").
+const FILTER_EXCLUDED_INDUSTRIES: Record<"professional" | "side", string[]> = {
+  professional: [],
+  side: ["Online", "Offline"],
+};
+
+export function getFilterableIndustries(
+  industries: string[],
+  category: "professional" | "side",
+): string[] {
+  const excluded = FILTER_EXCLUDED_INDUSTRIES[category];
+  return industries.filter((industry) => !excluded.includes(industry));
+}
+
 // Study "카테고리"(구 태그) — 실제 DB 원본 값은 Works의 industry와 동일하게 영문으로 저장되고
 // (예: studies.tags에 "Data"), 필터 칩/어드민 선택지에는 Figma 시안(node 355:1062)의 한글
 // 라벨로 번역해 보여준다. "Talk"는 Figma 시안의 "말하기"에 대응하는 원본 값 — 아직 실제
@@ -122,16 +137,31 @@ export function getStudyFormatOptions(): string[] {
   return STUDY_FORMAT_OPTIONS;
 }
 
-// Front에 노출되는 Study 태그 배지 순서 — 카테고리(AI/데이터 분석/말하기)가 항상 형태
-// (Online/Offline)보다 앞에 오도록 정렬한다. 어드민에서 어떤 순서로 선택했는지와 무관하다.
-// 목록에 없는 커스텀 값은 맨 뒤로 보낸다.
+// /study 필터 칩 순서 — Works의 sortIndustries와 동일한 방식. 정해진 카테고리 순서를
+// 먼저 두고, 어드민에서 직접 입력으로 새로 추가된 값은 알파벳순으로 뒤에 이어 붙인다.
+// (형태값(Online/Offline)은 별도 개념이라 호출하는 쪽에서 미리 걸러내고 넘겨야 한다.)
+export function sortStudyCategories(categories: string[]): string[] {
+  return [...categories].sort((a, b) => {
+    const ai = STUDY_CATEGORY_OPTIONS.indexOf(a);
+    const bi = STUDY_CATEGORY_OPTIONS.indexOf(b);
+    if (ai === -1 && bi === -1) return a.localeCompare(b);
+    if (ai === -1) return 1;
+    if (bi === -1) return -1;
+    return ai - bi;
+  });
+}
+
+// Front에 노출되는 Study 태그 배지 순서 — 카테고리(정해진 값이든 어드민에서 직접 입력한
+// 커스텀 값이든)가 항상 형태(Online/Offline)보다 앞에 오도록 정렬한다. 어드민에서 어떤
+// 순서로 선택했는지와 무관하다. 형태가 아닌 값은 전부 "카테고리"로 취급해, 목록에 없는
+// 커스텀 카테고리도 형태보다 뒤로 밀리지 않는다.
 export function sortStudyTagsForDisplay(tags: string[]): string[] {
   const rank = (tag: string) => {
+    const formatIndex = STUDY_FORMAT_OPTIONS.indexOf(tag);
+    if (formatIndex !== -1) return STUDY_CATEGORY_OPTIONS.length + 1 + formatIndex;
     const categoryIndex = STUDY_CATEGORY_OPTIONS.indexOf(tag);
     if (categoryIndex !== -1) return categoryIndex;
-    const formatIndex = STUDY_FORMAT_OPTIONS.indexOf(tag);
-    if (formatIndex !== -1) return STUDY_CATEGORY_OPTIONS.length + formatIndex;
-    return STUDY_CATEGORY_OPTIONS.length + STUDY_FORMAT_OPTIONS.length;
+    return STUDY_CATEGORY_OPTIONS.length; // 커스텀 카테고리 — 정해진 카테고리들 뒤, 형태보다는 앞
   };
   return [...tags].sort((a, b) => rank(a) - rank(b));
 }

@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { ProjectForm } from "@/components/admin/project-form";
+import { getKnownIndustries } from "@/lib/data";
 import type { Project } from "@/lib/types";
 
 export default async function AdminEditWorkPage({
@@ -22,7 +23,7 @@ export default async function AdminEditWorkPage({
 
   const project = data as Project;
 
-  const [{ count: professional }, { count: side }] = await Promise.all([
+  const [{ count: professional }, { count: side }, industryOptions] = await Promise.all([
     supabase
       .from("projects")
       .select("id", { count: "exact", head: true })
@@ -35,6 +36,7 @@ export default async function AdminEditWorkPage({
       .eq("category", "side")
       .eq("is_featured", true)
       .neq("id", id),
+    getKnownIndustries(),
   ]);
 
   return (
@@ -46,6 +48,7 @@ export default async function AdminEditWorkPage({
       <ProjectForm
         project={project}
         featuredCounts={{ professional: professional ?? 0, side: side ?? 0 }}
+        industryOptions={industryOptions}
       />
     </div>
   );

@@ -17,7 +17,7 @@ async function requireAdmin() {
 
 // is_featured/featured_order는 노출 정원 트리거(enforce_featured_cap)가 걸려 있어
 // /admin/main에서만 다룬다 — 이 폼은 콘텐츠 필드만 책임진다.
-export type ProjectInput = Omit<Project, "id" | "is_featured" | "featured_order">;
+export type ProjectInput = Omit<Project, "id" | "is_featured" | "featured_order" | "deleted_at">;
 
 const SUMMARY_MAX = 50;
 
@@ -70,11 +70,30 @@ export async function updateProject(id: string, input: ProjectInput): Promise<Ac
 
 export async function deleteProject(id: string): Promise<ActionResult> {
   const supabase = await requireAdmin();
+  // is_featured를 그대로 두면 getFeaturedProjects가 deleted_at을 걸러내지 않던 예전 버전에서
+  // 삭제된(휴지통에 있는) 프로젝트가 Main에 계속 노출되는 문제가 있었다 — 삭제 시점에 같이 끈다.
   const { error } = await supabase
     .from("projects")
-    .update({ deleted_at: new Date().toISOString() })
+    .update({ deleted_at: new Date().toISOString(), is_featured: false, featured_order: null })
     .eq("id", id);
   if (error) return { ok: false, message: "삭제에 실패했어요." };
+  revalidateProjectPaths();
+  return { ok: true };
+}
+
+export async function restoreProject(id: string): Promise<ActionResult> {
+  const supabase = await requireAdmin();
+  const { error } = await supabase.from("projects").update({ deleted_at: null }).eq("id", id);
+  if (error) return { ok: false, message: "복구에 실패했어요." };
+  revalidateProjectPaths();
+  return { ok: true };
+}
+
+// 휴지통에서 완전 삭제 — soft delete와 달리 되돌릴 수 없다.
+export async function permanentlyDeleteProject(id: string): Promise<ActionResult> {
+  const supabase = await requireAdmin();
+  const { error } = await supabase.from("projects").delete().eq("id", id);
+  if (error) return { ok: false, message: "완전 삭제에 실패했어요." };
   revalidateProjectPaths();
   return { ok: true };
 }

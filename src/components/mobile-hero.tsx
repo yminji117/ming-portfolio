@@ -3,8 +3,9 @@
 import { useLayoutEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { CopyEmailButton } from "@/components/copy-email-button";
+import { HeroMedia } from "@/components/hero-media";
 import { getInstagramHandle } from "@/lib/format";
-import type { About } from "@/lib/types";
+import type { About, HeroMediaType } from "@/lib/types";
 
 const bigWordClass =
   "font-[family-name:var(--font-display)] font-black text-[40px] leading-[1.055] tracking-[-0.021em]";
@@ -18,11 +19,17 @@ export function MobileHero({
   careerYears,
   projectsCount,
   words,
+  heroMediaType,
+  heroImageUrl,
+  heroVideoUrl,
 }: {
   about: About | null;
   careerYears: number | null;
   projectsCount: number;
   words: string[];
+  heroMediaType: HeroMediaType;
+  heroImageUrl: string | null;
+  heroVideoUrl: string | null;
 }) {
   const name = about?.name_ko || about?.name_en;
 
@@ -86,14 +93,12 @@ export function MobileHero({
         ref={videoRef}
         className="relative z-10 aspect-[767/420] w-full overflow-hidden rounded-[var(--radius)] bg-[var(--color-line)]"
       >
-        <video
-          src="/hero/hi.mp4"
-          poster={about?.photo_url ?? undefined}
-          autoPlay
-          muted
-          playsInline
-          preload="auto"
-          className="absolute inset-0 h-full w-full object-cover"
+        <HeroMedia
+          mediaType={heroMediaType}
+          imageUrl={heroImageUrl}
+          videoUrl={heroVideoUrl}
+          posterUrl={about?.photo_url ?? undefined}
+          sizes="100vw"
         />
       </div>
 

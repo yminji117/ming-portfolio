@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
+import { getStudyFormatOptions, normalizeIndustry } from "@/lib/format";
 import type {
   About,
   Career,
@@ -31,6 +32,7 @@ export async function getFeaturedProjects(
     .select("*")
     .eq("category", category)
     .eq("is_featured", true)
+    .is("deleted_at", null)
     .order("featured_order", { ascending: true })
     .limit(limit);
   if (error) console.error("getFeaturedProjects failed:", error.message);
@@ -43,11 +45,12 @@ export async function getProjectsPage(
   limit: number,
 ): Promise<{ items: Project[]; total: number }> {
   const supabase = await createClient();
-  // /works 리스트 기본 정렬: 최신순(start_date desc, 동률은 id desc로 안정 정렬)
+  // /works 리스트 기본 정렬: 핀 고정 우선 → 최신순(start_date desc) → 동률은 id desc로 안정 정렬
   const { data, error, count } = await supabase
     .from("projects")
     .select("*", { count: "exact" })
     .eq("category", category)
+    .order("is_pinned", { ascending: false })
     .order("start_date", { ascending: false, nullsFirst: false })
     .order("id", { ascending: false })
     .range(offset, offset + limit - 1);
@@ -79,6 +82,31 @@ export async function getProjectCategoryCounts(): Promise<
   };
 }
 
+// 어드민 업종 선택 필드용 — 지금까지 어떤 프로젝트에서든 실제로 쓰인 업종 값을
+// 분류별로 모아준다. "+ 직접 입력"으로 한 번 추가된 값도 다음 프로젝트부터는
+// 재입력 없이 선택지(pill)로 바로 고를 수 있게 하기 위함(오타 방지).
+export async function getKnownIndustries(): Promise<Record<ProjectCategory, string[]>> {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("projects")
+    .select("category, industry")
+    .is("deleted_at", null);
+  if (error) console.error("getKnownIndustries failed:", error.message);
+
+  const seen: Record<ProjectCategory, Set<string>> = {
+    professional: new Set(),
+    side: new Set(),
+  };
+  (data ?? []).forEach((row) => {
+    const category = row.category as ProjectCategory;
+    normalizeIndustry(row.industry).forEach((industry) => seen[category].add(industry));
+  });
+  return {
+    professional: Array.from(seen.professional),
+    side: Array.from(seen.side),
+  };
+}
+
 export async function getProjectBySlug(slug: string): Promise<Project | null> {
   const supabase = await createClient();
   const { data, error } = await supabase
@@ -100,6 +128,7 @@ export async function getAdjacentProjects(
     .from("projects")
     .select("slug, title")
     .eq("category", category)
+    .order("is_pinned", { ascending: false })
     .order("start_date", { ascending: false, nullsFirst: false })
     .order("id", { ascending: false });
   if (error) {
@@ -115,12 +144,34 @@ export async function getAdjacentProjects(
   };
 }
 
+// 어드민 스터디 카테고리 선택 필드용 — getKnownIndustries와 동일한 목적으로, 지금까지 어떤
+// 스터디에서든 "+ 직접 입력"으로 쓰인 카테고리 값을 모아준다. 형태(Online/Offline)는 별개
+// 필드(StudyFormatField)가 관리하므로 여기서는 제외한다.
+export async function getKnownStudyCategories(): Promise<string[]> {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("studies")
+    .select("tags")
+    .is("deleted_at", null);
+  if (error) console.error("getKnownStudyCategories failed:", error.message);
+
+  const formatOptions = getStudyFormatOptions();
+  const seen = new Set<string>();
+  (data ?? []).forEach((row) => {
+    (row.tags ?? []).forEach((tag: string) => {
+      if (!formatOptions.includes(tag)) seen.add(tag);
+    });
+  });
+  return Array.from(seen);
+}
+
 export async function getFeaturedStudies(limit: number): Promise<Study[]> {
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("studies")
     .select("*")
     .eq("is_featured", true)
+    .is("deleted_at", null)
     .order("featured_order", { ascending: true })
     .limit(limit);
   if (error) console.error("getFeaturedStudies failed:", error.message);
@@ -132,9 +183,11 @@ export async function getStudiesPage(
   limit: number,
 ): Promise<{ items: Study[]; total: number }> {
   const supabase = await createClient();
+  // /study 리스트 기본 정렬: 핀 고정 우선 → 최신순(start_date desc) → 동률은 id desc로 안정 정렬
   const { data, error, count } = await supabase
     .from("studies")
     .select("*", { count: "exact" })
+    .order("is_pinned", { ascending: false })
     .order("start_date", { ascending: false, nullsFirst: false })
     .order("id", { ascending: false })
     .range(offset, offset + limit - 1);
@@ -160,6 +213,7 @@ export async function getAdjacentStudies(
   const { data, error } = await supabase
     .from("studies")
     .select("slug, title")
+    .order("is_pinned", { ascending: false })
     .order("start_date", { ascending: false, nullsFirst: false })
     .order("id", { ascending: false });
   if (error) {
@@ -251,18 +305,9 @@ const CURRENTLY_LABEL_PRIORITY: Record<string, number> = {
 };
 
 // limit 생략 시 전체 노출 — /about에서 재사용 (PRD 6.4)
-export async function getCurrentlyDoing(limit?: number): Promise<CurrentlyDoing[]> {
-  const supabase = await createClient();
-  const { data, error } = await supabase
-    .from("currently_doing")
-    .select("*")
-    .eq("is_visible", true);
-  if (error) console.error("getCurrentlyDoing failed:", error.message);
-
-  const rows = data ?? [];
-
-  // PRD 5.7: 수동 order가 있으면 우선, 없으면 라벨 우선순위 → 시작일 최신순
-  const sorted = [...rows].sort((a, b) => {
+// PRD 5.7: 수동 order가 있으면 우선, 없으면 라벨 우선순위 → 시작일 최신순
+function sortCurrentlyDoing(rows: CurrentlyDoing[]): CurrentlyDoing[] {
+  return [...rows].sort((a, b) => {
     if (a.order != null && b.order != null) return a.order - b.order;
     if (a.order != null) return -1;
     if (b.order != null) return 1;
@@ -273,8 +318,49 @@ export async function getCurrentlyDoing(limit?: number): Promise<CurrentlyDoing[
 
     return (b.start_date ?? "").localeCompare(a.start_date ?? "");
   });
+}
 
+export async function getCurrentlyDoing(limit?: number): Promise<CurrentlyDoing[]> {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("currently_doing")
+    .select("*")
+    .eq("is_visible", true);
+  if (error) console.error("getCurrentlyDoing failed:", error.message);
+
+  const sorted = sortCurrentlyDoing(data ?? []);
   return limit != null ? sorted.slice(0, limit) : sorted;
+}
+
+// 어드민 Currently Doing 관리용 — 노출/비노출 전부 보여준다(is_visible 필터 없음).
+export async function getAllCurrentlyDoing(): Promise<CurrentlyDoing[]> {
+  const supabase = await createClient();
+  const { data, error } = await supabase.from("currently_doing").select("*");
+  if (error) console.error("getAllCurrentlyDoing failed:", error.message);
+  return sortCurrentlyDoing(data ?? []);
+}
+
+// Currently Doing "연결" 필드용 — 프로젝트/스터디를 제목으로 고를 수 있게 최소 정보만 가져온다.
+export async function getProjectsForSelect(): Promise<{ id: string; title: string }[]> {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("projects")
+    .select("id, title")
+    .is("deleted_at", null)
+    .order("title", { ascending: true });
+  if (error) console.error("getProjectsForSelect failed:", error.message);
+  return data ?? [];
+}
+
+export async function getStudiesForSelect(): Promise<{ id: string; title: string }[]> {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("studies")
+    .select("id, title")
+    .is("deleted_at", null)
+    .order("title", { ascending: true });
+  if (error) console.error("getStudiesForSelect failed:", error.message);
+  return data ?? [];
 }
 
 // PRD 7.3 — guestbook_public 뷰만 사용(content/password_hash 없음), 등록 일시 최신순 페이지네이션

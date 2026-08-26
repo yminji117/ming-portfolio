@@ -10,6 +10,7 @@ import {
 } from "@/app/admin/(protected)/works/actions";
 import { setFeaturedPosition, unfeatureItem } from "@/app/admin/(protected)/main/actions";
 import {
+  CheckboxField,
   DateRangeField,
   FormSection,
   NumberField,
@@ -53,6 +54,7 @@ function toInput(project?: Project): ProjectInput {
     gallery_urls: project?.gallery_urls ?? null,
     contribution_percent: project?.contribution_percent ?? null,
     industry: normalizeIndustry(project?.industry),
+    is_pinned: project?.is_pinned ?? false,
     status: project?.status ?? "draft",
   };
 }
@@ -60,10 +62,13 @@ function toInput(project?: Project): ProjectInput {
 export function ProjectForm({
   project,
   featuredCounts,
+  industryOptions,
 }: {
   project?: Project;
   // 자기 자신을 제외한, 같은 분류(category)에서 이미 노출 중인 건수.
   featuredCounts: { professional: number; side: number };
+  // 분류별로 다른 프로젝트에서 이미 "+ 직접 입력"으로 쓰인 업종 값 — 선택지로 재사용.
+  industryOptions: { professional: string[]; side: string[] };
 }) {
   const router = useRouter();
   const isEdit = Boolean(project);
@@ -196,6 +201,11 @@ export function ProjectForm({
             { value: "published", label: "Published" },
           ]}
         />
+        <CheckboxField
+          label="목록 상단 고정"
+          checked={input.is_pinned}
+          onChange={(v) => set("is_pinned", v)}
+        />
         <div className="sm:col-span-2">
           <TextAreaField
             label="한 줄 요약"
@@ -230,6 +240,7 @@ export function ProjectForm({
           <IndustriesField
             category={input.category}
             values={input.industry ?? []}
+            extraOptions={industryOptions[input.category]}
             onChange={(v) => set("industry", v)}
           />
         </div>

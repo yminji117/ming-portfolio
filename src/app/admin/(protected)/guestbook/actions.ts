@@ -64,3 +64,21 @@ export async function deleteGuestbookEntryAdmin(id: string): Promise<ActionResul
   revalidatePath("/here");
   return { ok: true };
 }
+
+export async function restoreGuestbookEntry(id: string): Promise<ActionResult> {
+  const supabase = await requireAdmin();
+  const { error } = await supabase.from("guestbook").update({ deleted_at: null }).eq("id", id);
+  if (error) return { ok: false, message: "복구에 실패했어요." };
+  revalidatePath("/admin/guestbook");
+  revalidatePath("/here");
+  return { ok: true };
+}
+
+// 휴지통에서 완전 삭제 — soft delete와 달리 되돌릴 수 없다.
+export async function permanentlyDeleteGuestbookEntry(id: string): Promise<ActionResult> {
+  const supabase = await requireAdmin();
+  const { error } = await supabase.from("guestbook").delete().eq("id", id);
+  if (error) return { ok: false, message: "완전 삭제에 실패했어요." };
+  revalidatePath("/admin/guestbook");
+  return { ok: true };
+}

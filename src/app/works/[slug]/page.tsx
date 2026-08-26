@@ -62,7 +62,7 @@ export default async function ProjectDetailPage(
             </Link>
 
             <div className="flex flex-col gap-10">
-            <div className="relative h-[140px] w-full overflow-hidden rounded-[var(--radius)] bg-[var(--color-ink)] sm:h-[180px] lg:h-[200px]">
+            <div className="relative h-[140px] w-full overflow-hidden rounded-[var(--radius)] border border-solid border-[var(--color-line)] bg-[var(--color-ink)] sm:h-[180px] lg:h-[200px]">
               {project.cover_url && (
                 <Image
                   src={project.cover_url}
@@ -182,12 +182,12 @@ export default async function ProjectDetailPage(
                     </p>
                   </DetailSection>
                 )}
+
+                {project.gallery_urls && project.gallery_urls.length > 0 && (
+                  <ProjectGallery urls={project.gallery_urls} desktopLayout="stack-collapsible" />
+                )}
               </div>
             </div>
-
-            {project.gallery_urls && project.gallery_urls.length > 0 && (
-              <ProjectGallery urls={project.gallery_urls} />
-            )}
             </div>
           </div>
 

@@ -41,7 +41,68 @@ export default async function AboutPage() {
       <main className="flex-1 pt-16 lg:pt-[60px]">
         <div className="container-app py-10 lg:py-16">
           <div className="mx-auto flex max-w-[480px] flex-col gap-8 lg:max-w-[859px] lg:flex-row lg:items-start lg:gap-10">
-            <div className="mx-auto w-full max-w-[280px] shrink-0 lg:mx-0">
+            {/* Mobile: 사진 + 이름/직무/연락처 — Figma '(Mo)About | MINJI'(node 288:402) 반영 */}
+            <div className="flex items-end gap-5 lg:hidden">
+              <div className="h-[224px] w-[179px] shrink-0 overflow-hidden rounded-[var(--radius)] bg-[var(--color-bg)]">
+                {about?.photo_url ? (
+                  <Image
+                    src={about.photo_url}
+                    alt={name}
+                    width={179}
+                    height={224}
+                    priority
+                    className="h-full w-full object-cover"
+                  />
+                ) : (
+                  <div className="flex h-full w-full items-center justify-center font-[family-name:var(--font-display)] text-2xl font-black text-[var(--color-text-muted)]">
+                    MJ
+                  </div>
+                )}
+              </div>
+              <div className="flex min-w-0 flex-1 flex-col items-start justify-end gap-10">
+                <div className="flex w-full min-w-0 flex-col gap-1">
+                  <div className="flex flex-wrap items-end gap-3">
+                    <h1 className="text-[28px] font-bold leading-[40px] tracking-[-1px] text-[var(--color-text)]">
+                      {name}
+                    </h1>
+                    {about?.name_en && about?.name_ko && (
+                      <p className="text-[14px] leading-6 text-[var(--color-text-muted)]">
+                        {about.name_en}
+                      </p>
+                    )}
+                  </div>
+                  {about?.tagline && (
+                    <p className="text-[20px] font-medium leading-[30px] text-[var(--color-text)]">
+                      {about.tagline}
+                    </p>
+                  )}
+                </div>
+
+                {(about?.email || about?.instagram_url) && (
+                  <div className="flex w-full min-w-0 flex-col items-start gap-3">
+                    {about?.email && (
+                      <CopyEmailButton
+                        email={about.email}
+                        className="block h-9 max-w-full truncate rounded-full border border-[var(--color-line)] px-[17px] text-[16px] leading-9 text-[var(--color-text)]"
+                      />
+                    )}
+                    {about?.instagram_url && (
+                      <a
+                        href={about.instagram_url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="block h-9 max-w-full truncate rounded-full border border-[var(--color-line)] px-[17px] text-[16px] leading-9 text-[var(--color-text)]"
+                      >
+                        {getInstagramHandle(about.instagram_url)}
+                      </a>
+                    )}
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Desktop: 사진 (기존 유지) */}
+            <div className="mx-auto hidden w-full max-w-[280px] shrink-0 lg:mx-0 lg:block">
               <div className="aspect-[280/350] w-full overflow-hidden rounded-[var(--radius)] bg-[var(--color-bg)]">
                 {about?.photo_url ? (
                   <Image
@@ -61,7 +122,8 @@ export default async function AboutPage() {
             </div>
 
             <div className="flex flex-1 flex-col gap-[60px] lg:max-w-[539px]">
-              <div className="flex flex-col gap-3">
+              {/* Desktop: 이름/직무/연락처 (기존 유지) */}
+              <div className="hidden flex-col gap-3 lg:flex">
                 <div className="flex flex-col gap-2">
                   <div className="flex flex-wrap items-end gap-5">
                     <h1

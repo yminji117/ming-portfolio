@@ -1,9 +1,10 @@
 import { createClient } from "@/lib/supabase/server";
 import { ProjectForm } from "@/components/admin/project-form";
+import { getKnownIndustries } from "@/lib/data";
 
 export default async function AdminNewWorkPage() {
   const supabase = await createClient();
-  const [{ count: professional }, { count: side }] = await Promise.all([
+  const [{ count: professional }, { count: side }, industryOptions] = await Promise.all([
     supabase
       .from("projects")
       .select("id", { count: "exact", head: true })
@@ -14,6 +15,7 @@ export default async function AdminNewWorkPage() {
       .select("id", { count: "exact", head: true })
       .eq("category", "side")
       .eq("is_featured", true),
+    getKnownIndustries(),
   ]);
 
   return (
@@ -25,7 +27,10 @@ export default async function AdminNewWorkPage() {
           관리에서 바꿀 수 있어요.
         </p>
       </div>
-      <ProjectForm featuredCounts={{ professional: professional ?? 0, side: side ?? 0 }} />
+      <ProjectForm
+        featuredCounts={{ professional: professional ?? 0, side: side ?? 0 }}
+        industryOptions={industryOptions}
+      />
     </div>
   );
 }

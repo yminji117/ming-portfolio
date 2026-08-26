@@ -3,7 +3,7 @@
 import { useMemo, useRef, useState, useTransition, type RefObject } from "react";
 import { loadMoreProjects } from "@/app/works/actions";
 import { WorksListGrid } from "@/components/works-list-grid";
-import { getIndustryLabel, normalizeIndustry, sortIndustries } from "@/lib/format";
+import { getFilterableIndustries, getIndustryLabel, normalizeIndustry, sortIndustries } from "@/lib/format";
 import type { Project, ProjectCategory } from "@/lib/types";
 
 const ALL = "all";
@@ -29,7 +29,7 @@ export function WorksListClient({
     items.forEach((project) => {
       normalizeIndustry(project.industry).forEach((industry) => unique.add(industry));
     });
-    return sortIndustries(Array.from(unique), category);
+    return getFilterableIndustries(sortIndustries(Array.from(unique), category), category);
   }, [items, category]);
 
   if (items.length === 0) {

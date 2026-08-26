@@ -9,15 +9,23 @@ const inputClass =
 
 // Works의 IndustriesField와 동일한 방식 — Figma 시안에 정해진 카테고리 목록에서 여러 개
 // 고르고, 목록에 없는 값은 직접 입력으로 추가한다. /study 필터 칩과 항상 같은 순서를 쓴다.
+// extraOptions: 다른 스터디에서 이미 "+ 직접 입력"으로 쓰인 카테고리 — 재사용 가능하도록
+// 선택지에 함께 노출한다(Works IndustriesField의 extraOptions와 동일한 목적).
 export function StudyCategoryField({
   values,
+  extraOptions = [],
   onChange,
 }: {
   values: string[];
+  extraOptions?: string[];
   onChange: (values: string[]) => void;
 }) {
-  const options = getStudyCategoryOptions();
+  const fixedOptions = getStudyCategoryOptions();
   const formatOptions = getStudyFormatOptions();
+  const reusableOptions = extraOptions
+    .filter((v) => !fixedOptions.includes(v) && !formatOptions.includes(v))
+    .sort();
+  const options = [...fixedOptions, ...reusableOptions];
   // 형태(Online/Offline)는 별도 필드(StudyFormatField)가 관리하므로 여기 커스텀 값 목록엔
   // 안 뜨게 걸러낸다 — 둘 다 같은 tags 배열을 공유해서 생기는 겹침을 막는다.
   const customValues = values.filter((v) => !options.includes(v) && !formatOptions.includes(v));

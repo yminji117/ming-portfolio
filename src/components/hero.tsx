@@ -1,8 +1,9 @@
 import Link from "next/link";
 import { CopyEmailButton } from "@/components/copy-email-button";
+import { HeroMedia } from "@/components/hero-media";
 import { MobileHero } from "@/components/mobile-hero";
 import { getInstagramHandle } from "@/lib/format";
-import type { About } from "@/lib/types";
+import type { About, HeroMediaType } from "@/lib/types";
 
 const bigWordClass =
   "font-[family-name:var(--font-display)] font-black text-[40px] leading-[1.055] tracking-[-0.021em]";
@@ -16,11 +17,17 @@ export function Hero({
   careerYears,
   projectsCount,
   heroTitle,
+  heroMediaType,
+  heroImageUrl,
+  heroVideoUrl,
 }: {
   about: About | null;
   careerYears: number | null;
   projectsCount: number;
   heroTitle: string;
+  heroMediaType: HeroMediaType;
+  heroImageUrl: string | null;
+  heroVideoUrl: string | null;
 }) {
   const name = about?.name_ko || about?.name_en;
   const words = heroTitle.split(" ");
@@ -74,6 +81,9 @@ export function Hero({
               careerYears={careerYears}
               projectsCount={projectsCount}
               words={words}
+              heroMediaType={heroMediaType}
+              heroImageUrl={heroImageUrl}
+              heroVideoUrl={heroVideoUrl}
             />
           </>
         ) : (
@@ -90,14 +100,12 @@ export function Hero({
       <div className="relative z-10 hidden lg:absolute lg:inset-0 lg:block">
         <div className="relative mx-auto w-full max-w-3xl lg:absolute lg:left-[24.67%] lg:top-[27.24%] lg:mx-0 lg:h-[55.26%] lg:w-[50.73%] lg:max-w-none">
           <div className="relative aspect-[767/420] w-full overflow-hidden rounded-[var(--radius)] bg-[var(--color-line)] lg:aspect-auto lg:h-full">
-            <video
-              src="/hero/hi.mp4"
-              poster={about?.photo_url ?? undefined}
-              autoPlay
-              muted
-              playsInline
-              preload="auto"
-              className="absolute inset-0 h-full w-full object-cover"
+            <HeroMedia
+              mediaType={heroMediaType}
+              imageUrl={heroImageUrl}
+              videoUrl={heroVideoUrl}
+              posterUrl={about?.photo_url ?? undefined}
+              sizes="(min-width: 1024px) 51vw, 100vw"
             />
           </div>
 

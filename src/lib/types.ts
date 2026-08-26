@@ -41,9 +41,11 @@ export interface Project {
   gallery_urls: string[] | null;
   contribution_percent: number | null;
   industry: string[] | null;
+  is_pinned: boolean;
   is_featured: boolean;
   featured_order: number | null;
   status: ContentStatus;
+  deleted_at: string | null;
 }
 
 export interface StudyRoadmapStep {
@@ -72,9 +74,11 @@ export interface Study {
   end_date: string | null;
   body: StudyBody | null;
   gallery_urls: string[] | null;
+  is_pinned: boolean;
   is_featured: boolean;
   featured_order: number | null;
   status: ContentStatus;
+  deleted_at: string | null;
 }
 
 export interface About {
@@ -109,6 +113,7 @@ export interface CurrentlyDoing {
   end_date: string | null;
   ref_type: CurrentlyRefType;
   ref_id: string | null;
+  is_visible: boolean;
   order: number | null;
 }
 
@@ -138,6 +143,7 @@ export interface GuestbookEntryAdmin {
   is_hidden: boolean;
   flag: GuestbookFlag;
   admin_memo: string | null;
+  deleted_at: string | null;
 }
 
 export interface Skill {
@@ -156,4 +162,6 @@ export interface SiteSettings {
   hero_media_type: HeroMediaType;
   currently_limit: number;
   footer_text: string | null;
+  og_image_url: string | null;
+  is_maintenance: boolean;
 }

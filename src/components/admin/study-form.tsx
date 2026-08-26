@@ -10,6 +10,7 @@ import {
 } from "@/app/admin/(protected)/studies/actions";
 import { setFeaturedPosition, unfeatureItem } from "@/app/admin/(protected)/main/actions";
 import {
+  CheckboxField,
   DateRangeField,
   FormSection,
   SelectField,
@@ -44,6 +45,7 @@ function toInput(study?: Study): StudyInput {
     end_date: study?.end_date ?? null,
     body: study?.body ?? { steps: [], blocks: [] },
     gallery_urls: study?.gallery_urls ?? null,
+    is_pinned: study?.is_pinned ?? false,
     status: study?.status ?? "draft",
   };
 }
@@ -51,10 +53,13 @@ function toInput(study?: Study): StudyInput {
 export function StudyForm({
   study,
   featuredCount,
+  categoryOptions,
 }: {
   study?: Study;
   // 자기 자신을 제외한, 이미 노출 중인 스터디 건수.
   featuredCount: number;
+  // 다른 스터디에서 이미 "+ 직접 입력"으로 쓰인 카테고리 값 — 선택지로 재사용.
+  categoryOptions: string[];
 }) {
   const router = useRouter();
   const isEdit = Boolean(study);
@@ -190,6 +195,11 @@ export function StudyForm({
             { value: "published", label: "Published" },
           ]}
         />
+        <CheckboxField
+          label="목록 상단 고정"
+          checked={input.is_pinned}
+          onChange={(v) => set("is_pinned", v)}
+        />
         <div className="sm:col-span-2">
           <TextAreaField
             label="요약"
@@ -207,7 +217,11 @@ export function StudyForm({
             onChange={(v) => set("overview", v || null)}
           />
         </div>
-        <StudyCategoryField values={input.tags} onChange={(v) => set("tags", v)} />
+        <StudyCategoryField
+          values={input.tags}
+          extraOptions={categoryOptions}
+          onChange={(v) => set("tags", v)}
+        />
         <StudyFormatField values={input.tags} onChange={(v) => set("tags", v)} />
         <TextField
           label="외부 링크"

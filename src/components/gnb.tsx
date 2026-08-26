@@ -26,8 +26,26 @@ export function Gnb() {
   useEffect(() => {
     function onScroll() {
       const y = window.scrollY;
-      setHidden(y > lastY.current && y > 80);
+      const prevY = lastY.current;
       lastY.current = y;
+
+      // 하단으로 스크롤하면 기존처럼 80px만 넘어도 바로 숨긴다.
+      if (y > prevY && y > 80) {
+        setHidden(true);
+        return;
+      }
+      // 맨 위 근처로 돌아오면 항상 보여준다.
+      if (y <= 80) {
+        setHidden(false);
+        return;
+      }
+      // 그 사이(80px ~ 한 화면 높이)에서 위로 스크롤한 경우는 재등장시키지 않는다 —
+      // 각 페이지 최상단 히어로 이미지가 이 구간에 있어서, 여기서 바로 재등장시키면
+      // 반투명 헤더가 히어로 이미지 위에 겹쳐 상단 라운드 코너가 잘려 보인다.
+      // 한 화면 높이를 넘겨 스크롤을 더 올린 뒤에만(히어로가 완전히 지나간 뒤) 재등장.
+      if (y < prevY && y > window.innerHeight) {
+        setHidden(false);
+      }
     }
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);

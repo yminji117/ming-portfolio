@@ -17,7 +17,7 @@ async function requireAdmin() {
 
 // is_featured/featured_order는 노출 정원 트리거(enforce_featured_cap)가 걸려 있어
 // /admin/main에서만 다룬다 — 이 폼은 콘텐츠 필드만 책임진다.
-export type StudyInput = Omit<Study, "id" | "is_featured" | "featured_order">;
+export type StudyInput = Omit<Study, "id" | "is_featured" | "featured_order" | "deleted_at">;
 
 // 다른 곳(워드, 노션, PDF 등)에서 복사해 붙여넣으면 스페이스가 눈에 안 보이는
 // non-breaking space(U+00A0)로 섞여 들어올 때가 있다 — word-break: keep-all과
@@ -69,11 +69,30 @@ export async function updateStudy(id: string, input: StudyInput): Promise<Action
 
 export async function deleteStudy(id: string): Promise<ActionResult> {
   const supabase = await requireAdmin();
+  // is_featured를 그대로 두면 getFeaturedStudies가 deleted_at을 걸러내지 않던 예전 버전에서
+  // 삭제된(휴지통에 있는) 스터디가 Main에 계속 노출되는 문제가 있었다 — 삭제 시점에 같이 끈다.
   const { error } = await supabase
     .from("studies")
-    .update({ deleted_at: new Date().toISOString() })
+    .update({ deleted_at: new Date().toISOString(), is_featured: false, featured_order: null })
     .eq("id", id);
   if (error) return { ok: false, message: "삭제에 실패했어요." };
+  revalidateStudyPaths();
+  return { ok: true };
+}
+
+export async function restoreStudy(id: string): Promise<ActionResult> {
+  const supabase = await requireAdmin();
+  const { error } = await supabase.from("studies").update({ deleted_at: null }).eq("id", id);
+  if (error) return { ok: false, message: "복구에 실패했어요." };
+  revalidateStudyPaths();
+  return { ok: true };
+}
+
+// 휴지통에서 완전 삭제 — soft delete와 달리 되돌릴 수 없다.
+export async function permanentlyDeleteStudy(id: string): Promise<ActionResult> {
+  const supabase = await requireAdmin();
+  const { error } = await supabase.from("studies").delete().eq("id", id);
+  if (error) return { ok: false, message: "완전 삭제에 실패했어요." };
   revalidateStudyPaths();
   return { ok: true };
 }

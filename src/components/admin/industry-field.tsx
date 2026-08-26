@@ -8,16 +8,22 @@ import type { ProjectCategory } from "@/lib/types";
 // 분류(category)별로 Figma 시안에 정해진 업종 목록(getIndustryOptions)에서 여러 개 고르고,
 // 목록에 없는 값이 필요하면 직접 입력으로 추가한다 — /works 필터 칩·카드 라벨 기준값이라
 // 오타로 칩이 어지러워지지 않도록 자유 텍스트 대신 선택식을 기본으로 한다.
+// extraOptions: 이 분류의 다른 프로젝트에서 이미 "+ 직접 입력"으로 한 번 쓰인 값들 —
+// Figma 고정 목록에는 없지만 재사용 가능하도록 선택지에 함께 노출한다.
 export function IndustriesField({
   category,
   values,
+  extraOptions = [],
   onChange,
 }: {
   category: ProjectCategory;
   values: string[];
+  extraOptions?: string[];
   onChange: (values: string[]) => void;
 }) {
-  const options = getIndustryOptions(category);
+  const fixedOptions = getIndustryOptions(category);
+  const reusableOptions = extraOptions.filter((v) => !fixedOptions.includes(v)).sort();
+  const options = [...fixedOptions, ...reusableOptions];
   const customValues = values.filter((v) => !options.includes(v));
   const [customInput, setCustomInput] = useState("");
 

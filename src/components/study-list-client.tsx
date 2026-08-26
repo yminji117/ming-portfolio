@@ -1,14 +1,12 @@
 "use client";
 
-import { useRef, useState, useTransition, type RefObject } from "react";
+import { useMemo, useRef, useState, useTransition, type RefObject } from "react";
 import { loadMoreStudies } from "@/app/study/actions";
 import { StudyListGrid } from "@/components/study-list-grid";
-import { getStudyCategoryLabel, getStudyCategoryOptions } from "@/lib/format";
+import { getStudyCategoryLabel, getStudyFormatOptions, sortStudyCategories } from "@/lib/format";
 import type { Study } from "@/lib/types";
 
 const ALL = "all";
-// Figma 'Study | MINJI' 그대로 — 실제 콘텐츠에 어떤 태그가 있는지와 무관하게 항상 이 목록만 보여준다.
-const FILTER_CATEGORIES = getStudyCategoryOptions();
 
 export function StudyListClient({
   initialItems,
@@ -21,6 +19,20 @@ export function StudyListClient({
   const [isPending, startTransition] = useTransition();
   const [active, setActive] = useState<string>(ALL);
   const filterScrollRef = useRef<HTMLDivElement>(null);
+
+  // Works의 industries와 동일한 방식 — 고정 목록이 아니라 실제 로드된 스터디의 tags에서
+  // 뽑는다. 어드민에서 새 카테고리를 추가하면 이 필터에도 자동으로 반영된다.
+  // 형태(Online/Offline)는 별개 개념이라 필터 칩에서는 제외한다.
+  const formatOptions = getStudyFormatOptions();
+  const categories = useMemo(() => {
+    const unique = new Set<string>();
+    items.forEach((study) => {
+      study.tags.forEach((tag) => {
+        if (!formatOptions.includes(tag)) unique.add(tag);
+      });
+    });
+    return sortStudyCategories(Array.from(unique));
+  }, [items, formatOptions]);
 
   if (items.length === 0) {
     return (
@@ -42,28 +54,30 @@ export function StudyListClient({
 
   return (
     <div className="flex flex-col gap-5">
-      <div
-        ref={filterScrollRef}
-        className="no-scrollbar flex items-center gap-1 overflow-x-auto"
-      >
-        <FilterChip
-          label="All"
-          selected={active === ALL}
-          onClick={() => setActive(ALL)}
-          index={0}
-          scrollRef={filterScrollRef}
-        />
-        {FILTER_CATEGORIES.map((tag, i) => (
+      {categories.length > 0 && (
+        <div
+          ref={filterScrollRef}
+          className="no-scrollbar flex items-center gap-1 overflow-x-auto"
+        >
           <FilterChip
-            key={tag}
-            label={getStudyCategoryLabel(tag)}
-            selected={active === tag}
-            onClick={() => setActive(tag)}
-            index={i + 1}
+            label="All"
+            selected={active === ALL}
+            onClick={() => setActive(ALL)}
+            index={0}
             scrollRef={filterScrollRef}
           />
-        ))}
-      </div>
+          {categories.map((tag, i) => (
+            <FilterChip
+              key={tag}
+              label={getStudyCategoryLabel(tag)}
+              selected={active === tag}
+              onClick={() => setActive(tag)}
+              index={i + 1}
+              scrollRef={filterScrollRef}
+            />
+          ))}
+        </div>
+      )}
 
       {filtered.length === 0 ? (
         <p className="py-20 text-center text-[length:var(--fs-body)] text-[var(--color-text-muted)]">

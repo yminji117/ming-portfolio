@@ -16,14 +16,16 @@ const arrowButtonClass =
 //   아래쪽 화살표를 누르면 전체가 펼쳐지며 화살표가 위쪽을 가리키도록 뒤집힌다(다시 누르면 3장으로 접힘).
 //   Works/Study 둘 다 동일.
 // - Desktop(lg 이상): desktopLayout으로 분기.
-//   "carousel"(Works 기본) — 가로 캐러셀 + 좌우 화살표(스와이프도 가능), 더 넘길 방향에 이미지가 있을 때만 페이드인/아웃.
+//   "carousel" — 가로 캐러셀 + 좌우 화살표(스와이프도 가능), 더 넘길 방향에 이미지가 있을 때만 페이드인/아웃.
 //   "stack"(Study, Figma 시안 반영) — 전체 이미지를 화살표 없이 세로로 그대로 나열.
+//   "stack-collapsible"(Works) — stack과 같은 큰 이미지 크기를 쓰되, 모바일처럼 기본 3장만 보여주고
+//   위/아래 화살표 토글로 펼치기/접기.
 export function ProjectGallery({
   urls,
   desktopLayout = "carousel",
 }: {
   urls: string[];
-  desktopLayout?: "carousel" | "stack";
+  desktopLayout?: "carousel" | "stack" | "stack-collapsible";
 }) {
   const trackRef = useRef<HTMLDivElement>(null);
   const [canScrollPrev, setCanScrollPrev] = useState(false);
@@ -106,6 +108,34 @@ export function ProjectGallery({
               <Image src={url} alt="" fill sizes="70vw" className="object-cover" />
             </div>
           ))}
+        </div>
+      ) : desktopLayout === "stack-collapsible" ? (
+        <div className="hidden flex-col items-center gap-3 lg:flex">
+          <div className="flex w-full flex-col gap-3">
+            {mobileVisibleUrls.map((url, i) => (
+              <div
+                key={i}
+                className="relative aspect-[351/197] w-full overflow-hidden rounded-[4px] bg-[var(--color-line)]"
+              >
+                <Image src={url} alt="" fill sizes="70vw" className="object-cover" />
+              </div>
+            ))}
+          </div>
+          {hasMoreThanPreview && (
+            <button
+              type="button"
+              onClick={() => setExpanded((v) => !v)}
+              aria-label={expanded ? "이미지 접기" : "이미지 전체 보기"}
+              aria-expanded={expanded}
+              className={`${arrowButtonClass} -mt-5 opacity-100`}
+            >
+              <ArrowRightIcon
+                className={`size-6 transition-transform duration-[var(--dur-base)] ease-[var(--ease-out)] ${
+                  expanded ? "-rotate-90" : "rotate-90"
+                }`}
+              />
+            </button>
+          )}
         </div>
       ) : (
         <div className="hidden items-center lg:flex">

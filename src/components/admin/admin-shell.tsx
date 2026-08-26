@@ -1,52 +1,67 @@
+"use client";
+
+import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
 import { AdminNavLink } from "./admin-nav-link";
 import { SignOutButton } from "./sign-out-button";
 
-// Phase 3c~3d에서 순서대로 붙는 섹션 — 지금은 라우트가 없어 비활성 표시만 해둔다(PLAN.md Phase 3 참고).
-const COMING_SOON = ["About", "Careers", "Skills", "Currently Doing", "Site Settings", "Media"];
+// PRD 9.9 규칙 #6 — 어드민은 PC(1024px 이상) 기준으로 설계돼 있어 좁은 화면에서는 표/폼이
+// 다 깨진다. 1024px 미만에서는 안내 화면만 보여주고, 방명록(/admin/guestbook)만 예외로 둔다
+// (외출 중에도 새 글 확인 정도는 필요할 수 있어서 — 액션 버튼도 다 작아서 못 누를 수준까진
+// 아니라 별도 읽기 전용 UI를 새로 만들진 않았다).
+const GUARD_EXEMPT_PREFIX = "/admin/guestbook";
 
 export function AdminShell({ email, children }: { email: string; children: ReactNode }) {
+  const pathname = usePathname();
+  const isExempt = pathname.startsWith(GUARD_EXEMPT_PREFIX);
+
   return (
-    <div className="flex min-h-screen bg-[#f3f4f7]">
-      <aside className="flex w-[240px] flex-none flex-col gap-6 border-r border-[var(--color-line)] bg-white px-4 py-6">
-        <div className="px-2">
-          <span className="text-[11px] font-semibold uppercase tracking-[0.12em] text-[var(--color-accent)]">
-            MINJI
-          </span>
-          <p className="text-[15px] font-bold text-[var(--color-text)]">Admin</p>
+    <>
+      {!isExempt && (
+        <div className="flex min-h-screen flex-col items-center justify-center gap-2 px-6 text-center lg:hidden">
+          <p className="text-[18px] font-bold text-[var(--color-text)]">PC에서 접속해 주세요</p>
+          <p className="text-[13px] text-[var(--color-text-muted)]">
+            어드민은 1024px 이상 화면에 맞춰져 있어요. 노트북·데스크톱에서 다시 열어주세요.
+          </p>
         </div>
+      )}
 
-        <nav className="flex flex-col gap-1">
-          <AdminNavLink href="/admin" exact>
-            대시보드
-          </AdminNavLink>
-          <AdminNavLink href="/admin/works">Works</AdminNavLink>
-          <AdminNavLink href="/admin/studies">Study</AdminNavLink>
-          <AdminNavLink href="/admin/main">노출 관리</AdminNavLink>
-          <AdminNavLink href="/admin/guestbook">방명록</AdminNavLink>
-        </nav>
-
-        <div className="flex flex-col gap-1 border-t border-[var(--color-line)] pt-4">
-          <span className="px-3 text-[11px] font-semibold uppercase tracking-[0.08em] text-[var(--color-text-muted)]">
-            준비 중
-          </span>
-          {COMING_SOON.map((label) => (
-            <span
-              key={label}
-              className="flex cursor-not-allowed items-center rounded-[10px] px-3 py-2 text-[13px] text-[#b7bac2]"
-            >
-              {label}
+      <div
+        className={`flex min-h-screen flex-col bg-[#f3f4f7] lg:flex-row ${isExempt ? "" : "hidden lg:flex"}`}
+      >
+        <aside className="flex w-full flex-none flex-col gap-4 border-b border-[var(--color-line)] bg-white px-4 py-4 lg:w-[240px] lg:gap-6 lg:border-b-0 lg:border-r lg:py-6">
+          <div className="px-2">
+            <span className="text-[11px] font-semibold uppercase tracking-[0.12em] text-[var(--color-accent)]">
+              MINJI
             </span>
-          ))}
-        </div>
+            <p className="text-[15px] font-bold text-[var(--color-text)]">Admin</p>
+          </div>
 
-        <div className="mt-auto flex flex-col gap-2 border-t border-[var(--color-line)] pt-4">
-          <span className="truncate px-1 text-[12px] text-[var(--color-text-muted)]">{email}</span>
-          <SignOutButton />
-        </div>
-      </aside>
+          {/* 방명록 예외로 모바일에서도 이 shell이 뜰 수 있어 nav는 가로 스크롤로, 나머지 항목은
+              접속 자체가 안 되니(위 안내 화면으로 막힘) 굳이 숨기지 않고 그대로 둔다. */}
+          <nav className="no-scrollbar flex gap-1 overflow-x-auto lg:flex-col lg:overflow-visible">
+            <AdminNavLink href="/admin" exact>
+              대시보드
+            </AdminNavLink>
+            <AdminNavLink href="/admin/works">Works</AdminNavLink>
+            <AdminNavLink href="/admin/studies">Study</AdminNavLink>
+            <AdminNavLink href="/admin/about">About</AdminNavLink>
+            <AdminNavLink href="/admin/currently-doing">Currently Doing</AdminNavLink>
+            <AdminNavLink href="/admin/main">노출 관리</AdminNavLink>
+            <AdminNavLink href="/admin/guestbook">방명록</AdminNavLink>
+            <AdminNavLink href="/admin/site-settings">Site Settings</AdminNavLink>
+            <AdminNavLink href="/admin/media">미디어</AdminNavLink>
+            <AdminNavLink href="/admin/trash">휴지통</AdminNavLink>
+          </nav>
 
-      <div className="flex-1 px-8 py-8 lg:px-12">{children}</div>
-    </div>
+          <div className="flex flex-col gap-2 border-t border-[var(--color-line)] pt-3 lg:mt-auto lg:pt-4">
+            <span className="truncate px-1 text-[12px] text-[var(--color-text-muted)]">{email}</span>
+            <SignOutButton />
+          </div>
+        </aside>
+
+        <div className="flex-1 px-4 py-6 lg:px-12 lg:py-8">{children}</div>
+      </div>
+    </>
   );
 }

@@ -42,9 +42,7 @@ export default async function StudyDetailPage(
   ]);
 
   const period = formatCareerRange(study.start_date, study.end_date);
-  // IMAGE 갤러리는 Roadmap이 있는 스터디(로드맵형 게시물)에만 제공한다 — Figma 시안 반영.
-  const hasRoadmap = Boolean(study.body?.steps && study.body.steps.length > 0);
-  const galleryUrls = hasRoadmap ? (study.gallery_urls ?? []) : [];
+  const galleryUrls = study.gallery_urls ?? [];
 
   return (
     <>

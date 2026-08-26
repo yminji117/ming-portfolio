@@ -55,6 +55,9 @@ export default async function Home() {
           careerYears={careerYears}
           projectsCount={projectsCount}
           heroTitle={settings?.hero_title ?? "Welcome To My Home"}
+          heroMediaType={settings?.hero_media_type ?? "video"}
+          heroImageUrl={settings?.hero_image_url ?? null}
+          heroVideoUrl={settings?.hero_video_url ?? null}
         />
         <CapabilitiesSection />
         <WorksSection
