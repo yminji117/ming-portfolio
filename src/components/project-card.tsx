@@ -1,5 +1,5 @@
-import Link from "next/link";
 import { MediaThumb } from "@/components/media-thumb";
+import { TrackedLink } from "@/components/tracked-link";
 import { formatCareerRange, getIndustryLabel, normalizeIndustry, sortIndustries } from "@/lib/format";
 import type { Project } from "@/lib/types";
 
@@ -24,8 +24,10 @@ export function ProjectCard({
       : project.company;
 
   return (
-    <Link
+    <TrackedLink
       href={`/works/${project.slug}`}
+      eventName="project_card_click"
+      meta={{ slug: project.slug, category: project.category }}
       className={`group flex flex-col gap-3 rounded-[var(--radius)] border p-4 transition-colors duration-[var(--dur-base)] ease-[var(--ease-out)] hover:border-[var(--color-accent)] ${
         active ? "border-black bg-white text-black" : "border-white bg-black text-white"
       }`}
@@ -66,6 +68,6 @@ export function ProjectCard({
           </p>
         </div>
       </div>
-    </Link>
+    </TrackedLink>
   );
 }

@@ -2,6 +2,7 @@ import Link from "next/link";
 import { CopyEmailButton } from "@/components/copy-email-button";
 import { HeroMedia } from "@/components/hero-media";
 import { MobileHero } from "@/components/mobile-hero";
+import { TrackedExternalLink } from "@/components/tracked-external-link";
 import { getInstagramHandle } from "@/lib/format";
 import type { About, HeroMediaType } from "@/lib/types";
 
@@ -167,15 +168,14 @@ export function Hero({
                 </div>
               )}
               {about?.instagram_url && (
-                <a
+                <TrackedExternalLink
                   href={about.instagram_url}
-                  target="_blank"
-                  rel="noopener noreferrer"
+                  eventName="instagram_click"
                   className="flex w-full items-center justify-between gap-2 text-[length:var(--fs-body)] text-[#0A0A0A] transition-colors duration-[var(--dur-fast)] hover:text-[var(--color-accent)]"
                 >
                   {getInstagramHandle(about.instagram_url)}
                   <span aria-hidden="true" className="text-[20px] font-extralight">→</span>
-                </a>
+                </TrackedExternalLink>
               )}
             </div>
           )}

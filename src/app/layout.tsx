@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { AnalyticsTracker } from "@/components/analytics-tracker";
 import { MotionProvider } from "@/components/motion-provider";
 import { PageLoadGate } from "@/components/page-load-gate";
 import { getSiteSettings } from "@/lib/data";
@@ -20,6 +21,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html lang="ko" className={`h-full antialiased ${nanumSquareNeo.variable}`}>
       <body className="min-h-full flex flex-col">
+        <AnalyticsTracker />
         <MotionProvider>
           <PageLoadGate>{children}</PageLoadGate>
         </MotionProvider>

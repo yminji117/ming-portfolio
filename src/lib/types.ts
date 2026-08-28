@@ -165,3 +165,37 @@ export interface SiteSettings {
   og_image_url: string | null;
   is_maintenance: boolean;
 }
+
+// analytics_public_stats 뷰 — anon도 읽을 수 있는 집계 전용, 개별 방문자 정보 없음.
+export interface AnalyticsPublicStats {
+  total_pageviews: number;
+  total_visitors: number;
+  today_pageviews: number;
+  today_visitors: number;
+}
+
+export interface AnalyticsDailyPoint {
+  day: string;
+  pageviews: number;
+  unique_visitors: number;
+}
+
+export interface AnalyticsTopPage {
+  path: string;
+  pageviews: number;
+}
+
+export interface AnalyticsTopAction {
+  event_name: string;
+  action_count: number;
+}
+
+export interface AnalyticsTrafficSource {
+  source: string;
+  sessions: number;
+}
+
+export interface AnalyticsExitPage {
+  path: string;
+  exits: number;
+}

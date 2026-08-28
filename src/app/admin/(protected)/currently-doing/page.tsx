@@ -1,11 +1,18 @@
+import { CurrentlyDoingAutoPreview } from "@/components/admin/currently-doing-auto-preview";
 import { CurrentlyDoingEditor } from "@/components/admin/currently-doing-editor";
-import { getAllCurrentlyDoing, getProjectsForSelect, getStudiesForSelect } from "@/lib/data";
+import {
+  getAllCurrentlyDoing,
+  getAutoCurrentlyDoingPreview,
+  getProjectsForSelect,
+  getStudiesForSelect,
+} from "@/lib/data";
 
 export default async function AdminCurrentlyDoingPage() {
-  const [items, projects, studies] = await Promise.all([
+  const [items, projects, studies, autoItems] = await Promise.all([
     getAllCurrentlyDoing(),
     getProjectsForSelect(),
     getStudiesForSelect(),
+    getAutoCurrentlyDoingPreview(),
   ]);
 
   return (
@@ -14,11 +21,12 @@ export default async function AdminCurrentlyDoingPage() {
         <h1 className="text-[24px] font-bold text-[var(--color-text)]">Currently Doing</h1>
         <p className="mt-1 text-[14px] text-[var(--color-text-muted)]">
           라벨·일자를 표에서 바로 수정해요. 라벨/노출/연결은 바로 저장되고, 텍스트·날짜는 입력을 마치고
-          다른 곳을 클릭하면 저장돼요.
+          다른 곳을 클릭하면 저장돼요. Front에는 아래 두 목록이 합쳐져 노출됩니다.
         </p>
       </div>
 
       <CurrentlyDoingEditor items={items} projects={projects} studies={studies} />
+      <CurrentlyDoingAutoPreview items={autoItems} />
     </div>
   );
 }

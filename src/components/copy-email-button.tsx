@@ -1,8 +1,11 @@
 "use client";
 
 import { AnimatePresence, motion } from "framer-motion";
+import { usePathname } from "next/navigation";
 import { useState } from "react";
 import { createPortal } from "react-dom";
+import { trackAnalyticsEvent } from "@/lib/analytics-track";
+import { getAnalyticsDeviceCategory, getOrCreateAnalyticsSession } from "@/lib/analytics-session";
 
 export function CopyEmailButton({
   email,
@@ -12,12 +15,22 @@ export function CopyEmailButton({
   className?: string;
 }) {
   const [copied, setCopied] = useState(false);
+  const pathname = usePathname();
 
   async function handleCopy() {
     try {
       await navigator.clipboard.writeText(email);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
+
+      const session = getOrCreateAnalyticsSession();
+      trackAnalyticsEvent({
+        eventType: "action",
+        eventName: "email_copy",
+        path: pathname ?? "/",
+        sessionId: session.sessionId,
+        deviceCategory: getAnalyticsDeviceCategory(),
+      });
     } catch {
       // 클립보드 접근 실패 시 시각적 피드백만 생략 (동작에는 영향 없음)
     }

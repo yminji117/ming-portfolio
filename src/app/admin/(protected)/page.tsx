@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { StatTile } from "@/components/admin/stat-tile";
+import { getAnalyticsPublicStats } from "@/lib/analytics";
 
 export default async function AdminDashboardPage() {
   const supabase = await createClient();
@@ -14,6 +15,7 @@ export default async function AdminDashboardPage() {
     { count: featuredProfessionalCount },
     { count: featuredSideCount },
     { count: featuredStudiesCount },
+    analyticsStats,
   ] = await Promise.all([
     supabase
       .from("guestbook")
@@ -47,6 +49,7 @@ export default async function AdminDashboardPage() {
       .eq("category", "side")
       .eq("is_featured", true),
     supabase.from("studies").select("id", { count: "exact", head: true }).eq("is_featured", true),
+    getAnalyticsPublicStats(),
   ]);
 
   return (
@@ -102,6 +105,21 @@ export default async function AdminDashboardPage() {
             노출 관리
           </Link>
         </div>
+      </div>
+
+      <div className="flex flex-col gap-3">
+        <h2 className="text-[13px] font-semibold text-[var(--color-text-muted)]">방문 통계</h2>
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+          <StatTile label="오늘 방문자" value={analyticsStats?.today_visitors ?? 0} tone="accent" />
+          <StatTile label="오늘 페이지뷰" value={analyticsStats?.today_pageviews ?? 0} />
+          <StatTile label="누적 방문자" value={analyticsStats?.total_visitors ?? 0} />
+        </div>
+        <Link
+          href="/admin/analytics"
+          className="inline-flex w-fit items-center gap-1.5 rounded-full bg-[var(--color-accent)] px-5 py-2.5 text-[14px] font-medium text-[var(--color-accent-ink)] transition-transform duration-[var(--dur-fast)] hover:scale-[1.02]"
+        >
+          분석 보기
+        </Link>
       </div>
     </div>
   );

@@ -6,3 +6,5 @@
 - [Commit 5ce49c7 review](project_commit_5ce49c7_review.md) — 2026-08-25 short pointer summary: 1 new Critical (brute force), rest of guestbook fixes verified correct, Currently Doing slug-link gap still open (3rd cycle)
 - [Guestbook lockout removed — accepted risk](project_guestbook_lockout_accepted_risk.md) — user explicitly declined restoring brute-force lockout (2026-08-25); do NOT re-flag as blocking Critical
 - [PRD.md schema/security reference](reference_prd_schema_sections.md) — where to find DB/RLS/admin-auth requirements to cross-check migrations against
+- [Commit ef166c3 admin CMS review](project_commit_ef166c3_admin_cms_review.md) — reorderCurrentlyDoing/new-row bug found; mobile guard, media path validation deemed informational-only
+- [Mobile paths review — hero/gate bug](project_mobile_review_hero_gate_bug.md) — Critical: PageLoadGate waits on hidden desktop video on mobile (~4s stall); about/page.tsx TEMP dup-data leftover still live (2026-08-28)

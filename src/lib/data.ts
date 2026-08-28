@@ -50,6 +50,7 @@ export async function getProjectsPage(
     .from("projects")
     .select("*", { count: "exact" })
     .eq("category", category)
+    .is("deleted_at", null)
     .order("is_pinned", { ascending: false })
     .order("start_date", { ascending: false, nullsFirst: false })
     .order("id", { ascending: false })
@@ -66,11 +67,13 @@ export async function getProjectCategoryCounts(): Promise<
     supabase
       .from("projects")
       .select("id", { count: "exact", head: true })
-      .eq("category", "professional"),
+      .eq("category", "professional")
+      .is("deleted_at", null),
     supabase
       .from("projects")
       .select("id", { count: "exact", head: true })
-      .eq("category", "side"),
+      .eq("category", "side")
+      .is("deleted_at", null),
   ]);
   if (professional.error)
     console.error("getProjectCategoryCounts(professional) failed:", professional.error.message);
@@ -113,6 +116,7 @@ export async function getProjectBySlug(slug: string): Promise<Project | null> {
     .from("projects")
     .select("*")
     .eq("slug", slug)
+    .is("deleted_at", null)
     .maybeSingle();
   if (error) console.error("getProjectBySlug failed:", error.message);
   return data;
@@ -128,6 +132,7 @@ export async function getAdjacentProjects(
     .from("projects")
     .select("slug, title")
     .eq("category", category)
+    .is("deleted_at", null)
     .order("is_pinned", { ascending: false })
     .order("start_date", { ascending: false, nullsFirst: false })
     .order("id", { ascending: false });
@@ -187,6 +192,7 @@ export async function getStudiesPage(
   const { data, error, count } = await supabase
     .from("studies")
     .select("*", { count: "exact" })
+    .is("deleted_at", null)
     .order("is_pinned", { ascending: false })
     .order("start_date", { ascending: false, nullsFirst: false })
     .order("id", { ascending: false })
@@ -201,6 +207,7 @@ export async function getStudyBySlug(slug: string): Promise<Study | null> {
     .from("studies")
     .select("*")
     .eq("slug", slug)
+    .is("deleted_at", null)
     .maybeSingle();
   if (error) console.error("getStudyBySlug failed:", error.message);
   return data;
@@ -213,6 +220,7 @@ export async function getAdjacentStudies(
   const { data, error } = await supabase
     .from("studies")
     .select("slug, title")
+    .is("deleted_at", null)
     .order("is_pinned", { ascending: false })
     .order("start_date", { ascending: false, nullsFirst: false })
     .order("id", { ascending: false });
@@ -254,13 +262,15 @@ export async function getCareerYears(): Promise<number | null> {
   return Math.max(1, currentYear - startYear + 1);
 }
 
-// Hero 뱃지 "N건 완료" 계산용 — 게시된 프로젝트 총 개수
+// Hero 뱃지 "N건 완료" 계산용 — Professional 카테고리의 게시된 프로젝트 수만 집계
 export async function getPublishedProjectsCount(): Promise<number> {
   const supabase = await createClient();
   const { count, error } = await supabase
     .from("projects")
     .select("id", { count: "exact", head: true })
-    .eq("status", "published");
+    .eq("status", "published")
+    .eq("category", "professional")
+    .is("deleted_at", null);
   if (error) console.error("getPublishedProjectsCount failed:", error.message);
   return count ?? 0;
 }
@@ -305,7 +315,8 @@ const CURRENTLY_LABEL_PRIORITY: Record<string, number> = {
 };
 
 // limit 생략 시 전체 노출 — /about에서 재사용 (PRD 6.4)
-// PRD 5.7: 수동 order가 있으면 우선, 없으면 라벨 우선순위 → 시작일 최신순
+// 순서: 1순위 라벨(진행중 > 대기 > 완료, 수동 order가 있으면 최우선) → 2순위 시작일 최신순
+// (진행중/대기) → 3순위 종료일 최신순(완료) — 완료 항목은 "언제 끝났는지"가 더 의미 있는 기준이라 별도 처리.
 function sortCurrentlyDoing(rows: CurrentlyDoing[]): CurrentlyDoing[] {
   return [...rows].sort((a, b) => {
     if (a.order != null && b.order != null) return a.order - b.order;
@@ -316,10 +327,94 @@ function sortCurrentlyDoing(rows: CurrentlyDoing[]): CurrentlyDoing[] {
       CURRENTLY_LABEL_PRIORITY[a.label] - CURRENTLY_LABEL_PRIORITY[b.label];
     if (labelDiff !== 0) return labelDiff;
 
-    return (b.start_date ?? "").localeCompare(a.start_date ?? "");
+    const dateA = a.label === "done" ? a.end_date : a.start_date;
+    const dateB = b.label === "done" ? b.end_date : b.start_date;
+    return (dateB ?? "").localeCompare(dateA ?? "");
   });
 }
 
+function todayIso(): string {
+  return new Date().toISOString().slice(0, 10);
+}
+
+// 자동 생성 항목의 라벨 — Work/Study는 "하고 싶다(대기)" 상태가 없어 진행중/완료 둘 중 하나로만 판단한다.
+function deriveAutoCurrentlyLabel(endDate: string | null): "doing" | "done" {
+  if (!endDate) return "doing";
+  return endDate < todayIso() ? "done" : "doing";
+}
+
+// Works(Professional/Side)·Study 중 게시된(미삭제) 항목을 Currently Doing 형태로 변환한다.
+// 이미 수동 항목이 ref_type/ref_id로 연결해둔 프로젝트/스터디는 중복 노출을 막기 위해 제외한다.
+async function buildAutoCurrentlyDoingItems(
+  excludeProjectIds: Set<string>,
+  excludeStudyIds: Set<string>,
+): Promise<CurrentlyDoing[]> {
+  const supabase = await createClient();
+  const [{ data: projects, error: projectsError }, { data: studies, error: studiesError }] =
+    await Promise.all([
+      supabase
+        .from("projects")
+        .select("id, title, category, start_date, end_date")
+        .eq("status", "published")
+        .is("deleted_at", null),
+      supabase
+        .from("studies")
+        .select("id, title, start_date, end_date")
+        .eq("status", "published")
+        .is("deleted_at", null),
+    ]);
+  if (projectsError) console.error("buildAutoCurrentlyDoingItems(projects) failed:", projectsError.message);
+  if (studiesError) console.error("buildAutoCurrentlyDoingItems(studies) failed:", studiesError.message);
+
+  const projectItems: CurrentlyDoing[] = (projects ?? [])
+    .filter((p) => !excludeProjectIds.has(p.id))
+    .map((p) => ({
+      id: `auto-project-${p.id}`,
+      category: p.category === "side" ? "side" : "works",
+      title: p.title,
+      label: deriveAutoCurrentlyLabel(p.end_date),
+      start_date: p.start_date,
+      end_date: p.end_date,
+      ref_type: "project" as const,
+      ref_id: p.id,
+      is_visible: true,
+      order: null,
+    }));
+
+  const studyItems: CurrentlyDoing[] = (studies ?? [])
+    .filter((s) => !excludeStudyIds.has(s.id))
+    .map((s) => ({
+      id: `auto-study-${s.id}`,
+      category: "study" as const,
+      title: s.title,
+      label: deriveAutoCurrentlyLabel(s.end_date),
+      start_date: s.start_date,
+      end_date: s.end_date,
+      ref_type: "study" as const,
+      ref_id: s.id,
+      is_visible: true,
+      order: null,
+    }));
+
+  return [...projectItems, ...studyItems];
+}
+
+function collectRefExclusions(rows: { ref_type: string; ref_id: string | null }[]): {
+  projectIds: Set<string>;
+  studyIds: Set<string>;
+} {
+  const projectIds = new Set<string>();
+  const studyIds = new Set<string>();
+  rows.forEach((row) => {
+    if (!row.ref_id) return;
+    if (row.ref_type === "project") projectIds.add(row.ref_id);
+    if (row.ref_type === "study") studyIds.add(row.ref_id);
+  });
+  return { projectIds, studyIds };
+}
+
+// Front(Main/About) 노출용 — 수동으로 등록한 항목(노출 처리된 것만) + Works/Study에서 자동 생성된
+// 항목을 합쳐 정렬한다. 자동 항목은 수동 항목이 이미 연결해둔 프로젝트/스터디를 제외한다.
 export async function getCurrentlyDoing(limit?: number): Promise<CurrentlyDoing[]> {
   const supabase = await createClient();
   const { data, error } = await supabase
@@ -328,8 +423,24 @@ export async function getCurrentlyDoing(limit?: number): Promise<CurrentlyDoing[
     .eq("is_visible", true);
   if (error) console.error("getCurrentlyDoing failed:", error.message);
 
-  const sorted = sortCurrentlyDoing(data ?? []);
+  const manual = data ?? [];
+  const { projectIds, studyIds } = collectRefExclusions(manual);
+  const auto = await buildAutoCurrentlyDoingItems(projectIds, studyIds);
+
+  const sorted = sortCurrentlyDoing([...manual, ...auto]);
   return limit != null ? sorted.slice(0, limit) : sorted;
+}
+
+// 어드민 미리보기용 — Works/Study에서 자동 생성될 항목만 반환한다(수동 항목은 getAllCurrentlyDoing).
+// 어드민 세션은 숨김 처리된 수동 항목까지 전부 볼 수 있어, 숨겨둔 연결도 중복 제외 기준에 포함한다.
+export async function getAutoCurrentlyDoingPreview(): Promise<CurrentlyDoing[]> {
+  const supabase = await createClient();
+  const { data, error } = await supabase.from("currently_doing").select("ref_type, ref_id");
+  if (error) console.error("getAutoCurrentlyDoingPreview failed:", error.message);
+
+  const { projectIds, studyIds } = collectRefExclusions(data ?? []);
+  const auto = await buildAutoCurrentlyDoingItems(projectIds, studyIds);
+  return sortCurrentlyDoing(auto);
 }
 
 // 어드민 Currently Doing 관리용 — 노출/비노출 전부 보여준다(is_visible 필터 없음).

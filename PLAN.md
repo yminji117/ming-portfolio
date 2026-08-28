@@ -10,7 +10,7 @@
 
 ## 진행 현황
 
-> 마지막 업데이트: 2026.08.21. 작업이 완료될 때마다 이 표의 상태를 갱신합니다. (✅ 완료 / 🔄 진행중 / ⬜ 대기)
+> 마지막 업데이트: 2026.08.29. 작업이 완료될 때마다 이 표의 상태를 갱신합니다. (✅ 완료 / 🔄 진행중 / ⬜ 대기)
 
 | 상태 | 문서/작업 |
 | --- | --- |
@@ -30,7 +30,8 @@
 | Phase 1 | Main 페이지 구현 | ✅ 완료 | 전 섹션 실데이터 렌더 + 반응형 4개 뷰포트 + 인터랙션 브라우저 검증 완료 |
 | - | Figma '최종' 메인 디자인 반영 | ✅ 완료 | 블랙/화이트+블루 톤 리뉴얼, Works Professional industry 필터(하이라이트 방식) 추가, Study 로드맵 카드(단계 입력 시) 신설, 노출 정원 변경(Professional 5/Study 4/Side 2). `0005_industry_and_caps.sql` 작성 완료 — **Supabase SQL Editor에서 아직 미적용, 적용 전까지는 필터 칩·로드맵 카드·5/4/2 정원이 화면에 나타나지 않음**(쿼리 limit은 이미 반영되어 있어 기존 데이터 내에서는 정상 축소 노출됨) |
 | Phase 2 | 하위 페이지 및 상세 페이지 | 🔄 구현 완료, 마이그레이션 적용 대기 | `/works`, `/works/[slug]`, `/study`, `/study/[slug]`, `/about`, `/here`(방명록) 전부 구현·빌드·라우트 렌더링 확인 완료. **방명록 작성/인증/수정은 `0009_guestbook_functions.sql`을 Supabase SQL Editor에서 적용해야 동작**(RPC 함수 미존재 상태) — 적용 전까지는 목록 조회만 가능. `.env.local`에 `GUESTBOOK_SESSION_SECRET` 로컬용 자동 생성 완료, **Vercel에도 별도 값으로 등록 필요** |
-| Phase 3 | 어드민 구현 | ⬜ 대기 | |
+| Phase 3 | 어드민 구현 | ✅ 완료 | 실사용 브라우저 검증 일부 대기(3-2 대시보드 위젯만 부분 진행) |
+| Phase 4 | 방문자 분석(자체 트래킹 + 대시보드) | ✅ 완료 | 4a~4d 구현·검증 완료(2026.08.29), 일부 항목 실브라우저 클릭 확인 대기 |
 
 ---
 
@@ -163,7 +164,24 @@ PRD 2.2의 다크 토큰을 라이트로 교체. `app/globals.css`에 CSS 변수
 
 **Phase 3(어드민) 구현은 여기서 전부 끝났다.** 남은 건 전 항목의 "실사용 브라우저 검증"뿐 — 특히 로컬에서만 작업했고 아직 커밋/배포는 안 한 상태(2026.08.27 세션 전체)라는 걸 잊지 말 것.
 
+**3-4 확장: Currently Doing 자동 생성(2026.08.29)**: 기존엔 100% 수동 입력이었던 Currently Doing에, Works(Professional/Side)·Study에 게시된 항목을 자동으로 얹는 기능을 추가했다. `src/lib/data.ts`의 `getCurrentlyDoing`이 수동 항목(`is_visible=true`)과 자동 생성 항목(`buildAutoCurrentlyDoingItems` — `projects`/`studies`에서 `status='published' and deleted_at is null`인 것만, Professional→`works`/Side→`side`/Study→`study` 카테고리로 매핑)을 합쳐 반환한다. 자동 항목의 라벨은 "대기"가 있을 수 없어(이미 실제로 등록된 콘텐츠라) `end_date` 기준으로 진행중/완료만 판단한다(없거나 오늘 이후면 진행중). 수동 항목이 `ref_type`/`ref_id`로 이미 특정 프로젝트/스터디를 연결해뒀다면 그 항목은 자동 목록에서 제외해 중복을 막는다. 정렬 기준도 요청대로 조정: 라벨 우선순위(수동 `order` > 진행중 > 대기 > 완료)까지는 기존과 같고, 동순위 내에서는 진행중/대기는 `start_date` 최신순, **완료는 `end_date` 최신순**으로 갈라지도록 `sortCurrentlyDoing`을 고쳤다(기존엔 완료도 `start_date` 기준이었음). 어드민(`/admin/currently-doing`)에는 기존 수동 편집 테이블은 그대로 두고, 그 아래 읽기 전용 `CurrentlyDoingAutoPreview` 섹션을 새로 추가해 지금 자동으로 채워질 항목을 미리 볼 수 있게 했다(수정/삭제는 여전히 `/admin/works`·`/admin/studies`에서). 새 마이그레이션 없음(기존 RLS로 `projects`/`studies` 조회 충분). `tsc`/`eslint`/`next build` 전부 통과, 실브라우저 확인은 아직.
+
 ---
+
+## Phase 4 — 방문자 분석(자체 트래킹 + 대시보드) ✅ 구현 완료(실사용 브라우저 검증 일부 대기)
+
+**설계 확정(2026.08.29)**: 서드파티 애널리틱스(Vercel Analytics 등)가 아니라 Supabase에 직접 이벤트를 쌓는 자체 구축으로 결정. 방명록 기능이 이미 풀어낸 "anon이 직접 호출 가능한 공개 API로 안전하게 쓰기"(`guestbook_insert` RPC + `guestbook_client_ip_hash()`) 패턴을 그대로 재사용 — 서비스 롤 키, 별도 Route Handler, `proxy.ts` 변경 없이 기존 아키텍처 안에서 끝낸다. 화면은 두 곳: Front(전 페이지 Footer)에 방문자 누구나 보는 간단 통계 위젯, `/admin/analytics`에 관리자 전용 상세 대시보드(유입 경로/페이지뷰/액션/이탈 지점/인기 페이지). 이탈 지점은 `sendBeacon` 기반 정석 방식 대신 "세션의 마지막 pageview 행"으로 근사(PostgREST가 커스텀 헤더를 요구해 beacon과 궁합이 안 맞음 — 개인 포트폴리오 규모에서 근사 오차는 무시 가능). 상세 계획은 `.claude/plans/steady-painting-fern.md` 참고.
+
+작업량 기준 하위 단계로 순차 진행: **4a**(스키마 + 수집 파이프라인) → **4b**(어드민 상세 대시보드) → **4c**(Front 공개 위젯) → **4d**(기존 컴포넌트에 액션 클릭 계측 추가).
+
+| # | 상태 | 작업 | 완료 기준 |
+| --- | --- | --- | --- |
+| 4-1 | ✅ | **[4a]** `0041_analytics.sql`(`analytics_events` 테이블 + RLS + `analytics_track_event` RPC + `analytics_public_stats` 뷰), `src/lib/analytics-track.ts`, `src/components/analytics-tracker.tsx`, `layout.tsx` 마운트 | RPC 직접 호출로 실제 적재/중복 방지/anon 원본 테이블 차단 전부 확인 완료(2026.08.29) |
+| 4-2 | ✅ | **[4b]** 관리자 집계 함수 5개(`0043_analytics_admin_functions.sql`), `src/lib/analytics.ts`, `analytics-bar-list.tsx`, `/admin/analytics` 페이지, 네비 링크, `/admin` 대시보드 요약 섹션 | 코드 구현 + `tsc`/`eslint`/`next build` 통과, `0043` 적용 + anon 호출 차단 확인 완료(2026.08.29). **실브라우저로 숫자 렌더링 눈으로 확인은 아직** |
+| 4-3 | ✅ | **[4c]** `footer.tsx`에 공개 통계 위젯(오늘/누적 방문자) 추가 | 전 라우트(`/about`, `/works` 등)에서 "오늘 N명 방문 · 누적 N명 방문" 정상 노출 확인(2026.08.29) |
+| 4-4 | ✅ | **[4d]** `TrackedLink`/`TrackedExternalLink` 컴포넌트(+공용 세션 헬퍼 `analytics-session.ts`로 pageview/action 로직 통합) + `copy-email-button.tsx`(이메일 복사)/`guestbook-form.tsx`(방명록 작성)/`project-card.tsx`(카드 클릭)/`hero.tsx`·`about-summary.tsx`(인스타그램 링크) 계측 추가 | `tsc`/`eslint`/`next build` 통과, 라우트 정상 응답 + 카드·인스타 링크 href 원본 그대로 유지 확인(2026.08.29). **실제 클릭 후 이벤트 적재 브라우저 확인은 아직** |
+
+**4a 완료(2026.08.29)**: `0041_analytics.sql`, `src/lib/analytics-track.ts`, `src/components/analytics-tracker.tsx`(layout.tsx에 마운트) 작성 + Supabase SQL Editor에 적용 완료. `tsc`/`eslint`/`next build` 통과 + RPC 직접 호출로 실제 적재/3초 중복 방지/anon 원본 테이블 SELECT 차단까지 확인. 적용 직후 `guestbook_client_ip_hash()`가 0025에서 겪은 것과 동일한 "`function digest(text, unknown) does not exist`" 에러 발생(Supabase가 pgcrypto를 `extensions` 스키마에 설치) — `0042_analytics_pgcrypto_search_path.sql`로 `analytics_client_ip_hash()`의 `search_path`에 `extensions` 추가해 수정, 적용 후 정상 동작 확인.
 
 ## Cross-cutting (전 Phase 공통, 마무리 단계에서 점검)
 

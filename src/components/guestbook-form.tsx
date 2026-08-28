@@ -3,6 +3,8 @@
 import { useState, useTransition, type FormEvent } from "react";
 import { createGuestbookEntry } from "@/app/here/actions";
 import { CheckboxCheckedIcon, CheckboxUncheckedIcon } from "@/components/icons";
+import { trackAnalyticsEvent } from "@/lib/analytics-track";
+import { getAnalyticsDeviceCategory, getOrCreateAnalyticsSession } from "@/lib/analytics-session";
 import type { GuestbookEntry } from "@/lib/types";
 
 const CONTENT_MAX = 500;
@@ -37,6 +39,16 @@ export function GuestbookForm({ onCreated }: { onCreated: (entry: GuestbookEntry
         setError(result.message);
         return;
       }
+
+      const session = getOrCreateAnalyticsSession();
+      trackAnalyticsEvent({
+        eventType: "action",
+        eventName: "guestbook_submit",
+        path: "/here",
+        sessionId: session.sessionId,
+        deviceCategory: getAnalyticsDeviceCategory(),
+      });
+
       onCreated({ ...result.entry, updated_at: null });
       setContent("");
       setNickname("");

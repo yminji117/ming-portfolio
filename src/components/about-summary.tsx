@@ -3,6 +3,7 @@ import { CareerTimeline } from "@/components/career-timeline";
 import { CopyEmailButton } from "@/components/copy-email-button";
 import { MoreLink } from "@/components/more-link";
 import { Reveal } from "@/components/reveal";
+import { TrackedExternalLink } from "@/components/tracked-external-link";
 import { getInstagramHandle } from "@/lib/format";
 import type { About, Career } from "@/lib/types";
 
@@ -35,15 +36,14 @@ export function AboutSummary({
         </div>
       )}
       {about.instagram_url && (
-        <a
+        <TrackedExternalLink
           href={about.instagram_url}
-          target="_blank"
-          rel="noopener noreferrer"
+          eventName="instagram_click"
           className="flex w-full items-center justify-between gap-2 text-[length:var(--fs-body)] text-white transition-colors duration-[var(--dur-fast)] hover:text-[var(--color-accent)]"
         >
           {getInstagramHandle(about.instagram_url)}
           <span aria-hidden="true" className="text-[20px] font-extralight">→</span>
-        </a>
+        </TrackedExternalLink>
       )}
     </div>
   );

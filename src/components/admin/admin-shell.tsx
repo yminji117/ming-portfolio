@@ -49,6 +49,7 @@ export function AdminShell({ email, children }: { email: string; children: React
             <AdminNavLink href="/admin/currently-doing">Currently Doing</AdminNavLink>
             <AdminNavLink href="/admin/main">노출 관리</AdminNavLink>
             <AdminNavLink href="/admin/guestbook">방명록</AdminNavLink>
+            <AdminNavLink href="/admin/analytics">분석</AdminNavLink>
             <AdminNavLink href="/admin/site-settings">Site Settings</AdminNavLink>
             <AdminNavLink href="/admin/media">미디어</AdminNavLink>
             <AdminNavLink href="/admin/trash">휴지통</AdminNavLink>
