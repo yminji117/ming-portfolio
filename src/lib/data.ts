@@ -308,28 +308,18 @@ export async function getSkills(): Promise<Skill[]> {
   return data ?? [];
 }
 
-const CURRENTLY_LABEL_PRIORITY: Record<string, number> = {
-  doing: 0,
-  want: 1,
-  done: 2,
-};
-
 // limit 생략 시 전체 노출 — /about에서 재사용 (PRD 6.4)
-// 순서: 1순위 라벨(진행중 > 대기 > 완료, 수동 order가 있으면 최우선) → 2순위 시작일 최신순
-// (진행중/대기) → 3순위 종료일 최신순(완료) — 완료 항목은 "언제 끝났는지"가 더 의미 있는 기준이라 별도 처리.
+// 순서: 수동 order가 있으면 최우선 → 1순위 시작일 최신순 → 2순위 종료일 최신순(라벨 구분 없음).
 function sortCurrentlyDoing(rows: CurrentlyDoing[]): CurrentlyDoing[] {
   return [...rows].sort((a, b) => {
     if (a.order != null && b.order != null) return a.order - b.order;
     if (a.order != null) return -1;
     if (b.order != null) return 1;
 
-    const labelDiff =
-      CURRENTLY_LABEL_PRIORITY[a.label] - CURRENTLY_LABEL_PRIORITY[b.label];
-    if (labelDiff !== 0) return labelDiff;
+    const startDiff = (b.start_date ?? "").localeCompare(a.start_date ?? "");
+    if (startDiff !== 0) return startDiff;
 
-    const dateA = a.label === "done" ? a.end_date : a.start_date;
-    const dateB = b.label === "done" ? b.end_date : b.start_date;
-    return (dateB ?? "").localeCompare(dateA ?? "");
+    return (b.end_date ?? "").localeCompare(a.end_date ?? "");
   });
 }
 
