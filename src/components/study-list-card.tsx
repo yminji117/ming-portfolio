@@ -12,15 +12,15 @@ export function StudyListCard({ study }: { study: Study }) {
   return (
     <Link
       href={`/study/${study.slug}`}
-      className="group flex gap-4 rounded-[var(--radius)] border border-[var(--color-line)] p-3 transition-colors duration-[var(--dur-fast)] hover:border-[var(--color-accent)] sm:gap-6 sm:p-4"
+      className="group flex items-start gap-4 rounded-[var(--radius)] border border-[var(--color-line)] p-3 transition-colors duration-[var(--dur-fast)] hover:border-[var(--color-accent)] sm:gap-6 sm:p-4"
     >
-      <div className="relative aspect-square w-[123px] shrink-0 overflow-hidden rounded-[4px] border border-solid border-[#EBEEF5] bg-[#707070] sm:w-[135px]">
+      <div className="relative aspect-square w-[150px] shrink-0 overflow-hidden rounded-[4px] border border-solid border-[#EBEEF5] bg-[#707070]">
         {study.thumbnail_url ? (
           <Image
             src={study.thumbnail_url}
             alt={study.title}
             fill
-            sizes="(min-width: 640px) 135px, 123px"
+            sizes="150px"
             className="object-cover transition-transform duration-[var(--dur-base)] ease-[var(--ease-out)] group-hover:scale-[1.04]"
           />
         ) : (

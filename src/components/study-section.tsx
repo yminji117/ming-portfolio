@@ -8,17 +8,7 @@ import { Reveal } from "@/components/reveal";
 import { SectionHeading } from "@/components/section-heading";
 import { Tag } from "@/components/tag";
 import { getStudyCategoryLabel, sortStudyTagsForDisplay } from "@/lib/format";
-import { getStudyHref } from "@/lib/study";
-import type { Study, StudyRoadmapStep } from "@/lib/types";
-
-// 로드맵 본문이 없는 항목을 선택해 펼쳤을 때 보여줄 임시 텍스트.
-const PLACEHOLDER_STEPS: StudyRoadmapStep[] = [
-  { label: "1단계", text: "주제 정하고 자료 모으기" },
-  { label: "2단계", text: "레퍼런스 비교하며 정리하기" },
-  { label: "3단계", text: "핵심 인사이트 뽑아내기" },
-  { label: "4단계", text: "실제 작업에 적용해보기" },
-  { label: "5단계", text: "회고하고 다음 액션 정하기" },
-];
+import type { Study } from "@/lib/types";
 
 export function StudySection({
   studies,
@@ -61,11 +51,11 @@ function StudyItem({
   isOpen: boolean;
   onSelect: () => void;
 }) {
-  const steps =
-    study.body?.steps && study.body.steps.length > 0
-      ? study.body.steps
-      : PLACEHOLDER_STEPS;
-  const { href, isExternal } = getStudyHref(study);
+  const steps = study.body?.steps ?? [];
+  const hasSteps = steps.length > 0;
+  // 메인 Study 영역의 화살표는 항상 상세 페이지로 이동한다 — 외부 링크는 옆의
+  // 별도 버튼으로 분리해, '상세 보기'와 '외부로 이동'을 서로 다른 동작으로 구분한다.
+  const detailHref = `/study/${study.slug}`;
   const rawTag = sortStudyTagsForDisplay(study.tags)[0];
   const tag = rawTag ? getStudyCategoryLabel(rawTag) : undefined;
 
@@ -100,36 +90,50 @@ function StudyItem({
             }
           }}
           aria-expanded={isOpen}
-          className="min-w-0 flex-1 cursor-pointer text-left"
+          className="min-w-0 flex-1 cursor-pointer text-left lg:grid lg:grid-cols-[auto_1fr] lg:items-start lg:gap-x-4 lg:gap-y-0"
         >
-          {/* 모바일: 태그 + 펼치기 버튼 한 줄, 타이틀은 아래 줄 */}
+          {/* 모바일: 태그 + 버튼(들) 한 줄, 타이틀은 아래 줄 */}
           <div className="flex items-center justify-between gap-4 lg:hidden">
             {tagElement}
-            <Link
-              href={href}
-              target={isExternal ? "_blank" : undefined}
-              rel={isExternal ? "noopener noreferrer" : undefined}
-              aria-label={`${study.title} 자세히 보기`}
-              onClick={(event) => event.stopPropagation()}
-              className="group block shrink-0 transition-transform duration-[var(--dur-base)] ease-[var(--ease-out)] hover:translate-x-0.5"
-            >
-              <ExpandCircleRightIcon className="size-12 shrink-0" />
-            </Link>
+            <div className="flex shrink-0 items-center gap-2">
+              {study.external_url && (
+                <a
+                  href={study.external_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label={`${study.title} 외부 링크로 이동`}
+                  onClick={(event) => event.stopPropagation()}
+                  className="group block shrink-0 transition-transform duration-[var(--dur-base)] ease-[var(--ease-out)] hover:-translate-y-0.5 hover:translate-x-0.5"
+                >
+                  <ExpandCircleRightIcon className="size-9 -rotate-45 shrink-0" />
+                </a>
+              )}
+              <Link
+                href={detailHref}
+                aria-label={`${study.title} 자세히 보기`}
+                onClick={(event) => event.stopPropagation()}
+                className="group block shrink-0 transition-transform duration-[var(--dur-base)] ease-[var(--ease-out)] hover:translate-x-0.5"
+              >
+                <ExpandCircleRightIcon className="size-12 shrink-0" />
+              </Link>
+            </div>
           </div>
           <span className="mt-2 block font-[family-name:var(--font-body)] text-[24px] font-bold tracking-[-0.7px] lg:hidden">
             {study.title}
           </span>
 
-          {/* 데스크탑: 태그 + 타이틀 한 줄 (기존 레이아웃 그대로) */}
-          <div className="hidden lg:flex lg:flex-wrap lg:items-center lg:gap-4">
-            {tagElement}
-            <span className="font-[family-name:var(--font-body)] text-[28px] font-bold tracking-tight">
-              {study.title}
-            </span>
-          </div>
+          {/* 데스크탑: 태그 칼럼 (1행 1열) */}
+          <div className="hidden lg:block">{tagElement}</div>
 
+          {/* 데스크탑: 타이틀 (1행 2열) */}
+          <span className="hidden font-[family-name:var(--font-body)] text-[28px] font-bold tracking-tight lg:inline-block">
+            {study.title}
+          </span>
+
+          {/* 설명/로드맵 — 데스크탑에서는 태그 칼럼 왼쪽 끝부터 전체 너비로 펼쳐져
+              (lg:col-span-2), 타이틀이 아니라 태그(라벨)와 같은 x축에서 시작한다. */}
           <div
-            className="grid min-h-0 transition-[grid-template-rows] duration-[600ms] ease-[var(--ease-out)]"
+            className="grid min-h-0 transition-[grid-template-rows] duration-[600ms] ease-[var(--ease-out)] lg:col-span-2"
             style={{ gridTemplateRows: isOpen ? "1fr" : "0fr" }}
           >
             <div className="min-h-0 overflow-hidden">
@@ -145,58 +149,79 @@ function StudyItem({
                   />
                 </div>
               </div>
-              <ol
-                className={`relative mt-5 flex flex-col gap-3 pl-3 transition-opacity duration-500 lg:mt-4 lg:gap-2 ${
-                  isOpen ? "opacity-100 delay-150" : "opacity-0"
-                }`}
-                aria-hidden={!isOpen}
-              >
-                {steps.map((step, i) => (
-                  <li
-                    key={step.label}
-                    className="relative flex flex-col gap-2 pl-9 text-[16px] lg:flex-row lg:flex-wrap lg:items-center lg:gap-2 lg:text-[20px]"
-                  >
-                    {i < steps.length - 1 && (
-                      <span className="absolute left-[11px] top-6 h-full w-px bg-white/40" aria-hidden="true" />
-                    )}
-                    <StepCheckIcon className="absolute left-0 top-0.5 size-6 shrink-0" />
-                    <span className="w-[58px] font-medium text-white">{step.label}</span>
-                    <span className="text-[#cecece]">{step.text}</span>
-                  </li>
-                ))}
-              </ol>
+              {hasSteps ? (
+                <ol
+                  className={`relative mt-5 flex flex-col gap-3 pl-3 transition-opacity duration-500 lg:mt-4 lg:gap-2 lg:pl-0 ${
+                    isOpen ? "opacity-100 delay-150" : "opacity-0"
+                  }`}
+                  aria-hidden={!isOpen}
+                >
+                  {steps.map((step, i) => (
+                    <li
+                      key={step.label}
+                      className="relative flex flex-col gap-2 pl-9 text-[16px] lg:flex-row lg:flex-wrap lg:items-center lg:gap-2 lg:text-[20px]"
+                    >
+                      {i < steps.length - 1 && (
+                        <span className="absolute left-[11px] top-6 h-full w-px bg-white/40 lg:left-[11px]" aria-hidden="true" />
+                      )}
+                      <StepCheckIcon className="absolute left-0 top-0.5 size-6 shrink-0" />
+                      <span className="w-[58px] font-medium text-white">{step.label}</span>
+                      <span className="text-[#cecece]">{step.text}</span>
+                    </li>
+                  ))}
+                </ol>
+              ) : study.overview ? (
+                // 로드맵 단계를 안 채운 항목은 어드민 "설명"(overview)을 그대로 노출한다.
+                <p
+                  className={`mt-5 whitespace-pre-line text-[16px] leading-relaxed text-[#cecece] transition-opacity duration-500 lg:mt-4 lg:text-[18px] ${
+                    isOpen ? "opacity-100 delay-150" : "opacity-0"
+                  }`}
+                  aria-hidden={!isOpen}
+                >
+                  {study.overview}
+                </p>
+              ) : null}
             </div>
           </div>
         </div>
 
-        {/* 데스크탑 전용 썸네일 (기존 유지) */}
+        {/* 데스크탑 전용 썸네일 — 16:9(366×206px) 고정 크기 */}
         <div
-          className={`hidden overflow-hidden transition-[max-width] duration-[600ms] ease-[var(--ease-out)] lg:block lg:shrink-0 ${
-            isOpen ? "self-stretch" : "self-start"
-          }`}
-          style={{ maxWidth: isOpen ? "374px" : "0px", maxHeight: isOpen ? "none" : "0px" }}
+          className="hidden self-start overflow-hidden transition-[max-width,max-height] duration-[600ms] ease-[var(--ease-out)] lg:block lg:shrink-0"
+          style={{ maxWidth: isOpen ? "366px" : "0px", maxHeight: isOpen ? "206px" : "0px" }}
         >
-          <div className="h-full w-[374px] overflow-hidden">
+          <div className="h-[206px] w-[366px] overflow-hidden">
             <MediaThumb
               src={study.main_thumbnail_url ?? study.thumbnail_url}
               alt={study.title}
               bare
               theme="dark"
-              className={`h-full transition-opacity duration-500 ${isOpen ? "opacity-100 delay-150" : "opacity-0"}`}
+              className={`h-full w-full transition-opacity duration-500 ${isOpen ? "opacity-100 delay-150" : "opacity-0"}`}
             />
           </div>
         </div>
 
-        {/* 데스크탑 전용 펼치기 링크 (기존 유지) */}
-        <Link
-          href={href}
-          target={isExternal ? "_blank" : undefined}
-          rel={isExternal ? "noopener noreferrer" : undefined}
-          aria-label={`${study.title} 자세히 보기`}
-          className="group hidden shrink-0 transition-transform duration-[var(--dur-base)] ease-[var(--ease-out)] hover:translate-x-0.5 lg:block"
-        >
-          <ExpandCircleRightIcon className="size-12 shrink-0" />
-        </Link>
+        {/* 데스크탑: 외부 링크 버튼(있을 때만) + 상세 페이지 이동 버튼 */}
+        <div className="hidden shrink-0 items-center gap-3 lg:flex">
+          {study.external_url && (
+            <a
+              href={study.external_url}
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label={`${study.title} 외부 링크로 이동`}
+              className="group shrink-0 transition-transform duration-[var(--dur-base)] ease-[var(--ease-out)] hover:-translate-y-0.5 hover:translate-x-0.5"
+            >
+              <ExpandCircleRightIcon className="size-9 -rotate-45 shrink-0" />
+            </a>
+          )}
+          <Link
+            href={detailHref}
+            aria-label={`${study.title} 자세히 보기`}
+            className="group shrink-0 transition-transform duration-[var(--dur-base)] ease-[var(--ease-out)] hover:translate-x-0.5"
+          >
+            <ExpandCircleRightIcon className="size-12 shrink-0" />
+          </Link>
+        </div>
       </div>
     </div>
   );

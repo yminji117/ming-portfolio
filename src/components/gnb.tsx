@@ -140,12 +140,12 @@ export function Gnb() {
           >
             <span
               className={`block h-0.5 w-6 bg-current transition-transform duration-[var(--dur-fast)] ${
-                menuOpen ? "translate-y-2 rotate-45" : ""
+                menuOpen ? "translate-y-1 rotate-45" : ""
               }`}
             />
             <span
               className={`block h-0.5 w-6 bg-current transition-transform duration-[var(--dur-fast)] ${
-                menuOpen ? "-translate-y-2 -rotate-45" : ""
+                menuOpen ? "-translate-y-1 -rotate-45" : ""
               }`}
             />
           </button>

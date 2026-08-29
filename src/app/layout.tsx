@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { AnalyticsTracker } from "@/components/analytics-tracker";
+import { CursorFollower } from "@/components/cursor-follower";
 import { MotionProvider } from "@/components/motion-provider";
 import { PageLoadGate } from "@/components/page-load-gate";
 import { getSiteSettings } from "@/lib/data";
@@ -23,6 +24,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       <body className="min-h-full flex flex-col">
         <AnalyticsTracker />
         <MotionProvider>
+          <CursorFollower />
           <PageLoadGate>{children}</PageLoadGate>
         </MotionProvider>
       </body>
