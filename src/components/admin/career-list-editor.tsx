@@ -18,7 +18,7 @@ const TYPE_OPTIONS: { value: CareerType; label: string }[] = [
   { value: "school", label: "학교" },
 ];
 
-type Row = { id: string; isNew: boolean; input: CareerInput };
+type Row = { id: string; isNew: boolean; ongoing: boolean; input: CareerInput };
 
 function toInput(career?: Career): CareerInput {
   return {
@@ -38,7 +38,12 @@ export function CareerListEditor({ careers }: { careers: Career[] }) {
   const router = useRouter();
   const sorted = [...careers].sort((a, b) => (b.start_date ?? "").localeCompare(a.start_date ?? ""));
   const [rows, setRows] = useState<Row[]>(
-    sorted.map((c) => ({ id: c.id, isNew: false, input: toInput(c) })),
+    sorted.map((c) => ({
+      id: c.id,
+      isNew: false,
+      ongoing: Boolean(c.start_date && !c.end_date),
+      input: toInput(c),
+    })),
   );
   const [isPending, startTransition] = useTransition();
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -47,17 +52,30 @@ export function CareerListEditor({ careers }: { careers: Career[] }) {
     setRows((prev) => prev.map((r) => (r.id === id ? { ...r, input: { ...r.input, ...patch } } : r)));
   }
 
+  // "진행중" 체크는 종료일이 비어있는지로 매번 다시 계산하지 않고 독립된 상태로 갖는다 —
+  // 체크 해제 시에도 종료일이 그대로 null이라 파생값으로는 다시 true가 돼버려 체크가 안 풀렸었다.
+  function updateOngoing(id: string, ongoing: boolean) {
+    setRows((prev) =>
+      prev.map((r) =>
+        r.id === id
+          ? { ...r, ongoing, input: ongoing ? { ...r.input, end_date: null } : r.input }
+          : r,
+      ),
+    );
+  }
+
   function addRow() {
     const id = `new-${crypto.randomUUID()}`;
-    setRows((prev) => [{ id, isNew: true, input: toInput() }, ...prev]);
+    setRows((prev) => [{ id, isNew: true, ongoing: false, input: toInput() }, ...prev]);
   }
 
   function saveRow(row: Row) {
     setErrors((prev) => ({ ...prev, [row.id]: "" }));
+    const input = { ...row.input, end_date: row.ongoing ? null : row.input.end_date };
     startTransition(async () => {
       const result = row.isNew
-        ? await createCareer(row.input)
-        : await updateCareer(row.id, row.input);
+        ? await createCareer(input)
+        : await updateCareer(row.id, input);
       if (!result.ok) {
         setErrors((prev) => ({ ...prev, [row.id]: result.message }));
         return;
@@ -131,10 +149,10 @@ export function CareerListEditor({ careers }: { careers: Career[] }) {
                     label="기간"
                     startValue={row.input.start_date ?? ""}
                     endValue={row.input.end_date ?? ""}
-                    ongoing={Boolean(row.input.start_date && !row.input.end_date)}
+                    ongoing={row.ongoing}
                     onStartChange={(v) => updateRow(row.id, { start_date: v || null })}
                     onEndChange={(v) => updateRow(row.id, { end_date: v || null })}
-                    onOngoingChange={(ongoing) => updateRow(row.id, { end_date: ongoing ? null : row.input.end_date })}
+                    onOngoingChange={(ongoing) => updateOngoing(row.id, ongoing)}
                   />
                 </div>
                 <div className="sm:col-span-2 flex flex-col gap-1.5">

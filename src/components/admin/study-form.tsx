@@ -231,7 +231,7 @@ export function StudyForm({
         />
         <TextField
           label="관련 URL"
-          hint="상세 페이지 설명 하단에 '관련 URL · 바로 가기' 버튼으로 노출돼요 (목록/메인 이동에는 영향 없음)"
+          hint="채워두면 상세 페이지 '소속' 항목에 밑줄이 생기고 클릭 시 이동해요 (소속을 안 썼으면 노출되지 않아요)"
           value={input.related_url ?? ""}
           onChange={(v) => set("related_url", v || null)}
         />

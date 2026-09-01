@@ -48,113 +48,97 @@ export default async function StudyDetailPage(
     <>
       <Gnb />
       <main className="flex-1 pt-16 lg:pt-[60px]">
-        {/* Figma '최종' node 229:142(desktop)/246:162(mobile) — 목록 버튼은 GNB 바로 아래
-            16px만 띄우고 붙는다(모바일/데스크톱 동일), 하단은 기존 유지. */}
         <ContentProtect className="container-app flex flex-col gap-10 pt-4 pb-10 lg:gap-16 lg:pb-16">
-          <div className="flex flex-col gap-4">
-            <Link
-              href="/study"
-              className="inline-flex w-fit items-center rounded-[6px] border border-[var(--color-line)] px-4 py-1 text-[length:var(--fs-body)] transition-colors duration-[var(--dur-fast)] hover:border-[var(--color-accent)] hover:text-[var(--color-accent)]"
-            >
-              목록
-            </Link>
-
-            <div className="flex flex-col gap-10">
-              <div className="flex items-center justify-between gap-4">
-                <h1
-                  className="font-[family-name:var(--font-display)] font-extrabold leading-tight tracking-tight text-[var(--color-text)]"
-                  style={{ fontSize: "var(--fs-display-lg)" }}
+          <div className="flex flex-col gap-10">
+            <div className="flex items-center justify-between gap-4">
+              <h1
+                className="font-[family-name:var(--font-display)] font-extrabold leading-tight tracking-tight text-[var(--color-text)]"
+                style={{ fontSize: "var(--fs-display-lg)" }}
+              >
+                {study.title}
+              </h1>
+              {study.external_url && (
+                <a
+                  href={study.external_url}
+                  target="_blank"
+                  rel="noreferrer noopener"
+                  aria-label="외부 링크로 이동"
+                  className="arrow-btn arrow-btn-lg shrink-0 text-[var(--color-text)]"
                 >
-                  {study.title}
-                </h1>
-                {study.external_url && (
-                  <a
-                    href={study.external_url}
-                    target="_blank"
-                    rel="noreferrer noopener"
-                    aria-label="외부 링크로 이동"
-                    className="arrow-btn arrow-btn-lg shrink-0 text-[var(--color-text)]"
-                  >
-                    <ExpandCircleRightIcon className="size-full" />
-                  </a>
-                )}
-              </div>
+                  <ExpandCircleRightIcon className="size-full" />
+                </a>
+              )}
+            </div>
 
-              <div className="grid grid-cols-1 gap-10 lg:grid-cols-[360px_1fr] lg:gap-10">
-                <dl className="flex flex-col gap-5 lg:border-r lg:border-[var(--color-line)] lg:pr-8">
-                  {study.org_name && (
-                    <div className="flex flex-col gap-1.5">
-                      <dt className="text-[length:var(--fs-caption)] text-[var(--color-text-muted)]">소속</dt>
-                      <dd className="text-[length:var(--fs-body)]">{study.org_name}</dd>
-                    </div>
-                  )}
-                  {period && (
-                    <div className="flex flex-col gap-1.5">
-                      <dt className="text-[length:var(--fs-caption)] text-[var(--color-text-muted)]">기간</dt>
-                      <dd className="text-[length:var(--fs-body)]">{period}</dd>
-                    </div>
-                  )}
-                  {study.tags.length > 0 && (
-                    <div className="flex flex-col gap-1.5">
-                      <dt className="text-[length:var(--fs-caption)] text-[var(--color-text-muted)]">카테고리</dt>
-                      <dd className="flex flex-wrap gap-1.5">
-                        {sortStudyTagsForDisplay(study.tags).map((tag) => (
-                          <Tag key={tag}>{getStudyCategoryLabel(tag)}</Tag>
-                        ))}
-                      </dd>
-                    </div>
-                  )}
-                  {study.related_url && (
-                    <div className="flex flex-col gap-1.5">
-                      <dt className="text-[length:var(--fs-caption)] text-[var(--color-text-muted)]">관련 URL</dt>
-                      <dd>
+            <div className="grid grid-cols-1 gap-10 lg:grid-cols-[360px_1fr] lg:gap-10">
+              <dl className="flex flex-col gap-5 lg:border-r lg:border-[var(--color-line)] lg:pr-8">
+                {study.org_name && (
+                  <div className="flex flex-col gap-1.5">
+                    <dt className="text-[length:var(--fs-caption)] text-[var(--color-text-muted)]">소속</dt>
+                    <dd className="text-[length:var(--fs-body)]">
+                      {study.related_url ? (
                         <a
                           href={study.related_url}
                           target="_blank"
                           rel="noreferrer noopener"
-                          className="group inline-flex w-fit items-center gap-1 text-[length:var(--fs-body)] transition-colors duration-[var(--dur-fast)] hover:text-[var(--color-accent)]"
+                          className="underline underline-offset-2 transition-colors duration-[var(--dur-fast)] hover:text-[var(--color-accent)]"
                         >
-                          바로 가기
-                          <span className="inline-block transition-transform duration-[var(--dur-base)] ease-[var(--ease-out)] group-hover:translate-x-1">
-                            →
-                          </span>
+                          {study.org_name}
                         </a>
-                      </dd>
-                    </div>
-                  )}
-                </dl>
+                      ) : (
+                        study.org_name
+                      )}
+                    </dd>
+                  </div>
+                )}
+                {period && (
+                  <div className="flex flex-col gap-1.5">
+                    <dt className="text-[length:var(--fs-caption)] text-[var(--color-text-muted)]">기간</dt>
+                    <dd className="text-[length:var(--fs-body)]">{period}</dd>
+                  </div>
+                )}
+                {study.tags.length > 0 && (
+                  <div className="flex flex-col gap-1.5">
+                    <dt className="text-[length:var(--fs-caption)] text-[var(--color-text-muted)]">카테고리</dt>
+                    <dd className="flex flex-wrap gap-1.5">
+                      {sortStudyTagsForDisplay(study.tags).map((tag) => (
+                        <Tag key={tag}>{getStudyCategoryLabel(tag)}</Tag>
+                      ))}
+                    </dd>
+                  </div>
+                )}
+              </dl>
 
-                <div className="flex flex-col gap-14 lg:gap-16">
-                  {(study.overview ?? study.summary) && (
-                    <p className="whitespace-pre-line text-[length:var(--fs-body)] leading-relaxed text-[var(--color-text-muted)]">
-                      {study.overview ?? study.summary}
-                    </p>
-                  )}
+              <div className="flex flex-col gap-14 lg:gap-16">
+                {(study.overview ?? study.summary) && (
+                  <p className="whitespace-pre-line text-[length:var(--fs-body)] leading-relaxed text-[var(--color-text-muted)]">
+                    {study.overview ?? study.summary}
+                  </p>
+                )}
 
-                  {study.body?.steps && study.body.steps.length > 0 && (
-                    <section className="flex flex-col gap-4">
-                      <h2 className="text-[length:var(--fs-eyebrow)] font-semibold uppercase tracking-[0.15em] text-[var(--color-text-muted)]">
-                        Roadmap
-                      </h2>
-                      <ol className="flex flex-col gap-3">
-                        {study.body.steps.map((step) => (
-                          <li key={step.label} className="flex flex-wrap items-baseline gap-2">
-                            <span className="font-medium">{step.label}</span>
-                            <span className="text-[var(--color-text-muted)]">{step.text}</span>
-                          </li>
-                        ))}
-                      </ol>
-                    </section>
-                  )}
+                {study.body?.steps && study.body.steps.length > 0 && (
+                  <section className="flex flex-col gap-4">
+                    <h2 className="text-[length:var(--fs-eyebrow)] font-semibold uppercase tracking-[0.15em] text-[var(--color-text-muted)]">
+                      Roadmap
+                    </h2>
+                    <ol className="flex flex-col gap-3">
+                      {study.body.steps.map((step) => (
+                        <li key={step.label} className="flex flex-wrap items-baseline gap-2">
+                          <span className="font-medium">{step.label}</span>
+                          <span className="text-[var(--color-text-muted)]">{step.text}</span>
+                        </li>
+                      ))}
+                    </ol>
+                  </section>
+                )}
 
-                  {galleryUrls.length > 0 && (
-                    <ProjectGallery urls={galleryUrls} desktopLayout="stack" />
-                  )}
+                {galleryUrls.length > 0 && (
+                  <ProjectGallery urls={galleryUrls} desktopLayout="stack" />
+                )}
 
-                  {study.body?.blocks && study.body.blocks.length > 0 && (
-                    <ContentBlocks blocks={study.body.blocks} />
-                  )}
-                </div>
+                {study.body?.blocks && study.body.blocks.length > 0 && (
+                  <ContentBlocks blocks={study.body.blocks} />
+                )}
               </div>
             </div>
           </div>
@@ -179,6 +163,12 @@ export default async function StudyDetailPage(
             ) : (
               <span aria-hidden="true" className="flex-1" />
             )}
+            <Link
+              href="/study"
+              className="inline-flex w-fit shrink-0 items-center rounded-[6px] border border-[var(--color-line)] px-4 py-1 text-[length:var(--fs-body)] transition-colors duration-[var(--dur-fast)] hover:border-[var(--color-accent)] hover:text-[var(--color-accent)]"
+            >
+              목록
+            </Link>
             {next ? (
               <Link
                 href={`/study/${next.slug}`}

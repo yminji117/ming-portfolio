@@ -50,18 +50,8 @@ export default async function ProjectDetailPage(
       <Gnb />
       {/* Study 상세 페이지와 동일하게 고정 GNB만큼 클리어한다(모바일 h-16 / 데스크톱 60px). */}
       <main className="flex-1 pt-16 lg:pt-[60px]">
-        {/* Figma '최종' node 229:142(desktop)/246:162(mobile) — 목록 버튼은 GNB 바로 아래
-            16px만 띄우고 붙는다(모바일/데스크톱 동일), 하단은 기존 유지. */}
         <ContentProtect className="container-app flex flex-col gap-10 pt-4 pb-10 lg:gap-16 lg:pb-16">
-          <div className="flex flex-col gap-4">
-            <Link
-              href={`/works?tab=${project.category}`}
-              className="inline-flex w-fit items-center rounded-[6px] border border-[var(--color-line)] px-4 py-1 text-[length:var(--fs-body)] transition-colors duration-[var(--dur-fast)] hover:border-[var(--color-accent)] hover:text-[var(--color-accent)]"
-            >
-              목록
-            </Link>
-
-            <div className="flex flex-col gap-10">
+          <div className="flex flex-col gap-10">
             <div className="relative h-[140px] w-full overflow-hidden rounded-[var(--radius)] border border-solid border-[var(--color-line)] bg-[var(--color-ink)] sm:h-[180px] lg:h-[200px]">
               {project.cover_url && (
                 <Image
@@ -188,7 +178,6 @@ export default async function ProjectDetailPage(
                 )}
               </div>
             </div>
-            </div>
           </div>
 
           <nav
@@ -211,6 +200,12 @@ export default async function ProjectDetailPage(
             ) : (
               <span aria-hidden="true" className="flex-1" />
             )}
+            <Link
+              href={`/works?tab=${project.category}`}
+              className="inline-flex w-fit shrink-0 items-center rounded-[6px] border border-[var(--color-line)] px-4 py-1 text-[length:var(--fs-body)] transition-colors duration-[var(--dur-fast)] hover:border-[var(--color-accent)] hover:text-[var(--color-accent)]"
+            >
+              목록
+            </Link>
             {next ? (
               <Link
                 href={`/works/${next.slug}`}

@@ -53,8 +53,7 @@ function StudyItem({
 }) {
   const steps = study.body?.steps ?? [];
   const hasSteps = steps.length > 0;
-  // 메인 Study 영역의 화살표는 항상 상세 페이지로 이동한다 — 외부 링크는 옆의
-  // 별도 버튼으로 분리해, '상세 보기'와 '외부로 이동'을 서로 다른 동작으로 구분한다.
+  // 메인 Study 영역의 화살표는 외부 링크 여부와 상관없이 항상 상세 페이지로 이동한다.
   const detailHref = `/study/${study.slug}`;
   const rawTag = sortStudyTagsForDisplay(study.tags)[0];
   const tag = rawTag ? getStudyCategoryLabel(rawTag) : undefined;
@@ -92,31 +91,17 @@ function StudyItem({
           aria-expanded={isOpen}
           className="min-w-0 flex-1 cursor-pointer text-left lg:grid lg:grid-cols-[auto_1fr] lg:items-start lg:gap-x-4 lg:gap-y-0"
         >
-          {/* 모바일: 태그 + 버튼(들) 한 줄, 타이틀은 아래 줄 */}
+          {/* 모바일: 태그 + 펼치기 버튼 한 줄, 타이틀은 아래 줄 */}
           <div className="flex items-center justify-between gap-4 lg:hidden">
             {tagElement}
-            <div className="flex shrink-0 items-center gap-2">
-              {study.external_url && (
-                <a
-                  href={study.external_url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  aria-label={`${study.title} 외부 링크로 이동`}
-                  onClick={(event) => event.stopPropagation()}
-                  className="group block shrink-0 transition-transform duration-[var(--dur-base)] ease-[var(--ease-out)] hover:-translate-y-0.5 hover:translate-x-0.5"
-                >
-                  <ExpandCircleRightIcon className="size-9 -rotate-45 shrink-0" />
-                </a>
-              )}
-              <Link
-                href={detailHref}
-                aria-label={`${study.title} 자세히 보기`}
-                onClick={(event) => event.stopPropagation()}
-                className="group block shrink-0 transition-transform duration-[var(--dur-base)] ease-[var(--ease-out)] hover:translate-x-0.5"
-              >
-                <ExpandCircleRightIcon className="size-12 shrink-0" />
-              </Link>
-            </div>
+            <Link
+              href={detailHref}
+              aria-label={`${study.title} 자세히 보기`}
+              onClick={(event) => event.stopPropagation()}
+              className="group block shrink-0 transition-transform duration-[var(--dur-base)] ease-[var(--ease-out)] hover:translate-x-0.5"
+            >
+              <ExpandCircleRightIcon className="size-12 shrink-0" />
+            </Link>
           </div>
           <span className="mt-2 block font-[family-name:var(--font-body)] text-[24px] font-bold tracking-[-0.7px] lg:hidden">
             {study.title}
@@ -201,27 +186,14 @@ function StudyItem({
           </div>
         </div>
 
-        {/* 데스크탑: 외부 링크 버튼(있을 때만) + 상세 페이지 이동 버튼 */}
-        <div className="hidden shrink-0 items-center gap-3 lg:flex">
-          {study.external_url && (
-            <a
-              href={study.external_url}
-              target="_blank"
-              rel="noopener noreferrer"
-              aria-label={`${study.title} 외부 링크로 이동`}
-              className="group shrink-0 transition-transform duration-[var(--dur-base)] ease-[var(--ease-out)] hover:-translate-y-0.5 hover:translate-x-0.5"
-            >
-              <ExpandCircleRightIcon className="size-9 -rotate-45 shrink-0" />
-            </a>
-          )}
-          <Link
-            href={detailHref}
-            aria-label={`${study.title} 자세히 보기`}
-            className="group shrink-0 transition-transform duration-[var(--dur-base)] ease-[var(--ease-out)] hover:translate-x-0.5"
-          >
-            <ExpandCircleRightIcon className="size-12 shrink-0" />
-          </Link>
-        </div>
+        {/* 데스크탑 전용 펼치기 링크 */}
+        <Link
+          href={detailHref}
+          aria-label={`${study.title} 자세히 보기`}
+          className="group hidden shrink-0 transition-transform duration-[var(--dur-base)] ease-[var(--ease-out)] hover:translate-x-0.5 lg:block"
+        >
+          <ExpandCircleRightIcon className="size-12 shrink-0" />
+        </Link>
       </div>
     </div>
   );
