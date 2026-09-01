@@ -104,7 +104,7 @@ export default async function ProjectDetailPage(
                 )}
                 {project.contribution_percent != null && (
                   <MetaRow label={`기여도 (${project.contribution_percent}%)`}>
-                    <div className="h-1 w-full max-w-[240px] rounded-full bg-[var(--color-line)]">
+                    <div className="h-1 w-full rounded-full bg-[var(--color-line)]">
                       <div
                         className="h-1 rounded-full bg-[var(--color-accent)]"
                         style={{ width: `${project.contribution_percent}%` }}
