@@ -51,6 +51,7 @@ function GuestbookAdminRow({ entry }: { entry: GuestbookEntryAdmin }) {
   const [isHidden, setIsHidden] = useState(entry.is_hidden);
   const [flag, setFlag] = useState<GuestbookFlag>(entry.flag);
   const [deleted, setDeleted] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   if (deleted) return null;
 
@@ -87,9 +88,14 @@ function GuestbookAdminRow({ entry }: { entry: GuestbookEntryAdmin }) {
             disabled={isPending}
             onChange={(event) => {
               const next = event.target.value as GuestbookFlag;
-              setFlag(next);
+              setError(null);
               startTransition(async () => {
-                await setGuestbookFlag(entry.id, next);
+                const result = await setGuestbookFlag(entry.id, next);
+                if (!result.ok) {
+                  setError(result.message);
+                  return;
+                }
+                setFlag(next);
               });
             }}
             className="h-8 rounded-full border border-[var(--color-line)] bg-white px-3 text-[12px] font-medium text-[var(--color-text)] outline-none"
@@ -106,9 +112,14 @@ function GuestbookAdminRow({ entry }: { entry: GuestbookEntryAdmin }) {
             disabled={isPending}
             onClick={() => {
               const next = !isHidden;
-              setIsHidden(next);
+              setError(null);
               startTransition(async () => {
-                await setGuestbookHidden(entry.id, next);
+                const result = await setGuestbookHidden(entry.id, next);
+                if (!result.ok) {
+                  setError(result.message);
+                  return;
+                }
+                setIsHidden(next);
               });
             }}
             className={`h-8 rounded-full border px-3 text-[12px] font-medium transition-colors ${
@@ -125,9 +136,14 @@ function GuestbookAdminRow({ entry }: { entry: GuestbookEntryAdmin }) {
             disabled={isPending}
             onClick={() => {
               if (!window.confirm("이 게시글을 삭제할까요? 목록에서 즉시 사라져요.")) return;
+              setError(null);
               startTransition(async () => {
                 const result = await deleteGuestbookEntryAdmin(entry.id);
-                if (result.ok) setDeleted(true);
+                if (!result.ok) {
+                  setError(result.message);
+                  return;
+                }
+                setDeleted(true);
               });
             }}
             className="h-8 rounded-full border border-[var(--color-line)] px-3 text-[12px] font-medium text-red-600 transition-colors hover:border-red-600"
@@ -141,13 +157,21 @@ function GuestbookAdminRow({ entry }: { entry: GuestbookEntryAdmin }) {
         {entry.content}
       </p>
 
+      {error && <p className="text-[12px] text-red-600">{error}</p>}
+
       <textarea
         value={memo}
         onChange={(event) => setMemo(event.target.value)}
         onBlur={() => {
           if (memo === (entry.admin_memo ?? "")) return;
+          const attempted = memo;
+          setError(null);
           startTransition(async () => {
-            await setGuestbookMemo(entry.id, memo);
+            const result = await setGuestbookMemo(entry.id, attempted);
+            if (!result.ok) {
+              setError(result.message);
+              setMemo(entry.admin_memo ?? "");
+            }
           });
         }}
         placeholder="운영 메모 (방문자에게는 보이지 않아요)"
@@ -160,9 +184,14 @@ function GuestbookAdminRow({ entry }: { entry: GuestbookEntryAdmin }) {
           type="button"
           disabled={isPending}
           onClick={() => {
-            setIsRead(true);
+            setError(null);
             startTransition(async () => {
-              await setGuestbookRead(entry.id, true);
+              const result = await setGuestbookRead(entry.id, true);
+              if (!result.ok) {
+                setError(result.message);
+                return;
+              }
+              setIsRead(true);
             });
           }}
           className="self-start text-[12px] font-medium text-[var(--color-accent)] hover:underline"

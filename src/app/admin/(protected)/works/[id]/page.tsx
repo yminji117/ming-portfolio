@@ -44,8 +44,10 @@ export default async function AdminEditWorkPage({
       <div>
         <h1 className="text-[24px] font-bold text-[var(--color-text)]">{project.title}</h1>
         <p className="mt-1 text-[14px] text-[var(--color-text-muted)]">/works/{project.slug}</p>
+        <p className="mt-0.5 font-mono text-[12px] text-[var(--color-text-muted)]">ID · {project.id}</p>
       </div>
       <ProjectForm
+        key={project.id}
         project={project}
         featuredCounts={{ professional: professional ?? 0, side: side ?? 0 }}
         industryOptions={industryOptions}

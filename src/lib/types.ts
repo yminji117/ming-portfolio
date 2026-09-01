@@ -113,6 +113,8 @@ export interface CurrentlyDoing {
   end_date: string | null;
   ref_type: CurrentlyRefType;
   ref_id: string | null;
+  // ref_id가 가리키는 프로젝트/스터디의 slug — 상세 페이지 링크 생성용(DB 컬럼이 아니라 조회 시 붙여줌).
+  ref_slug: string | null;
   is_visible: boolean;
   order: number | null;
 }

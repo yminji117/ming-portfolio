@@ -37,8 +37,9 @@ export default async function AdminEditStudyPage({
       <div>
         <h1 className="text-[24px] font-bold text-[var(--color-text)]">{study.title}</h1>
         <p className="mt-1 text-[14px] text-[var(--color-text-muted)]">/study/{study.slug}</p>
+        <p className="mt-0.5 font-mono text-[12px] text-[var(--color-text-muted)]">ID · {study.id}</p>
       </div>
-      <StudyForm study={study} featuredCount={count ?? 0} categoryOptions={categoryOptions} />
+      <StudyForm key={study.id} study={study} featuredCount={count ?? 0} categoryOptions={categoryOptions} />
     </div>
   );
 }

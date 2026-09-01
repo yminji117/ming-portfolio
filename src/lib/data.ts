@@ -344,12 +344,12 @@ async function buildAutoCurrentlyDoingItems(
     await Promise.all([
       supabase
         .from("projects")
-        .select("id, title, category, start_date, end_date")
+        .select("id, slug, title, category, start_date, end_date")
         .eq("status", "published")
         .is("deleted_at", null),
       supabase
         .from("studies")
-        .select("id, title, start_date, end_date")
+        .select("id, slug, title, start_date, end_date")
         .eq("status", "published")
         .is("deleted_at", null),
     ]);
@@ -367,6 +367,7 @@ async function buildAutoCurrentlyDoingItems(
       end_date: p.end_date,
       ref_type: "project" as const,
       ref_id: p.id,
+      ref_slug: p.slug,
       is_visible: true,
       order: null,
     }));
@@ -382,6 +383,7 @@ async function buildAutoCurrentlyDoingItems(
       end_date: s.end_date,
       ref_type: "study" as const,
       ref_id: s.id,
+      ref_slug: s.slug,
       is_visible: true,
       order: null,
     }));
@@ -403,6 +405,42 @@ function collectRefExclusions(rows: { ref_type: string; ref_id: string | null }[
   return { projectIds, studyIds };
 }
 
+// 수동 항목이 ref_type/ref_id로 연결해둔 프로젝트/스터디의 slug를 조회한다 —
+// currently_doing 테이블엔 slug가 없어 상세 링크를 만들려면 따로 가져와야 한다.
+async function resolveRefSlugs(
+  projectIds: Set<string>,
+  studyIds: Set<string>,
+): Promise<{ projectSlugs: Map<string, string>; studySlugs: Map<string, string> }> {
+  const supabase = await createClient();
+  const [{ data: projects }, { data: studies }] = await Promise.all([
+    projectIds.size > 0
+      ? supabase.from("projects").select("id, slug").in("id", Array.from(projectIds))
+      : Promise.resolve({ data: [] as { id: string; slug: string }[] }),
+    studyIds.size > 0
+      ? supabase.from("studies").select("id, slug").in("id", Array.from(studyIds))
+      : Promise.resolve({ data: [] as { id: string; slug: string }[] }),
+  ]);
+  return {
+    projectSlugs: new Map((projects ?? []).map((p) => [p.id, p.slug])),
+    studySlugs: new Map((studies ?? []).map((s) => [s.id, s.slug])),
+  };
+}
+
+function attachRefSlug(
+  row: CurrentlyDoing,
+  projectSlugs: Map<string, string>,
+  studySlugs: Map<string, string>,
+): CurrentlyDoing {
+  if (!row.ref_id) return { ...row, ref_slug: null };
+  const slug =
+    row.ref_type === "project"
+      ? (projectSlugs.get(row.ref_id) ?? null)
+      : row.ref_type === "study"
+        ? (studySlugs.get(row.ref_id) ?? null)
+        : null;
+  return { ...row, ref_slug: slug };
+}
+
 // Front(Main/About) 노출용 — 수동으로 등록한 항목(노출 처리된 것만) + Works/Study에서 자동 생성된
 // 항목을 합쳐 정렬한다. 자동 항목은 수동 항목이 이미 연결해둔 프로젝트/스터디를 제외한다.
 export async function getCurrentlyDoing(limit?: number): Promise<CurrentlyDoing[]> {
@@ -415,9 +453,13 @@ export async function getCurrentlyDoing(limit?: number): Promise<CurrentlyDoing[
 
   const manual = data ?? [];
   const { projectIds, studyIds } = collectRefExclusions(manual);
-  const auto = await buildAutoCurrentlyDoingItems(projectIds, studyIds);
+  const [auto, { projectSlugs, studySlugs }] = await Promise.all([
+    buildAutoCurrentlyDoingItems(projectIds, studyIds),
+    resolveRefSlugs(projectIds, studyIds),
+  ]);
+  const manualWithSlug = manual.map((row) => attachRefSlug(row, projectSlugs, studySlugs));
 
-  const sorted = sortCurrentlyDoing([...manual, ...auto]);
+  const sorted = sortCurrentlyDoing([...manualWithSlug, ...auto]);
   return limit != null ? sorted.slice(0, limit) : sorted;
 }
 

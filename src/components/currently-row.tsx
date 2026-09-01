@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { formatCurrentlyRange } from "@/lib/format";
 import type { CurrentlyDoing } from "@/lib/types";
 
@@ -14,8 +15,18 @@ export const LABEL_STYLE: Record<CurrentlyDoing["label"], string> = {
 };
 
 export function CurrentlyRow({ item }: { item: CurrentlyDoing }) {
-  return (
-    <div className="flex flex-col gap-1 py-4 sm:flex-row sm:items-center sm:justify-between sm:gap-2">
+  const href =
+    item.ref_type === "project" && item.ref_slug
+      ? `/works/${item.ref_slug}`
+      : item.ref_type === "study" && item.ref_slug
+        ? `/study/${item.ref_slug}`
+        : null;
+  const titleClass = `text-[length:var(--fs-body)] font-bold text-[var(--color-text)] ${
+    href ? "transition-colors duration-[var(--dur-fast)] group-hover:text-[var(--color-accent)]" : ""
+  }`;
+
+  const body = (
+    <>
       <div className="flex flex-col gap-1 sm:flex-row sm:flex-wrap sm:items-center sm:gap-5">
         <div className="flex items-center justify-between sm:contents">
           <span className="w-20 text-[length:var(--fs-body)] uppercase text-[var(--color-text)]">
@@ -33,15 +44,30 @@ export function CurrentlyRow({ item }: { item: CurrentlyDoing }) {
           >
             {LABEL_TEXT[item.label]}
           </span>
-          <span className="text-[length:var(--fs-body)] font-bold text-[var(--color-text)]">{item.title}</span>
+          <span className={titleClass}>{item.title}</span>
         </span>
-        <span className="text-[length:var(--fs-body)] font-bold text-[var(--color-text)] sm:hidden">
-          {item.title}
-        </span>
+        <span className={`sm:hidden ${titleClass}`}>{item.title}</span>
       </div>
       <span className="text-[length:var(--fs-body)] text-[#707070] sm:text-[var(--color-text)]">
         {formatCurrentlyRange(item.start_date, item.end_date)}
       </span>
+    </>
+  );
+
+  if (href) {
+    return (
+      <Link
+        href={href}
+        className="group flex flex-col gap-1 py-4 sm:flex-row sm:items-center sm:justify-between sm:gap-2"
+      >
+        {body}
+      </Link>
+    );
+  }
+
+  return (
+    <div className="flex flex-col gap-1 py-4 sm:flex-row sm:items-center sm:justify-between sm:gap-2">
+      {body}
     </div>
   );
 }

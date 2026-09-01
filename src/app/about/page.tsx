@@ -29,12 +29,6 @@ export default async function AboutPage() {
 
   const name = about?.name_ko || about?.name_en || "MINJI";
 
-  // TEMP: 더보기 버튼 동작 확인용 — 실 데이터를 복제해 12개로 늘림. 확인 끝나면 이 블록 제거.
-  const currentlyDoingForTest = [
-    ...currentlyDoing,
-    ...currentlyDoing.map((item, i) => ({ ...item, id: `${item.id}-dup${i}` })),
-  ].slice(0, 12);
-
   return (
     <>
       <Gnb />
@@ -194,7 +188,7 @@ export default async function AboutPage() {
 
         <CurrentlyDoingSection
           id="currently"
-          items={currentlyDoingForTest}
+          items={currentlyDoing}
           filterable
           moreHref="/about#currently"
           showTopBorder={false}

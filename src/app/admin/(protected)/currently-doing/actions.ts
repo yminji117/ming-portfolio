@@ -21,7 +21,8 @@ function revalidateCurrentlyPaths() {
   revalidatePath("/about");
 }
 
-export type CurrentlyDoingInput = Omit<CurrentlyDoing, "id">;
+// ref_slug는 DB 컬럼이 아니라 조회 시 계산해서 붙이는 표시용 필드라 입력에서 제외한다.
+export type CurrentlyDoingInput = Omit<CurrentlyDoing, "id" | "ref_slug">;
 
 export async function createCurrentlyDoing(input: CurrentlyDoingInput): Promise<ActionResult> {
   const supabase = await requireAdmin();

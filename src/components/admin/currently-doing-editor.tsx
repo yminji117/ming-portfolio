@@ -39,7 +39,10 @@ const selectClass =
 const inputClass =
   "h-9 w-full rounded-[8px] border border-[var(--color-line)] bg-white px-2 text-[13px] text-[var(--color-text)] outline-none focus:border-[var(--color-accent)]";
 
-type Row = { id: string; isNew: boolean; input: CurrentlyDoingInput };
+// resetKey: 텍스트/날짜 입력창(defaultValue 방식)은 저장 실패 시 row.input을 그대로 둬도
+// 이미 타이핑된 DOM 값은 저절로 안 돌아온다 — resetKey를 바꿔 강제로 리마운트시켜야
+// 화면이 실제로 마지막 저장값으로 복원된다.
+type Row = { id: string; isNew: boolean; resetKey: number; input: CurrentlyDoingInput };
 
 function toInput(item?: CurrentlyDoing): CurrentlyDoingInput {
   return {
@@ -70,7 +73,7 @@ export function CurrentlyDoingEditor({
 }) {
   const router = useRouter();
   const [rows, setRows] = useState<Row[]>(
-    items.map((item) => ({ id: item.id, isNew: false, input: toInput(item) })),
+    items.map((item) => ({ id: item.id, isNew: false, resetKey: 0, input: toInput(item) })),
   );
   const [isPending, startTransition] = useTransition();
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -80,21 +83,32 @@ export function CurrentlyDoingEditor({
     setRows((prev) => prev.map((r) => (r.id === id ? { ...r, input: { ...r.input, ...patch } } : r)));
   }
 
-  // 기존 행: 바로 저장. 새 행: 로컬 상태만 바꾸고 "등록" 버튼을 눌러야 실제로 생성된다
+  // 기존 행: 서버 저장이 성공했을 때만 화면에 반영(실패 시 화면은 그대로 유지).
+  // 새 행: 아직 DB에 없으니 로컬 상태만 바꾸고 "등록" 버튼을 눌러야 실제로 생성된다
   // (title이 비어있는 상태로 저장을 시도하면 DB not-null 제약에 걸린다).
   function save(row: Row, patch: Partial<CurrentlyDoingInput>) {
-    patchLocal(row.id, patch);
-    if (row.isNew) return;
+    if (row.isNew) {
+      patchLocal(row.id, patch);
+      return;
+    }
     setErrors((prev) => ({ ...prev, [row.id]: "" }));
     startTransition(async () => {
       const result = await updateCurrentlyDoing(row.id, patch);
-      if (!result.ok) setErrors((prev) => ({ ...prev, [row.id]: result.message }));
+      if (!result.ok) {
+        setErrors((prev) => ({ ...prev, [row.id]: result.message }));
+        // 텍스트/날짜 입력창은 defaultValue라 리마운트해야 마지막 저장값으로 되돌아간다.
+        setRows((prev) =>
+          prev.map((r) => (r.id === row.id ? { ...r, resetKey: r.resetKey + 1 } : r)),
+        );
+        return;
+      }
+      patchLocal(row.id, patch);
     });
   }
 
   function addRow() {
     const id = `new-${crypto.randomUUID()}`;
-    setRows((prev) => [{ id, isNew: true, input: toInput() }, ...prev]);
+    setRows((prev) => [{ id, isNew: true, resetKey: 0, input: toInput() }, ...prev]);
   }
 
   function submitNewRow(row: Row) {
@@ -206,6 +220,7 @@ export function CurrentlyDoingEditor({
                     </td>
                     <td className="py-2 pr-2">
                       <input
+                        key={`${row.id}:${row.resetKey}:title`}
                         type="text"
                         defaultValue={row.input.title}
                         placeholder="리스트 명"
@@ -243,6 +258,7 @@ export function CurrentlyDoingEditor({
                     </td>
                     <td className="py-2 pr-2">
                       <input
+                        key={`${row.id}:${row.resetKey}:start`}
                         type="date"
                         defaultValue={row.input.start_date ?? ""}
                         onBlur={(e) => {
@@ -255,6 +271,7 @@ export function CurrentlyDoingEditor({
                     </td>
                     <td className="py-2 pr-2">
                       <input
+                        key={`${row.id}:${row.resetKey}:end`}
                         type="date"
                         defaultValue={row.input.end_date ?? ""}
                         onBlur={(e) => {
