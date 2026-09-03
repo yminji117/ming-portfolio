@@ -105,7 +105,6 @@ export function Hero({
               mediaType={heroMediaType}
               imageUrl={heroImageUrl}
               videoUrl={heroVideoUrl}
-              posterUrl={about?.photo_url ?? undefined}
               sizes="(min-width: 1024px) 51vw, 100vw"
             />
           </div>

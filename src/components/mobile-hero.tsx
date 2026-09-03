@@ -97,7 +97,6 @@ export function MobileHero({
           mediaType={heroMediaType}
           imageUrl={heroImageUrl}
           videoUrl={heroVideoUrl}
-          posterUrl={about?.photo_url ?? undefined}
           sizes="100vw"
         />
       </div>

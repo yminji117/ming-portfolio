@@ -1,6 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
-import { formatProjectRange, sortStudyTagsForDisplay } from "@/lib/format";
+import { DEFAULT_THUMBNAIL, formatProjectRange, sortStudyTagsForDisplay } from "@/lib/format";
 import type { Study } from "@/lib/types";
 
 // Study 리스트 카드는 항상 내부 상세 페이지로 이동한다 — 외부 링크(external_url)는
@@ -21,19 +21,13 @@ export function StudyListCard({
       className="group flex items-start gap-4 rounded-[var(--radius)] border border-[var(--color-line)] p-3 transition-colors duration-[var(--dur-fast)] hover:border-[var(--color-accent)] sm:gap-6 sm:p-4"
     >
       <div className="relative aspect-square w-[150px] shrink-0 overflow-hidden rounded-[4px] border border-solid border-[#EBEEF5] bg-[#707070]">
-        {study.thumbnail_url ? (
-          <Image
-            src={study.thumbnail_url}
-            alt={study.title}
-            fill
-            sizes="150px"
-            className="object-cover transition-transform duration-[var(--dur-base)] ease-[var(--ease-out)] group-hover:scale-[1.04]"
-          />
-        ) : (
-          <span className="absolute inset-0 flex items-center justify-center text-[16px] font-light text-[#323232]">
-            img
-          </span>
-        )}
+        <Image
+          src={study.thumbnail_url ?? DEFAULT_THUMBNAIL}
+          alt={study.title}
+          fill
+          sizes="150px"
+          className="object-cover transition-transform duration-[var(--dur-base)] ease-[var(--ease-out)] group-hover:scale-[1.04]"
+        />
       </div>
       <div className="flex min-w-0 flex-1 flex-col justify-between">
         <div className="flex flex-col gap-3">

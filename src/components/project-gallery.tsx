@@ -9,7 +9,7 @@ const MOBILE_PREVIEW_COUNT = 3;
 // 화살표는 항상 DOM에 두고 opacity만 트랜지션한다 — 조건부 렌더(마운트/언마운트)로 하면
 // 트랙 폭이 갑자기 바뀌면서 이미지가 같이 밀리는 느낌이 나서, 자연스러운 페이드가 안 된다.
 const arrowButtonClass =
-  "relative z-10 flex size-10 shrink-0 items-center justify-center rounded-full bg-white/10 text-[var(--color-text)] backdrop-blur-xl backdrop-saturate-150 transition-[opacity,background-color] duration-[var(--dur-fast)] ease-[var(--ease-out)] hover:bg-white/20";
+  "relative z-10 flex size-10 shrink-0 items-center justify-center rounded-full border border-[#EBEEF5] bg-white/10 text-[var(--color-text)] backdrop-blur-[20px] backdrop-saturate-150 transition-[opacity,background-color] duration-[var(--dur-fast)] ease-[var(--ease-out)] hover:bg-white/20";
 
 // Works/Study 상세 페이지 IMAGE 섹션.
 // - Mobile(lg 미만, Figma '최종' 모바일 상세 반영): 세로로 이미지를 나열하되 기본은 3장만 보여주고,

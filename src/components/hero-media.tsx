@@ -1,4 +1,5 @@
 import Image from "next/image";
+import { HeroVideo } from "@/components/hero-video";
 import type { HeroMediaType } from "@/lib/types";
 
 // site_settings에서 관리하는 히어로 미디어 — 이미지/영상 중 선택, 값이 비어 있으면
@@ -9,28 +10,17 @@ export function HeroMedia({
   mediaType,
   imageUrl,
   videoUrl,
-  posterUrl,
   sizes,
 }: {
   mediaType: HeroMediaType;
   imageUrl: string | null;
   videoUrl: string | null;
-  posterUrl?: string;
   sizes: string;
 }) {
   if (mediaType === "image" && imageUrl) {
     return <Image src={imageUrl} alt="" fill priority sizes={sizes} className="object-cover" />;
   }
 
-  return (
-    <video
-      src={videoUrl ?? DEFAULT_VIDEO_URL}
-      poster={posterUrl}
-      autoPlay
-      muted
-      playsInline
-      preload="auto"
-      className="absolute inset-0 h-full w-full object-cover"
-    />
-  );
+  // 영상 로딩 중 로딩 화면 노출은 HeroVideo(클라이언트)에서 처리한다.
+  return <HeroVideo src={videoUrl ?? DEFAULT_VIDEO_URL} />;
 }

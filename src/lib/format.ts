@@ -1,3 +1,6 @@
+// 썸네일/이미지를 등록하지 않은 항목에 공통으로 쓰는 기본 이미지(public/basic).
+export const DEFAULT_THUMBNAIL = "/basic/Thumbnail_basic.png";
+
 function dotDate(isoDate: string): string {
   return isoDate.replaceAll("-", ".");
 }
@@ -145,12 +148,4 @@ export function getResultPreview(
     .filter(Boolean);
   if (lines.length === 0) return null;
   return { text: lines[0], remainingCount: lines.length - 1 };
-}
-
-export function getInitials(title: string): string {
-  const trimmed = title.trim();
-  if (!trimmed) return "";
-  const words = trimmed.split(/\s+/);
-  if (words.length === 1) return trimmed.slice(0, 2).toUpperCase();
-  return (words[0][0] + words[1][0]).toUpperCase();
 }

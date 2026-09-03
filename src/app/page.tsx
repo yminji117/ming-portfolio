@@ -4,6 +4,7 @@ import { CurrentlyDoingSection } from "@/components/currently-doing-section";
 import { Footer } from "@/components/footer";
 import { Gnb } from "@/components/gnb";
 import { Hero } from "@/components/hero";
+import { NoticePopup } from "@/components/notice-popup";
 import { StudySection } from "@/components/study-section";
 import { WorksSection } from "@/components/works-section";
 import {
@@ -53,6 +54,7 @@ export default async function Home() {
 
   return (
     <>
+      <NoticePopup />
       <Gnb />
       <main className="flex-1">
         <Hero
