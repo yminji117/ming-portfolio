@@ -1,18 +1,9 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { createClient } from "@/lib/supabase/server";
+import { requireAdmin } from "@/lib/require-admin";
 
 type ActionResult = { ok: true } | { ok: false; message: string };
-
-async function requireAdmin() {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) throw new Error("unauthorized");
-  return supabase;
-}
 
 // 여기서 지우면 Storage 파일 자체가 사라진다 — 어디선가 이 URL을 쓰고 있어도(예: 아직
 // Works/About 폼에 저장돼 있는 이미지) 그 참조는 그대로 남아 깨진 이미지가 된다. media

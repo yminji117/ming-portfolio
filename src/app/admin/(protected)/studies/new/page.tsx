@@ -1,13 +1,14 @@
 import { createClient } from "@/lib/supabase/server";
 import { StudyForm } from "@/components/admin/study-form";
-import { getKnownStudyCategories } from "@/lib/data";
+import { getCategories } from "@/lib/data";
 
 export default async function AdminNewStudyPage() {
   const supabase = await createClient();
-  const [{ count }, categoryOptions] = await Promise.all([
+  const [{ count }, allCategories] = await Promise.all([
     supabase.from("studies").select("id", { count: "exact", head: true }).eq("is_featured", true),
-    getKnownStudyCategories(),
+    getCategories(),
   ]);
+  const categories = allCategories.filter((c) => c.scope === "study").map((c) => c.name);
 
   return (
     <div className="flex flex-col gap-6">
@@ -18,7 +19,7 @@ export default async function AdminNewStudyPage() {
           관리에서 바꿀 수 있어요.
         </p>
       </div>
-      <StudyForm featuredCount={count ?? 0} categoryOptions={categoryOptions} />
+      <StudyForm featuredCount={count ?? 0} categories={categories} />
     </div>
   );
 }

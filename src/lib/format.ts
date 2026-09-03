@@ -46,17 +46,6 @@ export function getInstagramHandle(url: string): string {
   }
 }
 
-// Works Professional 필터 칩과 카드 태그에 공통으로 쓰는 업종 표시 라벨.
-// project.industry의 DB 원본 값(필터링 기준)과 화면 노출 텍스트를 분리한다.
-const INDUSTRY_LABELS: Record<string, string> = {
-  Education: "EdTech",
-  Brand: "Brand Site",
-};
-
-export function getIndustryLabel(industry: string): string {
-  return INDUSTRY_LABELS[industry] ?? industry;
-}
-
 // projects.industry는 0032_project_industry_array.sql 적용 전엔 DB에 아직 단일 문자열(text)로
 // 남아있을 수 있다 — 마이그레이션 적용 전에도 카드/필터가 죽지 않도록 방어적으로 배열화한다.
 export function normalizeIndustry(value: unknown): string[] {
@@ -65,23 +54,9 @@ export function normalizeIndustry(value: unknown): string[] {
   return [];
 }
 
-// Figma '최종' 시안의 필터 칩 노출 순서 — 카테고리별로 고정 순서를 따르고,
-// 목록에 없는 값(향후 추가된 industry)은 정해진 순서 뒤에 그대로 이어 붙인다.
-const INDUSTRY_ORDER: Record<"professional" | "side", string[]> = {
-  professional: ["Education", "OTT", "Commerce", "Brand"],
-  side: ["Community", "Popup", "Online", "Offline"],
-};
-
-// 어드민 업종 선택 필드용 — 카테고리별 정해진 옵션 순서 그대로 노출한다.
-export function getIndustryOptions(category: "professional" | "side"): string[] {
-  return INDUSTRY_ORDER[category];
-}
-
-export function sortIndustries(
-  industries: string[],
-  category: "professional" | "side",
-): string[] {
-  const order = INDUSTRY_ORDER[category];
+// 필터 칩·카드 태그·상세 카테고리 등 업종이 노출되는 모든 곳이 공유하는 정렬 순서(카테고리
+// 관리에서 정한 순서). order에 없는 값(삭제된 카테고리 등)은 순서 뒤에 알파벳순으로 붙는다.
+export function sortIndustries(industries: string[], order: string[]): string[] {
   return [...industries].sort((a, b) => {
     const ai = order.indexOf(a);
     const bi = order.indexOf(b);
@@ -107,43 +82,24 @@ export function getFilterableIndustries(
   return industries.filter((industry) => !excluded.includes(industry));
 }
 
-// Study "카테고리"(구 태그) — 실제 DB 원본 값은 Works의 industry와 동일하게 영문으로 저장되고
-// (예: studies.tags에 "Data"), 필터 칩/어드민 선택지에는 Figma 시안(node 355:1062)의 한글
-// 라벨로 번역해 보여준다. "Talk"는 Figma 시안의 "말하기"에 대응하는 원본 값 — 아직 실제
-// 데이터가 없어 확정값이 아니니, 다른 값을 쓰고 싶으면 알려주세요.
-const STUDY_CATEGORY_LABELS: Record<string, string> = {
-  Data: "데이터 분석",
-  Talk: "말하기",
-};
-
-export function getStudyCategoryLabel(category: string): string {
-  return STUDY_CATEGORY_LABELS[category] ?? category;
-}
-
 // Study는 "카테고리"(주제 — Figma node 355:1062)와 "형태"(Online/Offline — node 355:999)가
 // 별개 개념이지만, DB엔 이 둘을 나누는 컬럼이 따로 없고 studies.tags 배열 하나뿐이다.
-// 어드민에서 두 필드로 분리해 보여주고 저장은 같은 tags 배열에 합쳐서 한다.
-const STUDY_CATEGORY_OPTIONS = ["AI", "Data", "Talk"];
+// 어드민에서 두 필드로 분리해 보여주고 저장은 같은 tags 배열에 합쳐서 한다. 카테고리 값 자체는
+// 어드민 "카테고리 관리"에서 관리하고, 형태(Online/Offline)만 고정 2개라 여기 하드코딩한다.
 const STUDY_FORMAT_OPTIONS = ["Online", "Offline"];
-
-// 카테고리 — Works의 업종과 동일한 기능(고정 목록 다중 선택 + 직접 입력). /study 필터 칩도
-// 이 목록을 그대로 쓴다(Figma 'Study | MINJI' 그대로, 실제 콘텐츠 태그와 무관하게 고정).
-export function getStudyCategoryOptions(): string[] {
-  return STUDY_CATEGORY_OPTIONS;
-}
 
 // 형태 — Online/Offline 중 선택. 카테고리와 달리 고정된 2개뿐이라 직접 입력은 없다.
 export function getStudyFormatOptions(): string[] {
   return STUDY_FORMAT_OPTIONS;
 }
 
-// /study 필터 칩 순서 — Works의 sortIndustries와 동일한 방식. 정해진 카테고리 순서를
-// 먼저 두고, 어드민에서 직접 입력으로 새로 추가된 값은 알파벳순으로 뒤에 이어 붙인다.
+// /study 필터 칩 순서 — Works의 sortIndustries와 동일한 방식. order에 없는 값(어드민에서
+// 직접 입력으로 추가된 값)은 알파벳순으로 뒤에 이어 붙인다.
 // (형태값(Online/Offline)은 별도 개념이라 호출하는 쪽에서 미리 걸러내고 넘겨야 한다.)
-export function sortStudyCategories(categories: string[]): string[] {
+export function sortStudyCategories(categories: string[], order: string[]): string[] {
   return [...categories].sort((a, b) => {
-    const ai = STUDY_CATEGORY_OPTIONS.indexOf(a);
-    const bi = STUDY_CATEGORY_OPTIONS.indexOf(b);
+    const ai = order.indexOf(a);
+    const bi = order.indexOf(b);
     if (ai === -1 && bi === -1) return a.localeCompare(b);
     if (ai === -1) return 1;
     if (bi === -1) return -1;
@@ -155,13 +111,13 @@ export function sortStudyCategories(categories: string[]): string[] {
 // 커스텀 값이든)가 항상 형태(Online/Offline)보다 앞에 오도록 정렬한다. 어드민에서 어떤
 // 순서로 선택했는지와 무관하다. 형태가 아닌 값은 전부 "카테고리"로 취급해, 목록에 없는
 // 커스텀 카테고리도 형태보다 뒤로 밀리지 않는다.
-export function sortStudyTagsForDisplay(tags: string[]): string[] {
+export function sortStudyTagsForDisplay(tags: string[], order: string[]): string[] {
   const rank = (tag: string) => {
     const formatIndex = STUDY_FORMAT_OPTIONS.indexOf(tag);
-    if (formatIndex !== -1) return STUDY_CATEGORY_OPTIONS.length + 1 + formatIndex;
-    const categoryIndex = STUDY_CATEGORY_OPTIONS.indexOf(tag);
+    if (formatIndex !== -1) return order.length + 1 + formatIndex;
+    const categoryIndex = order.indexOf(tag);
     if (categoryIndex !== -1) return categoryIndex;
-    return STUDY_CATEGORY_OPTIONS.length; // 커스텀 카테고리 — 정해진 카테고리들 뒤, 형태보다는 앞
+    return order.length; // 커스텀 카테고리 — 정해진 카테고리들 뒤, 형태보다는 앞
   };
   return [...tags].sort((a, b) => rank(a) - rank(b));
 }

@@ -8,7 +8,7 @@ import {
   updateProject,
   type ProjectInput,
 } from "@/app/admin/(protected)/works/actions";
-import { setFeaturedPosition, unfeatureItem } from "@/app/admin/(protected)/main/actions";
+import { syncFeaturedItem } from "@/lib/featured-sync";
 import {
   CheckboxField,
   DateRangeField,
@@ -23,7 +23,7 @@ import { ContentBlockEditor } from "@/components/admin/content-block-editor";
 import { FeaturedControl } from "@/components/admin/featured-control";
 import { GalleryUploadField } from "@/components/admin/gallery-upload-field";
 import { ImageUploadField } from "@/components/admin/image-upload-field";
-import { IndustriesField } from "@/components/admin/industry-field";
+import { ChipsMultiSelectField } from "@/components/admin/chips-multi-select-field";
 import { cleanContentBlocks } from "@/lib/clean-content-blocks";
 import { FEATURED_CAP_PROFESSIONAL, FEATURED_CAP_SIDE } from "@/lib/featured-caps";
 import { normalizeIndustry } from "@/lib/format";
@@ -62,13 +62,13 @@ function toInput(project?: Project): ProjectInput {
 export function ProjectForm({
   project,
   featuredCounts,
-  industryOptions,
+  categories,
 }: {
   project?: Project;
   // 자기 자신을 제외한, 같은 분류(category)에서 이미 노출 중인 건수.
   featuredCounts: { professional: number; side: number };
-  // 분류별로 다른 프로젝트에서 이미 "+ 직접 입력"으로 쓰인 업종 값 — 선택지로 재사용.
-  industryOptions: { professional: string[]; side: string[] };
+  // "카테고리 관리"에서 관리하는 업종 목록 — 순서까지 그대로 선택지에 반영한다.
+  categories: { professional: string[]; side: string[] };
 }) {
   const router = useRouter();
   const isEdit = Boolean(project);
@@ -89,16 +89,13 @@ export function ProjectForm({
   const cap = input.category === "professional" ? FEATURED_CAP_PROFESSIONAL : FEATURED_CAP_SIDE;
   const draftBlocksFeature = input.status !== "published";
 
-  async function syncFeatured(id: string): Promise<{ ok: true } | { ok: false; message: string }> {
-    const wasFeatured = project?.is_featured ?? false;
-    if (wantFeatured && !draftBlocksFeature) {
-      if (wasFeatured && project?.featured_order === positionChoice) return { ok: true };
-      return setFeaturedPosition("projects", id, positionChoice);
-    }
-    if (wasFeatured) {
-      return unfeatureItem("projects", id);
-    }
-    return { ok: true };
+  function syncFeatured(id: string) {
+    return syncFeaturedItem(
+      "projects",
+      id,
+      { wasFeatured: project?.is_featured ?? false, wasPosition: project?.featured_order ?? null },
+      { wantFeatured, positionChoice, draftBlocksFeature },
+    );
   }
 
   function handleSubmit(event: React.FormEvent) {
@@ -237,10 +234,11 @@ export function ProjectForm({
         <TextField label="회사" value={input.company ?? ""} onChange={(v) => set("company", v || null)} />
         <TextField label="팀" value={input.team ?? ""} onChange={(v) => set("team", v || null)} />
         <div className="sm:col-span-2">
-          <IndustriesField
-            category={input.category}
+          <ChipsMultiSelectField
+            label="업종(industry)"
+            hint="필터 칩·카드 라벨 기준값 · 여러 개 선택 가능 · 카테고리 관리에서 추가"
             values={input.industry ?? []}
-            extraOptions={industryOptions[input.category]}
+            options={categories[input.category]}
             onChange={(v) => set("industry", v)}
           />
         </div>

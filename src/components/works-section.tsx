@@ -7,10 +7,12 @@ export function WorksSection({
   theme,
   projects,
   moreHref,
+  industryOrder,
 }: {
   theme: "dark" | "light";
   projects: Project[];
   moreHref: string;
+  industryOrder?: string[];
 }) {
   // PRD 5.0 — 콘텐츠 0건이면 섹션 전체 비노출
   if (projects.length === 0) return null;
@@ -27,7 +29,7 @@ export function WorksSection({
         </p>
         <div className="container-app relative">
           <SectionHeading eyebrow="Woke" title="Professionel" moreHref={moreHref} theme="dark" />
-          <WorksProfessionalGrid projects={projects} />
+          <WorksProfessionalGrid projects={projects} industryOrder={industryOrder ?? []} />
         </div>
       </section>
     );

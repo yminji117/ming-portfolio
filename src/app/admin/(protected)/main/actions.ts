@@ -1,19 +1,10 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { createClient } from "@/lib/supabase/server";
+import { requireAdmin } from "@/lib/require-admin";
 
 type ActionResult = { ok: true } | { ok: false; message: string };
 type Table = "projects" | "studies";
-
-async function requireAdmin() {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) throw new Error("unauthorized");
-  return supabase;
-}
 
 // enforce_featured_cap 트리거(0005_industry_and_caps.sql)가 던지는 예외 메시지는
 // 이미 사용자에게 보여줘도 되는 한국어 문장이라 그대로 전달한다.

@@ -3,7 +3,7 @@ import Link from "next/link";
 import { Footer } from "@/components/footer";
 import { Gnb } from "@/components/gnb";
 import { WorksListClient } from "@/components/works-list-client";
-import { getAbout, getProjectCategoryCounts, getProjectsPage } from "@/lib/data";
+import { getAbout, getCategories, getProjectCategoryCounts, getProjectsPage } from "@/lib/data";
 import { LIST_PAGE_SIZE } from "@/lib/constants";
 import type { ProjectCategory } from "@/lib/types";
 
@@ -21,11 +21,14 @@ export default async function WorksPage(props: PageProps<"/works">) {
   const searchParams = await props.searchParams;
   const tab = searchParams.tab === "side" ? "side" : "professional";
 
-  const [{ items, total }, counts, about] = await Promise.all([
+  const [{ items, total }, counts, about, allCategories] = await Promise.all([
     getProjectsPage(tab, 0, LIST_PAGE_SIZE),
     getProjectCategoryCounts(),
     getAbout(),
+    getCategories(),
   ]);
+  const scope = tab === "professional" ? "work_professional" : "work_side";
+  const industryOrder = allCategories.filter((c) => c.scope === scope).map((c) => c.name);
 
   return (
     <>
@@ -61,6 +64,7 @@ export default async function WorksPage(props: PageProps<"/works">) {
               category={tab}
               initialItems={items}
               total={total}
+              industryOrder={industryOrder}
             />
           </div>
         </div>

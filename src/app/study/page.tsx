@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { Footer } from "@/components/footer";
 import { Gnb } from "@/components/gnb";
 import { StudyListClient } from "@/components/study-list-client";
-import { getAbout, getStudiesPage } from "@/lib/data";
+import { getAbout, getCategories, getStudiesPage } from "@/lib/data";
 import { LIST_PAGE_SIZE } from "@/lib/constants";
 
 export const metadata: Metadata = {
@@ -11,10 +11,12 @@ export const metadata: Metadata = {
 };
 
 export default async function StudyPage() {
-  const [{ items, total }, about] = await Promise.all([
+  const [{ items, total }, about, allCategories] = await Promise.all([
     getStudiesPage(0, LIST_PAGE_SIZE),
     getAbout(),
+    getCategories(),
   ]);
+  const categoryOrder = allCategories.filter((c) => c.scope === "study").map((c) => c.name);
 
   return (
     <>
@@ -29,7 +31,7 @@ export default async function StudyPage() {
           </h1>
 
           <div className="mt-10">
-            <StudyListClient initialItems={items} total={total} />
+            <StudyListClient initialItems={items} total={total} categoryOrder={categoryOrder} />
           </div>
         </div>
       </main>

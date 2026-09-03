@@ -9,8 +9,8 @@ import { Footer } from "@/components/footer";
 import { Gnb } from "@/components/gnb";
 import { ProjectGallery } from "@/components/project-gallery";
 import { Tag } from "@/components/tag";
-import { getAbout, getAdjacentProjects, getProjectBySlug } from "@/lib/data";
-import { formatCareerRange } from "@/lib/format";
+import { getAbout, getAdjacentProjects, getCategories, getProjectBySlug } from "@/lib/data";
+import { formatCareerRange, sortIndustries } from "@/lib/format";
 
 export async function generateMetadata(
   props: PageProps<"/works/[slug]">,
@@ -38,12 +38,16 @@ export default async function ProjectDetailPage(
   const project = await getProjectBySlug(slug);
   if (!project) notFound();
 
-  const [{ prev, next }, about] = await Promise.all([
+  const [{ prev, next }, about, allCategories] = await Promise.all([
     getAdjacentProjects(project.category, project.slug),
     getAbout(),
+    getCategories(),
   ]);
 
   const period = formatCareerRange(project.start_date, project.end_date);
+  const scope = project.category === "professional" ? "work_professional" : "work_side";
+  const industryOrder = allCategories.filter((c) => c.scope === scope).map((c) => c.name);
+  const industries = project.industry ? sortIndustries(project.industry, industryOrder) : [];
 
   return (
     <>
@@ -95,6 +99,15 @@ export default async function ProjectDetailPage(
                 {period && (
                   <MetaRow label="기간">
                     <span>{period}</span>
+                  </MetaRow>
+                )}
+                {industries.length > 0 && (
+                  <MetaRow label="카테고리">
+                    <div className="flex flex-wrap gap-1.5">
+                      {industries.map((industry) => (
+                        <Tag key={industry}>{industry}</Tag>
+                      ))}
+                    </div>
                   </MetaRow>
                 )}
                 {project.role_note && (

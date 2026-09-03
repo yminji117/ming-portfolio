@@ -1,19 +1,11 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { createClient } from "@/lib/supabase/server";
+import { requireAdmin } from "@/lib/require-admin";
+import { friendlyError } from "@/lib/admin-errors";
 import type { Study } from "@/lib/types";
 
 type ActionResult = { ok: true } | { ok: false; message: string };
-
-async function requireAdmin() {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) throw new Error("unauthorized");
-  return supabase;
-}
 
 // is_featured/featured_order는 노출 정원 트리거(enforce_featured_cap)가 걸려 있어
 // /admin/main에서만 다룬다 — 이 폼은 콘텐츠 필드만 책임진다.
@@ -33,13 +25,6 @@ function normalizeStudyInput(input: StudyInput): StudyInput {
     title: normalizeSpaces(input.title),
     summary: input.summary ? normalizeSpaces(input.summary) : input.summary,
   };
-}
-
-function friendlyError(message: string): string {
-  if (message.includes("duplicate key") && message.includes("slug")) {
-    return "이미 사용 중인 slug예요. 다른 값을 입력해주세요.";
-  }
-  return "저장에 실패했어요. 다시 시도해 주세요.";
 }
 
 function revalidateStudyPaths(slug?: string) {

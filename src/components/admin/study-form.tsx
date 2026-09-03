@@ -8,7 +8,7 @@ import {
   updateStudy,
   type StudyInput,
 } from "@/app/admin/(protected)/studies/actions";
-import { setFeaturedPosition, unfeatureItem } from "@/app/admin/(protected)/main/actions";
+import { syncFeaturedItem } from "@/lib/featured-sync";
 import {
   CheckboxField,
   DateRangeField,
@@ -21,11 +21,12 @@ import { ContentBlockEditor } from "@/components/admin/content-block-editor";
 import { FeaturedControl } from "@/components/admin/featured-control";
 import { GalleryUploadField } from "@/components/admin/gallery-upload-field";
 import { ImageUploadField } from "@/components/admin/image-upload-field";
-import { StudyCategoryField } from "@/components/admin/study-category-field";
+import { ChipsMultiSelectField } from "@/components/admin/chips-multi-select-field";
 import { StudyFormatField } from "@/components/admin/study-format-field";
 import { StudyStepsEditor } from "@/components/admin/study-steps-editor";
 import { cleanContentBlocks } from "@/lib/clean-content-blocks";
 import { FEATURED_CAP_STUDY } from "@/lib/featured-caps";
+import { getStudyFormatOptions } from "@/lib/format";
 import { slugify } from "@/lib/slugify";
 import type { ContentStatus, Study } from "@/lib/types";
 
@@ -53,13 +54,13 @@ function toInput(study?: Study): StudyInput {
 export function StudyForm({
   study,
   featuredCount,
-  categoryOptions,
+  categories,
 }: {
   study?: Study;
   // 자기 자신을 제외한, 이미 노출 중인 스터디 건수.
   featuredCount: number;
-  // 다른 스터디에서 이미 "+ 직접 입력"으로 쓰인 카테고리 값 — 선택지로 재사용.
-  categoryOptions: string[];
+  // "카테고리 관리"에서 관리하는 카테고리 목록 — 순서까지 그대로 선택지에 반영한다.
+  categories: string[];
 }) {
   const router = useRouter();
   const isEdit = Boolean(study);
@@ -78,16 +79,13 @@ export function StudyForm({
 
   const draftBlocksFeature = input.status !== "published";
 
-  async function syncFeatured(id: string): Promise<{ ok: true } | { ok: false; message: string }> {
-    const wasFeatured = study?.is_featured ?? false;
-    if (wantFeatured && !draftBlocksFeature) {
-      if (wasFeatured && study?.featured_order === positionChoice) return { ok: true };
-      return setFeaturedPosition("studies", id, positionChoice);
-    }
-    if (wasFeatured) {
-      return unfeatureItem("studies", id);
-    }
-    return { ok: true };
+  function syncFeatured(id: string) {
+    return syncFeaturedItem(
+      "studies",
+      id,
+      { wasFeatured: study?.is_featured ?? false, wasPosition: study?.featured_order ?? null },
+      { wantFeatured, positionChoice, draftBlocksFeature },
+    );
   }
 
   function handleSubmit(event: React.FormEvent) {
@@ -217,9 +215,12 @@ export function StudyForm({
             onChange={(v) => set("overview", v || null)}
           />
         </div>
-        <StudyCategoryField
+        <ChipsMultiSelectField
+          label="카테고리"
+          hint="필터 칩 기준값 · 여러 개 선택 가능 · 카테고리 관리에서 추가"
           values={input.tags}
-          extraOptions={categoryOptions}
+          options={categories}
+          excludeOptions={getStudyFormatOptions()}
           onChange={(v) => set("tags", v)}
         />
         <StudyFormatField values={input.tags} onChange={(v) => set("tags", v)} />

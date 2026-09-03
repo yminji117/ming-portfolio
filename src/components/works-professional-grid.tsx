@@ -3,7 +3,7 @@
 import { useMemo, useRef, useState, type RefObject } from "react";
 import { ProjectCard } from "@/components/project-card";
 import { Reveal } from "@/components/reveal";
-import { getIndustryLabel, normalizeIndustry, sortIndustries } from "@/lib/format";
+import { normalizeIndustry, sortIndustries } from "@/lib/format";
 import type { Project } from "@/lib/types";
 
 const ALL = "all";
@@ -11,17 +11,19 @@ const ALL = "all";
 export function WorksProfessionalGrid({
   projects,
   cardMetaField = "company",
+  industryOrder,
 }: {
   projects: Project[];
   cardMetaField?: "company" | "period";
+  industryOrder: string[];
 }) {
   const industries = useMemo(() => {
     const unique = new Set<string>();
     projects.forEach((project) => {
       normalizeIndustry(project.industry).forEach((industry) => unique.add(industry));
     });
-    return sortIndustries(Array.from(unique), "professional");
-  }, [projects]);
+    return sortIndustries(Array.from(unique), industryOrder);
+  }, [projects, industryOrder]);
 
   const [active, setActive] = useState<string>(ALL);
   // 모바일 가로 스크롤 필터 칩 행 — 뒤쪽 칩을 선택했을 때 해당 칩이 보이도록 스크롤한다.
@@ -59,7 +61,7 @@ export function WorksProfessionalGrid({
             {industries.map((industry, i) => (
               <FilterChip
                 key={industry}
-                label={getIndustryLabel(industry)}
+                label={industry}
                 selected={active === industry}
                 onClick={() => setActive(industry)}
                 index={i + 1}
@@ -76,6 +78,7 @@ export function WorksProfessionalGrid({
                 project={project}
                 active={active !== ALL && normalizeIndustry(project.industry).includes(active)}
                 metaField={cardMetaField}
+                industryOrder={industryOrder}
               />
             </Reveal>
           </div>
@@ -92,6 +95,7 @@ export function WorksProfessionalGrid({
                   project={project}
                   active={active !== ALL && normalizeIndustry(project.industry).includes(active)}
                   metaField={cardMetaField}
+                  industryOrder={industryOrder}
                 />
               </Reveal>
             </div>

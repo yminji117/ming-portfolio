@@ -3,7 +3,7 @@
 import { useMemo, useRef, useState, useTransition, type RefObject } from "react";
 import { loadMoreStudies } from "@/app/study/actions";
 import { StudyListGrid } from "@/components/study-list-grid";
-import { getStudyCategoryLabel, getStudyFormatOptions, sortStudyCategories } from "@/lib/format";
+import { getStudyFormatOptions, sortStudyCategories } from "@/lib/format";
 import type { Study } from "@/lib/types";
 
 const ALL = "all";
@@ -11,9 +11,11 @@ const ALL = "all";
 export function StudyListClient({
   initialItems,
   total,
+  categoryOrder,
 }: {
   initialItems: Study[];
   total: number;
+  categoryOrder: string[];
 }) {
   const [items, setItems] = useState(initialItems);
   const [isPending, startTransition] = useTransition();
@@ -31,8 +33,8 @@ export function StudyListClient({
         if (!formatOptions.includes(tag)) unique.add(tag);
       });
     });
-    return sortStudyCategories(Array.from(unique));
-  }, [items, formatOptions]);
+    return sortStudyCategories(Array.from(unique), categoryOrder);
+  }, [items, formatOptions, categoryOrder]);
 
   if (items.length === 0) {
     return (
@@ -69,7 +71,7 @@ export function StudyListClient({
           {categories.map((tag, i) => (
             <FilterChip
               key={tag}
-              label={getStudyCategoryLabel(tag)}
+              label={tag}
               selected={active === tag}
               onClick={() => setActive(tag)}
               index={i + 1}
@@ -84,7 +86,7 @@ export function StudyListClient({
           해당 카테고리의 스터디가 없어요.
         </p>
       ) : (
-        <StudyListGrid studies={filtered} />
+        <StudyListGrid studies={filtered} categoryOrder={categoryOrder} />
       )}
 
       {hasMore && (

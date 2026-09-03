@@ -168,6 +168,17 @@ export interface SiteSettings {
   is_maintenance: boolean;
 }
 
+// Work(Professional/Side) 업종 + Study 카테고리 — 어드민 "카테고리 관리"에서 관리하는 통합 목록.
+// name이 곧 저장값(projects.industry/studies.tags)이자 표시 라벨이라 별도 라벨 매핑이 없다.
+export type CategoryScope = "work_professional" | "work_side" | "study";
+
+export interface Category {
+  id: string;
+  scope: CategoryScope;
+  name: string;
+  sort_order: number;
+}
+
 // analytics_public_stats 뷰 — anon도 읽을 수 있는 집계 전용, 개별 방문자 정보 없음.
 export interface AnalyticsPublicStats {
   total_pageviews: number;

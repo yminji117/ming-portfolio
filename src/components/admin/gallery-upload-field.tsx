@@ -4,6 +4,7 @@ import { useState } from "react";
 import Image from "next/image";
 import { FieldLabel } from "@/components/admin/admin-form-field";
 import { uploadImage } from "@/lib/upload-image";
+import { moveItem } from "@/lib/array-utils";
 
 export function GalleryUploadField({
   label,
@@ -38,11 +39,8 @@ export function GalleryUploadField({
   }
 
   function move(index: number, dir: -1 | 1) {
-    const target = index + dir;
-    if (target < 0 || target >= values.length) return;
-    const next = [...values];
-    [next[index], next[target]] = [next[target], next[index]];
-    onChange(next);
+    const next = moveItem(values, index, dir);
+    if (next !== values) onChange(next);
   }
 
   return (

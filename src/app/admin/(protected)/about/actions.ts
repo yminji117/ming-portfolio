@@ -1,19 +1,10 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { createClient } from "@/lib/supabase/server";
+import { requireAdmin } from "@/lib/require-admin";
 import type { About, Career, Skill } from "@/lib/types";
 
 type ActionResult = { ok: true } | { ok: false; message: string };
-
-async function requireAdmin() {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) throw new Error("unauthorized");
-  return supabase;
-}
 
 function revalidateAboutPaths() {
   revalidatePath("/admin/about");

@@ -1,8 +1,8 @@
 import { createClient } from "@/lib/supabase/server";
-import { getStudyFormatOptions, normalizeIndustry } from "@/lib/format";
 import type {
   About,
   Career,
+  Category,
   CurrentlyDoing,
   GuestbookEntry,
   Project,
@@ -85,29 +85,17 @@ export async function getProjectCategoryCounts(): Promise<
   };
 }
 
-// 어드민 업종 선택 필드용 — 지금까지 어떤 프로젝트에서든 실제로 쓰인 업종 값을
-// 분류별로 모아준다. "+ 직접 입력"으로 한 번 추가된 값도 다음 프로젝트부터는
-// 재입력 없이 선택지(pill)로 바로 고를 수 있게 하기 위함(오타 방지).
-export async function getKnownIndustries(): Promise<Record<ProjectCategory, string[]>> {
+// Work(Professional/Side) 업종 + Study 카테고리 통합 목록 — 어드민 "카테고리 관리"에서
+// 관리하며, 등록 페이지(Work/Study)의 선택지도 이 테이블을 그대로 쓴다.
+export async function getCategories(): Promise<Category[]> {
   const supabase = await createClient();
   const { data, error } = await supabase
-    .from("projects")
-    .select("category, industry")
-    .is("deleted_at", null);
-  if (error) console.error("getKnownIndustries failed:", error.message);
-
-  const seen: Record<ProjectCategory, Set<string>> = {
-    professional: new Set(),
-    side: new Set(),
-  };
-  (data ?? []).forEach((row) => {
-    const category = row.category as ProjectCategory;
-    normalizeIndustry(row.industry).forEach((industry) => seen[category].add(industry));
-  });
-  return {
-    professional: Array.from(seen.professional),
-    side: Array.from(seen.side),
-  };
+    .from("categories")
+    .select("*")
+    .order("scope", { ascending: true })
+    .order("sort_order", { ascending: true });
+  if (error) console.error("getCategories failed:", error.message);
+  return data ?? [];
 }
 
 export async function getProjectBySlug(slug: string): Promise<Project | null> {
@@ -147,27 +135,6 @@ export async function getAdjacentProjects(
     prev: index > 0 ? items[index - 1] : null,
     next: index < items.length - 1 ? items[index + 1] : null,
   };
-}
-
-// 어드민 스터디 카테고리 선택 필드용 — getKnownIndustries와 동일한 목적으로, 지금까지 어떤
-// 스터디에서든 "+ 직접 입력"으로 쓰인 카테고리 값을 모아준다. 형태(Online/Offline)는 별개
-// 필드(StudyFormatField)가 관리하므로 여기서는 제외한다.
-export async function getKnownStudyCategories(): Promise<string[]> {
-  const supabase = await createClient();
-  const { data, error } = await supabase
-    .from("studies")
-    .select("tags")
-    .is("deleted_at", null);
-  if (error) console.error("getKnownStudyCategories failed:", error.message);
-
-  const formatOptions = getStudyFormatOptions();
-  const seen = new Set<string>();
-  (data ?? []).forEach((row) => {
-    (row.tags ?? []).forEach((tag: string) => {
-      if (!formatOptions.includes(tag)) seen.add(tag);
-    });
-  });
-  return Array.from(seen);
 }
 
 export async function getFeaturedStudies(limit: number): Promise<Study[]> {

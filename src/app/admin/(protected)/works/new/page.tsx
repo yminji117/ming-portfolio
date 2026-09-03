@@ -1,10 +1,10 @@
 import { createClient } from "@/lib/supabase/server";
 import { ProjectForm } from "@/components/admin/project-form";
-import { getKnownIndustries } from "@/lib/data";
+import { getCategories } from "@/lib/data";
 
 export default async function AdminNewWorkPage() {
   const supabase = await createClient();
-  const [{ count: professional }, { count: side }, industryOptions] = await Promise.all([
+  const [{ count: professional }, { count: side }, allCategories] = await Promise.all([
     supabase
       .from("projects")
       .select("id", { count: "exact", head: true })
@@ -15,8 +15,12 @@ export default async function AdminNewWorkPage() {
       .select("id", { count: "exact", head: true })
       .eq("category", "side")
       .eq("is_featured", true),
-    getKnownIndustries(),
+    getCategories(),
   ]);
+  const categories = {
+    professional: allCategories.filter((c) => c.scope === "work_professional").map((c) => c.name),
+    side: allCategories.filter((c) => c.scope === "work_side").map((c) => c.name),
+  };
 
   return (
     <div className="flex flex-col gap-6">
@@ -29,7 +33,7 @@ export default async function AdminNewWorkPage() {
       </div>
       <ProjectForm
         featuredCounts={{ professional: professional ?? 0, side: side ?? 0 }}
-        industryOptions={industryOptions}
+        categories={categories}
       />
     </div>
   );

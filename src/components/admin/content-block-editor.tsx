@@ -1,5 +1,6 @@
 "use client";
 
+import { moveItem } from "@/lib/array-utils";
 import type { ContentBlock } from "@/lib/types";
 
 const BLOCK_LABELS: Record<ContentBlock["type"], string> = {
@@ -49,11 +50,8 @@ export function ContentBlockEditor({
     onChange(blocks.filter((_, i) => i !== index));
   }
   function move(index: number, dir: -1 | 1) {
-    const target = index + dir;
-    if (target < 0 || target >= blocks.length) return;
-    const next = [...blocks];
-    [next[index], next[target]] = [next[target], next[index]];
-    onChange(next);
+    const next = moveItem(blocks, index, dir);
+    if (next !== blocks) onChange(next);
   }
 
   return (

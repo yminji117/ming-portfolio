@@ -9,6 +9,7 @@ import { WorksSection } from "@/components/works-section";
 import {
   getAbout,
   getCareerYears,
+  getCategories,
   getCurrentlyDoing,
   getFeaturedProjects,
   getFeaturedStudies,
@@ -30,6 +31,7 @@ export default async function Home() {
     currentlyDoing,
     careerYears,
     projectsCount,
+    categories,
   ] = await Promise.all([
     getFeaturedProjects("professional", 5),
     getFeaturedProjects("side", 2),
@@ -39,7 +41,10 @@ export default async function Home() {
     getCurrentlyDoing(settings?.currently_limit ?? 6),
     getCareerYears(),
     getPublishedProjectsCount(),
+    getCategories(),
   ]);
+  const professionalOrder = categories.filter((c) => c.scope === "work_professional").map((c) => c.name);
+  const studyOrder = categories.filter((c) => c.scope === "study").map((c) => c.name);
 
   // TEMP: '+N' 배지 예시 확인용 — 확인 끝나면 제거
   const professionalProjectsForDemo = professionalProjects.map((p, i) =>
@@ -64,8 +69,9 @@ export default async function Home() {
           theme="dark"
           projects={professionalProjectsForDemo}
           moreHref="/works?tab=professional"
+          industryOrder={professionalOrder}
         />
-        <StudySection studies={studies} moreHref="/study" />
+        <StudySection studies={studies} moreHref="/study" categoryOrder={studyOrder} />
         <WorksSection
           theme="light"
           projects={sideProjects}

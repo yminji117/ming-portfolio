@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
+import { moveItem } from "@/lib/array-utils";
 import {
   createCurrentlyDoing,
   deleteCurrentlyDoing,
@@ -141,10 +142,8 @@ export function CurrentlyDoingEditor({
   }
 
   function move(index: number, direction: -1 | 1) {
-    const target = index + direction;
-    if (target < 0 || target >= rows.length) return;
-    const next = [...rows];
-    [next[index], next[target]] = [next[target], next[index]];
+    const next = moveItem(rows, index, direction);
+    if (next === rows) return;
     setRows(next);
     startTransition(async () => {
       // 아직 등록 안 된(new-<uuid>) 행은 DB에 없는 id라 reorder 대상에서 제외한다 —

@@ -1,6 +1,6 @@
 import { MediaThumb } from "@/components/media-thumb";
 import { TrackedLink } from "@/components/tracked-link";
-import { formatCareerRange, getIndustryLabel, normalizeIndustry, sortIndustries } from "@/lib/format";
+import { formatCareerRange, normalizeIndustry, sortIndustries } from "@/lib/format";
 import type { Project } from "@/lib/types";
 
 // Works Professional 카드 — industry 필터에 매칭되면 화이트, 아니면 블랙 상태를 유지한다(숨기지 않음).
@@ -9,14 +9,14 @@ export function ProjectCard({
   project,
   active,
   metaField = "company",
+  industryOrder,
 }: {
   project: Project;
   active: boolean;
   metaField?: "company" | "period";
+  industryOrder: string[];
 }) {
-  const tags = sortIndustries(normalizeIndustry(project.industry), project.category).map(
-    getIndustryLabel,
-  );
+  const tags = sortIndustries(normalizeIndustry(project.industry), industryOrder);
 
   const metaText =
     metaField === "period"

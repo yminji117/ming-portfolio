@@ -3,7 +3,7 @@
 import { useMemo, useRef, useState, useTransition, type RefObject } from "react";
 import { loadMoreProjects } from "@/app/works/actions";
 import { WorksListGrid } from "@/components/works-list-grid";
-import { getFilterableIndustries, getIndustryLabel, normalizeIndustry, sortIndustries } from "@/lib/format";
+import { getFilterableIndustries, normalizeIndustry, sortIndustries } from "@/lib/format";
 import type { Project, ProjectCategory } from "@/lib/types";
 
 const ALL = "all";
@@ -14,10 +14,12 @@ export function WorksListClient({
   category,
   initialItems,
   total,
+  industryOrder,
 }: {
   category: ProjectCategory;
   initialItems: Project[];
   total: number;
+  industryOrder: string[];
 }) {
   const [items, setItems] = useState(initialItems);
   const [isPending, startTransition] = useTransition();
@@ -29,8 +31,8 @@ export function WorksListClient({
     items.forEach((project) => {
       normalizeIndustry(project.industry).forEach((industry) => unique.add(industry));
     });
-    return getFilterableIndustries(sortIndustries(Array.from(unique), category), category);
-  }, [items, category]);
+    return getFilterableIndustries(sortIndustries(Array.from(unique), industryOrder), category);
+  }, [items, category, industryOrder]);
 
   if (items.length === 0) {
     return (
@@ -68,7 +70,7 @@ export function WorksListClient({
           {industries.map((industry, i) => (
             <FilterChip
               key={industry}
-              label={getIndustryLabel(industry)}
+              label={industry}
               selected={active === industry}
               onClick={() => setActive(industry)}
               index={i + 1}
@@ -83,7 +85,7 @@ export function WorksListClient({
           해당 카테고리의 프로젝트가 없어요.
         </p>
       ) : (
-        <WorksListGrid projects={filtered} />
+        <WorksListGrid projects={filtered} industryOrder={industryOrder} />
       )}
 
       {hasMore && (

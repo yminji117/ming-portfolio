@@ -1,5 +1,6 @@
 "use client";
 
+import { moveItem } from "@/lib/array-utils";
 import type { StudyRoadmapStep } from "@/lib/types";
 
 // Study 상세 로드맵 카드(PRD 5.4) — 있으면 로드맵 카드로, 없으면 플랫 행으로 렌더링된다.
@@ -17,11 +18,8 @@ export function StudyStepsEditor({
     onChange(steps.filter((_, i) => i !== index));
   }
   function move(index: number, dir: -1 | 1) {
-    const target = index + dir;
-    if (target < 0 || target >= steps.length) return;
-    const next = [...steps];
-    [next[index], next[target]] = [next[target], next[index]];
-    onChange(next);
+    const next = moveItem(steps, index, dir);
+    if (next !== steps) onChange(next);
   }
 
   const inputClass =

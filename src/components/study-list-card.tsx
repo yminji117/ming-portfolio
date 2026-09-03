@@ -1,13 +1,19 @@
 import Image from "next/image";
 import Link from "next/link";
-import { formatProjectRange, getStudyCategoryLabel, sortStudyTagsForDisplay } from "@/lib/format";
+import { formatProjectRange, sortStudyTagsForDisplay } from "@/lib/format";
 import type { Study } from "@/lib/types";
 
 // Study 리스트 카드는 항상 내부 상세 페이지로 이동한다 — 외부 링크(external_url)는
 // 상세 페이지 안의 동그란 화살표 버튼(ExpandCircleRightIcon)에서만 연결한다.
-export function StudyListCard({ study }: { study: Study }) {
+export function StudyListCard({
+  study,
+  categoryOrder,
+}: {
+  study: Study;
+  categoryOrder: string[];
+}) {
   const period = formatProjectRange(study.start_date, study.end_date);
-  const tags = sortStudyTagsForDisplay(study.tags).slice(0, 2);
+  const tags = sortStudyTagsForDisplay(study.tags, categoryOrder).slice(0, 2);
 
   return (
     <Link
@@ -38,7 +44,7 @@ export function StudyListCard({ study }: { study: Study }) {
                   key={tag}
                   className="inline-flex h-[24px] items-center justify-center rounded-full border border-[var(--color-ink)] px-[13px] text-[12px] text-[var(--color-ink)] sm:h-[28px]"
                 >
-                  {getStudyCategoryLabel(tag)}
+                  {tag}
                 </span>
               ))}
             </div>
