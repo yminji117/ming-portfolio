@@ -211,22 +211,36 @@ export async function getAbout(): Promise<About | null> {
   return data;
 }
 
-// Hero 뱃지 "N년차" 계산용 — 가장 이른 회사 경력 시작일 기준
+// Hero 뱃지 "N년차" 계산용 — Service Planner 직무 시작일 기준(퇴사 시 마지막 근무일에서 멈춤)
 export async function getCareerYears(): Promise<number | null> {
   const supabase = await createClient();
+  // 현업 경력은 Service Planner 직무 기간만 집계한다(이전 Product Designer 경력은 제외).
   const { data, error } = await supabase
     .from("careers")
-    .select("start_date")
+    .select("start_date, end_date")
     .eq("type", "company")
-    .order("start_date", { ascending: true })
-    .limit(1)
-    .maybeSingle();
+    .eq("title", "Service Planner")
+    .order("start_date", { ascending: true });
   if (error) console.error("getCareerYears failed:", error.message);
-  if (!data?.start_date) return null;
+  const rows = (data ?? []).filter((row) => row.start_date);
+  if (rows.length === 0) return null;
 
-  const startYear = new Date(data.start_date).getFullYear();
-  const currentYear = new Date().getFullYear();
-  return Math.max(1, currentYear - startYear + 1);
+  const start = new Date(rows[0].start_date as string);
+  // 재직 중(종료일 없는 Service Planner)이면 오늘까지, 모두 퇴사한 상태면 마지막 퇴사일에서 멈춘다
+  // — 다음 회사에 들어가기 전까지 연차가 더 올라가지 않도록.
+  const ongoing = rows.some((row) => !row.end_date);
+  const reference = ongoing
+    ? new Date()
+    : new Date(Math.max(...rows.map((row) => new Date(row.end_date as string).getTime())));
+
+  // "N년차" = 입사일로부터 지난 만 연수 + 1. 연도만 빼면 연말 입사도 이듬해에 2년차가 되어
+  // 실제보다 부풀려지므로, 아직 그해 입사 기념일이 안 지났으면 만 연수에서 1을 뺀다(월/일까지 반영).
+  let fullYears = reference.getFullYear() - start.getFullYear();
+  const anniversaryPassed =
+    reference.getMonth() > start.getMonth() ||
+    (reference.getMonth() === start.getMonth() && reference.getDate() >= start.getDate());
+  if (!anniversaryPassed) fullYears -= 1;
+  return Math.max(1, fullYears + 1);
 }
 
 // Hero 뱃지 "N건 완료" 계산용 — Professional 카테고리의 게시된 프로젝트 수만 집계
