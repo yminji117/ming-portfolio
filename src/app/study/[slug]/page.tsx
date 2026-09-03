@@ -135,7 +135,7 @@ export default async function StudyDetailPage(
                 )}
 
                 {galleryUrls.length > 0 && (
-                  <ProjectGallery urls={galleryUrls} desktopLayout="stack" />
+                  <ProjectGallery urls={galleryUrls} desktopLayout="stack-collapsible" />
                 )}
 
                 {study.body?.blocks && study.body.blocks.length > 0 && (
