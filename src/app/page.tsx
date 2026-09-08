@@ -54,7 +54,12 @@ export default async function Home() {
 
   return (
     <>
-      <NoticePopup />
+      <NoticePopup
+        enabled={settings?.notice_enabled ?? true}
+        emoji={settings?.notice_emoji ?? "🚨"}
+        title={settings?.notice_title ?? "아직 수정 중으로 서버 오류가 날 수 있어요!"}
+        subtitle={settings?.notice_subtitle ?? "오류날 경우 잠시후 새로고침 해주세요.\n감사합니다 :-)"}
+      />
       <Gnb />
       <main className="flex-1">
         <Hero

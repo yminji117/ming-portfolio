@@ -8,7 +8,17 @@ import { createPortal } from "react-dom";
 // 남기고 heroPopupClosed 이벤트를 쏴서 히어로 영상이 그때 재생을 시작하게 한다.
 const SEEN_KEY = "noticePopupSeen";
 
-export function NoticePopup() {
+export function NoticePopup({
+  enabled,
+  emoji,
+  title,
+  subtitle,
+}: {
+  enabled: boolean;
+  emoji: string;
+  title: string;
+  subtitle: string;
+}) {
   const [open, setOpen] = useState(false);
   const confirmRef = useRef<HTMLButtonElement>(null);
   // 배경 클릭 + ESC가 겹쳐 두 번 실행되는 것을 막는 가드.
@@ -17,8 +27,15 @@ export function NoticePopup() {
   // sessionStorage는 클라이언트에서만 읽을 수 있으므로 마운트 후 판단한다(첫 페인트엔 없다가
   // hydrate 후 표시 → SSR/hydration 불일치 방지).
   useEffect(() => {
+    if (!enabled) {
+      // 미제공이면 팝업을 띄우지 않되, HeroVideo가 heroPopupClosed를 무한 대기하지 않도록
+      // seen 플래그 + 이벤트를 함께 남긴다(HeroVideo effect 실행 순서와 무관하게 재생됨).
+      sessionStorage.setItem(SEEN_KEY, "1");
+      window.dispatchEvent(new CustomEvent("heroPopupClosed"));
+      return;
+    }
     if (sessionStorage.getItem(SEEN_KEY) !== "1") setOpen(true);
-  }, []);
+  }, [enabled]);
 
   useEffect(() => {
     if (!open) return;
@@ -65,15 +82,13 @@ export function NoticePopup() {
           >
             <div className="flex flex-col items-center gap-2.5">
               <span className="text-[48px] leading-none" aria-hidden="true">
-                🚨
+                {emoji}
               </span>
               <p id="notice-title" className="text-[16px] font-bold leading-[29px]">
-                아직 수정 중으로 서버 오류가 날 수 있어요!
+                {title}
               </p>
-              <p className="text-[16px] font-medium leading-[29px]">
-                오류날 경우 잠시후 새로고침 해주세요.
-                <br />
-                감사합니다 :-)
+              <p className="whitespace-pre-line text-[16px] font-medium leading-[29px]">
+                {subtitle}
               </p>
             </div>
             <button

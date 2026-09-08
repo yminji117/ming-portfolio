@@ -3,9 +3,11 @@
 import { useState, useTransition } from "react";
 import { updateSiteSettings } from "@/app/admin/(protected)/site-settings/actions";
 import {
+  CheckboxField,
   FormSection,
   NumberField,
   SelectField,
+  TextAreaField,
   TextField,
 } from "@/components/admin/admin-form-field";
 import { ImageUploadField } from "@/components/admin/image-upload-field";
@@ -21,6 +23,10 @@ const EMPTY: SiteSettings = {
   footer_text: null,
   og_image_url: null,
   is_maintenance: false,
+  notice_enabled: true,
+  notice_emoji: "🚨",
+  notice_title: "아직 수정 중으로 서버 오류가 날 수 있어요!",
+  notice_subtitle: "오류날 경우 잠시후 새로고침 해주세요.\n감사합니다 :-)",
 };
 
 export function SiteSettingsForm({ settings }: { settings: SiteSettings | null }) {
@@ -111,6 +117,38 @@ export function SiteSettingsForm({ settings }: { settings: SiteSettings | null }
             onChange={(url) => set("og_image_url", url)}
             pathPrefix="site/og"
             guide="카카오톡/슬랙 등에 링크 공유 시 노출되는 대표 이미지 · 1200×630 권장"
+          />
+        </div>
+      </FormSection>
+
+      <FormSection title="공지 팝업">
+        <div className="sm:col-span-2">
+          <CheckboxField
+            label="공지 팝업 제공"
+            checked={input.notice_enabled}
+            onChange={(v) => set("notice_enabled", v)}
+          />
+          <p className="mt-1 text-[11px] text-[var(--color-text-muted)]">
+            끄면 방문자에게 팝업이 표시되지 않아요.
+          </p>
+        </div>
+        <TextField
+          label="이모지"
+          hint="예: 🚨"
+          value={input.notice_emoji}
+          onChange={(v) => set("notice_emoji", v)}
+        />
+        <TextField
+          label="타이틀"
+          value={input.notice_title}
+          onChange={(v) => set("notice_title", v)}
+        />
+        <div className="sm:col-span-2">
+          <TextAreaField
+            label="서브타이틀"
+            hint="줄바꿈(Enter)으로 여러 줄 입력 가능 · 길이에 따라 팝업 높이 자동 조절"
+            value={input.notice_subtitle}
+            onChange={(v) => set("notice_subtitle", v)}
           />
         </div>
       </FormSection>
