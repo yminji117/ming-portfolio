@@ -166,11 +166,13 @@ export interface SiteSettings {
   footer_text: string | null;
   og_image_url: string | null;
   is_maintenance: boolean;
-  notice_enabled: boolean;
+  notice_display_mode: NoticeDisplayMode;
   notice_emoji: string;
   notice_title: string;
   notice_subtitle: string;
 }
+
+export type NoticeDisplayMode = "off" | "once_session" | "every_entry" | "dismiss_12h";
 
 // Work(Professional/Side) 업종 + Study 카테고리 — 어드민 "카테고리 관리"에서 관리하는 통합 목록.
 // name이 곧 저장값(projects.industry/studies.tags)이자 표시 라벨이라 별도 라벨 매핑이 없다.

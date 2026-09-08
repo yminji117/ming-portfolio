@@ -3,18 +3,23 @@
 import { AnimatePresence, motion } from "framer-motion";
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
+import type { NoticeDisplayMode } from "@/lib/types";
 
-// 세션 최초 진입 시 1회 노출하는 공지 팝업(Figma node 438:397). 닫으면(확인/배경/ESC) 세션 플래그를
-// 남기고 heroPopupClosed 이벤트를 쏴서 히어로 영상이 그때 재생을 시작하게 한다.
+// 공지 팝업(Figma node 438:397). 노출 방식은 어드민에서 4가지 중 선택(mode).
+// 닫으면(확인/배경/ESC) 세션 플래그를 남기고 heroPopupClosed 이벤트를 쏴서 히어로 영상이
+// 그때 재생을 시작하게 한다. 팝업을 아예 안 여는 경우에도 같은 신호(unblockHero)를 흘려
+// 히어로 영상이 무한 대기하지 않게 한다.
 const SEEN_KEY = "noticePopupSeen";
+// "오늘 하루 안보기" 만료 시각(epoch ms) — 세션이 아니라 기기별로 12시간 유지되도록 localStorage.
+const DISMISS_KEY = "noticePopupDismissUntil";
 
 export function NoticePopup({
-  enabled,
+  mode,
   emoji,
   title,
   subtitle,
 }: {
-  enabled: boolean;
+  mode: NoticeDisplayMode;
   emoji: string;
   title: string;
   subtitle: string;
@@ -24,18 +29,25 @@ export function NoticePopup({
   // 배경 클릭 + ESC가 겹쳐 두 번 실행되는 것을 막는 가드.
   const closedRef = useRef(false);
 
-  // sessionStorage는 클라이언트에서만 읽을 수 있으므로 마운트 후 판단한다(첫 페인트엔 없다가
-  // hydrate 후 표시 → SSR/hydration 불일치 방지).
+  // sessionStorage/localStorage는 클라이언트에서만 읽을 수 있으므로 마운트 후 판단한다(첫 페인트엔
+  // 없다가 hydrate 후 표시 → SSR/hydration 불일치 방지).
   useEffect(() => {
-    if (!enabled) {
-      // 미제공이면 팝업을 띄우지 않되, HeroVideo가 heroPopupClosed를 무한 대기하지 않도록
-      // seen 플래그 + 이벤트를 함께 남긴다(HeroVideo effect 실행 순서와 무관하게 재생됨).
+    // 팝업을 안 열 때 히어로 영상이 heroPopupClosed를 무한 대기하지 않도록 seen 플래그 + 이벤트를
+    // 함께 남긴다(HeroVideo effect 실행 순서와 무관하게 재생됨).
+    const unblockHero = () => {
       sessionStorage.setItem(SEEN_KEY, "1");
       window.dispatchEvent(new CustomEvent("heroPopupClosed"));
-      return;
+    };
+    if (mode === "off") return unblockHero();
+    if (mode === "once_session") {
+      if (sessionStorage.getItem(SEEN_KEY) === "1") return unblockHero();
+      return void setOpen(true);
     }
-    if (sessionStorage.getItem(SEEN_KEY) !== "1") setOpen(true);
-  }, [enabled]);
+    if (mode === "every_entry") return void setOpen(true);
+    // dismiss_12h — 만료 전이면 노출 안 함.
+    if (Date.now() < Number(localStorage.getItem(DISMISS_KEY) || 0)) return unblockHero();
+    setOpen(true);
+  }, [mode]);
 
   useEffect(() => {
     if (!open) return;
@@ -58,6 +70,12 @@ export function NoticePopup({
     setOpen(false);
     sessionStorage.setItem(SEEN_KEY, "1");
     window.dispatchEvent(new CustomEvent("heroPopupClosed"));
+  }
+
+  // "오늘 하루 안보기" — 지금부터 12시간 미노출로 기록하고 닫는다.
+  function handleDismissToday() {
+    localStorage.setItem(DISMISS_KEY, String(Date.now() + 12 * 60 * 60 * 1000));
+    handleClose();
   }
 
   if (typeof document === "undefined") return null;
@@ -91,14 +109,34 @@ export function NoticePopup({
                 {subtitle}
               </p>
             </div>
-            <button
-              ref={confirmRef}
-              type="button"
-              onClick={handleClose}
-              className="w-full rounded-[4px] border border-[#013dff] bg-[#0a0a0a] px-7 py-3 text-[16px] font-medium text-white"
-            >
-              확인
-            </button>
+            {mode === "dismiss_12h" ? (
+              <div className="flex w-full gap-2">
+                <button
+                  type="button"
+                  onClick={handleDismissToday}
+                  className="flex-1 rounded-[4px] border border-[#0a0a0a] bg-white px-7 py-3 text-[16px] font-medium text-[#0a0a0a]"
+                >
+                  오늘 하루 안보기
+                </button>
+                <button
+                  ref={confirmRef}
+                  type="button"
+                  onClick={handleClose}
+                  className="flex-1 rounded-[4px] border border-[#013dff] bg-[#0a0a0a] px-7 py-3 text-[16px] font-medium text-white"
+                >
+                  확인
+                </button>
+              </div>
+            ) : (
+              <button
+                ref={confirmRef}
+                type="button"
+                onClick={handleClose}
+                className="w-full rounded-[4px] border border-[#013dff] bg-[#0a0a0a] px-7 py-3 text-[16px] font-medium text-white"
+              >
+                확인
+              </button>
+            )}
           </motion.div>
         </div>
       )}

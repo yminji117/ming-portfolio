@@ -3,7 +3,6 @@
 import { useState, useTransition } from "react";
 import { updateSiteSettings } from "@/app/admin/(protected)/site-settings/actions";
 import {
-  CheckboxField,
   FormSection,
   NumberField,
   SelectField,
@@ -11,7 +10,7 @@ import {
   TextField,
 } from "@/components/admin/admin-form-field";
 import { ImageUploadField } from "@/components/admin/image-upload-field";
-import type { HeroMediaType, SiteSettings } from "@/lib/types";
+import type { HeroMediaType, NoticeDisplayMode, SiteSettings } from "@/lib/types";
 
 const EMPTY: SiteSettings = {
   hero_title: "Welcome To My Home",
@@ -23,7 +22,7 @@ const EMPTY: SiteSettings = {
   footer_text: null,
   og_image_url: null,
   is_maintenance: false,
-  notice_enabled: true,
+  notice_display_mode: "once_session",
   notice_emoji: "🚨",
   notice_title: "아직 수정 중으로 서버 오류가 날 수 있어요!",
   notice_subtitle: "오류날 경우 잠시후 새로고침 해주세요.\n감사합니다 :-)",
@@ -123,13 +122,19 @@ export function SiteSettingsForm({ settings }: { settings: SiteSettings | null }
 
       <FormSection title="공지 팝업">
         <div className="sm:col-span-2">
-          <CheckboxField
-            label="공지 팝업 제공"
-            checked={input.notice_enabled}
-            onChange={(v) => set("notice_enabled", v)}
+          <SelectField<NoticeDisplayMode>
+            label="노출 방식"
+            value={input.notice_display_mode}
+            onChange={(v) => set("notice_display_mode", v)}
+            options={[
+              { value: "off", label: "미제공 (팝업 안 뜸)" },
+              { value: "once_session", label: "진입 시 최소 1회만 제공" },
+              { value: "every_entry", label: "메인 진입 시 제공" },
+              { value: "dismiss_12h", label: "오늘 하루 안보기 버튼 제공" },
+            ]}
           />
           <p className="mt-1 text-[11px] text-[var(--color-text-muted)]">
-            끄면 방문자에게 팝업이 표시되지 않아요.
+            오늘 하루 안보기: 버튼을 누르면 12시간 동안 미노출 · 확인은 이번만 닫기
           </p>
         </div>
         <TextField
