@@ -2,13 +2,19 @@
 
 import { revalidatePath } from "next/cache";
 import { requireAdmin } from "@/lib/require-admin";
+import { getVisitorHash } from "@/lib/analytics-track";
 
-// 현재 접속 IP를 통계에서 제외 — 서버가 요청 헤더에서 IP 해시를 계산해 등록하고
-// 그 IP의 과거 기록까지 삭제한다(analytics_exclude_current_visitor RPC).
+// 현재 접속 IP를 통계에서 제외 — 추적과 동일한 헬퍼로 실제 브라우저 IP 해시를 계산해
+// 넘긴다(같은 IP → 같은 해시라야 제외가 실제로 매칭된다). 과거 데이터는 남겨두기로 했으므로
+// 이후 방문부터 이 해시가 집계에서 빠진다.
 export async function excludeCurrentVisitor(formData: FormData): Promise<void> {
   const supabase = await requireAdmin();
   const note = (formData.get("note") as string | null)?.trim() || null;
-  const { error } = await supabase.rpc("analytics_exclude_current_visitor", { p_note: note });
+  const visitorHash = await getVisitorHash();
+  const { error } = await supabase.rpc("analytics_exclude_current_visitor", {
+    p_note: note,
+    p_visitor_hash: visitorHash,
+  });
   if (error) console.error("excludeCurrentVisitor failed:", error.message);
   revalidatePath("/admin/analytics");
 }

@@ -1,7 +1,18 @@
 "use server";
 
+import { createHash } from "node:crypto";
 import { headers } from "next/headers";
 import { createClient } from "@/lib/supabase/server";
+
+// 실제 브라우저 IP를 SHA-256 해시한다(raw IP는 저장하지 않음). 서버 액션의 headers()에
+// 담긴 x-forwarded-for(Vercel 엣지가 세팅한 클라이언트 IP)를 쓴다 — Postgres의
+// request.headers는 서버→Supabase 요청 헤더라 브라우저 IP가 아니므로 여기서 직접 넘긴다.
+// 추적과 "IP 제외"가 이 동일 함수를 써야 같은 IP가 같은 해시로 매칭된다.
+export async function getVisitorHash(): Promise<string> {
+  const headerList = await headers();
+  const ip = headerList.get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown";
+  return createHash("sha256").update(ip).digest("hex");
+}
 
 export type AnalyticsEventInput = {
   eventType: "pageview" | "action";
@@ -23,6 +34,8 @@ export async function trackAnalyticsEvent(input: AnalyticsEventInput): Promise<v
   try {
     const headerList = await headers();
     const userAgent = headerList.get("user-agent");
+    const ip = headerList.get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown";
+    const visitorHash = createHash("sha256").update(ip).digest("hex");
 
     const supabase = await createClient();
     const { error } = await supabase.rpc("analytics_track_event", {
@@ -37,6 +50,7 @@ export async function trackAnalyticsEvent(input: AnalyticsEventInput): Promise<v
       p_device_category: input.deviceCategory ?? null,
       p_meta: input.meta ?? null,
       p_user_agent: userAgent,
+      p_visitor_hash: visitorHash,
     });
 
     if (error) {
