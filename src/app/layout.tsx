@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { GoogleAnalytics } from "@next/third-parties/google";
 import { AnalyticsTracker } from "@/components/analytics-tracker";
 import { CursorFollower } from "@/components/cursor-follower";
 import { MotionProvider } from "@/components/motion-provider";
@@ -28,6 +29,11 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
     <html lang="ko" className={`h-full antialiased ${nanumSquareNeo.variable}`}>
       <body className="min-h-full flex flex-col">
         <AnalyticsTracker />
+        {/* GA4는 자체 분석과 별개로 병행 — 측정 ID(env)가 있을 때만 로드. SPA 페이지뷰는
+            GA4 향상된 측정(브라우저 기록 기반)이 자동 처리한다. */}
+        {process.env.NEXT_PUBLIC_GA_ID && (
+          <GoogleAnalytics gaId={process.env.NEXT_PUBLIC_GA_ID} />
+        )}
         <MotionProvider>
           <CursorFollower />
           <PageLoadGate>{children}</PageLoadGate>
