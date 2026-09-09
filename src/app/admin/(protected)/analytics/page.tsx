@@ -11,6 +11,7 @@ import {
   getAnalyticsTopPages,
   getAnalyticsTrafficSources,
 } from "@/lib/analytics";
+import { ExcludeIpForm } from "@/components/admin/exclude-ip-form";
 import { excludeCurrentVisitor, removeExcludedVisitor } from "./actions";
 
 const WINDOW_DAYS = 30;
@@ -206,8 +207,9 @@ export default async function AdminAnalyticsPage() {
           통계 제외 IP
         </h2>
         <p className="text-[13px] text-[var(--color-text-muted)]">
-          지금 접속한 IP를 통계에서 빼요. 그 IP의 과거 기록도 함께 삭제되며(되돌릴 수 없어요)
-          앞으로도 집계되지 않아요. 네트워크(집·모바일 등)마다 IP가 달라서 각각 눌러야 해요.
+          지금 접속한 IP를 빼거나, 아는 IP를 직접 입력해 추가할 수 있어요. 그 IP의 과거 기록도
+          함께 삭제되며(되돌릴 수 없어요) 앞으로도 집계되지 않아요. 네트워크(집·모바일 등)마다
+          IP가 달라서 각각 등록해야 해요.
         </p>
 
         <form action={excludeCurrentVisitor} className="flex flex-wrap items-center gap-2">
@@ -224,6 +226,14 @@ export default async function AdminAnalyticsPage() {
             현재 접속 IP를 통계에서 제외
           </button>
         </form>
+
+        <div className="flex items-center gap-3">
+          <span className="h-px flex-1 bg-[var(--color-line)]" />
+          <span className="text-[12px] text-[var(--color-text-muted)]">또는 IP 직접 입력</span>
+          <span className="h-px flex-1 bg-[var(--color-line)]" />
+        </div>
+
+        <ExcludeIpForm />
 
         {excludedVisitors.length === 0 ? (
           <p className="text-[13px] text-[var(--color-text-muted)]">아직 제외한 IP가 없어요.</p>
