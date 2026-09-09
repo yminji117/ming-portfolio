@@ -46,3 +46,25 @@ export async function trackAnalyticsEvent(input: AnalyticsEventInput): Promise<v
     console.error("trackAnalyticsEvent threw:", err);
   }
 }
+
+// 페이지 체류시간 기록 — 이탈/전환/탭 숨김 시점에 그 페이지의 머문 시간을 보낸다.
+// trackAnalyticsEvent와 동일하게 실패해도 화면에 영향 없도록 절대 throw하지 않는다.
+export async function trackAnalyticsDwell(
+  sessionId: string,
+  path: string,
+  durationMs: number,
+): Promise<void> {
+  try {
+    const supabase = await createClient();
+    const { error } = await supabase.rpc("analytics_track_dwell", {
+      p_session_id: sessionId,
+      p_path: path,
+      p_duration_ms: Math.round(durationMs),
+    });
+    if (error) {
+      console.error("trackAnalyticsDwell failed:", error.message);
+    }
+  } catch (err) {
+    console.error("trackAnalyticsDwell threw:", err);
+  }
+}

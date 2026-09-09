@@ -218,3 +218,19 @@ export interface AnalyticsExitPage {
   path: string;
   exits: number;
 }
+
+// analytics_page_stats RPC — 페이지별(상세 포함) 오늘/누적 방문자·페이지뷰 + 중앙 체류시간.
+export interface AnalyticsPageStat {
+  path: string;
+  today_visitors: number;
+  total_visitors: number;
+  total_pageviews: number;
+  median_dwell_ms: number | null;
+}
+
+// 통계 제외 IP 목록 — visitor_hash는 원본 IP의 SHA-256 해시(운영자도 값 자체는 모름).
+export interface AnalyticsExcludedVisitor {
+  visitor_hash: string;
+  note: string | null;
+  created_at: string;
+}

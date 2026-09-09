@@ -1,7 +1,9 @@
 import { createClient } from "@/lib/supabase/server";
 import type {
   AnalyticsDailyPoint,
+  AnalyticsExcludedVisitor,
   AnalyticsExitPage,
+  AnalyticsPageStat,
   AnalyticsPublicStats,
   AnalyticsTopAction,
   AnalyticsTopPage,
@@ -77,5 +79,24 @@ export async function getAnalyticsExitPages(
     p_limit: limit,
   });
   if (error) console.error("getAnalyticsExitPages failed:", error.message);
+  return data ?? [];
+}
+
+// 페이지별(상세 포함) 오늘/누적 방문자·페이지뷰 + 중앙 체류시간.
+export async function getAnalyticsPageStats(limit = 50): Promise<AnalyticsPageStat[]> {
+  const supabase = await createClient();
+  const { data, error } = await supabase.rpc("analytics_page_stats", { p_limit: limit });
+  if (error) console.error("getAnalyticsPageStats failed:", error.message);
+  return data ?? [];
+}
+
+// 통계에서 제외 중인 IP 목록(관리자 세션에서만 값이 나옴 — RLS).
+export async function getAnalyticsExcludedVisitors(): Promise<AnalyticsExcludedVisitor[]> {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("analytics_excluded_visitors")
+    .select("*")
+    .order("created_at", { ascending: false });
+  if (error) console.error("getAnalyticsExcludedVisitors failed:", error.message);
   return data ?? [];
 }
