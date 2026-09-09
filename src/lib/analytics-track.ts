@@ -1,8 +1,16 @@
 "use server";
 
 import { createHash } from "node:crypto";
-import { headers } from "next/headers";
+import { cookies, headers } from "next/headers";
 import { createClient } from "@/lib/supabase/server";
+
+// 어드민(로그인 상태)의 활동은 통계에 수집하지 않는다. 이 사이트에서 Supabase 인증 세션을
+// 가진 사용자는 운영자뿐이므로, 인증 쿠키(sb-...-auth-token) 존재만으로 판별한다
+// (getUser() 네트워크 검증 없이 — 추적은 모든 방문마다 도는 경로라 가볍게 유지).
+async function isAdminRequest(): Promise<boolean> {
+  const cookieStore = await cookies();
+  return cookieStore.getAll().some((c) => /^sb-.*-auth-token(\.\d+)?$/.test(c.name) && !!c.value);
+}
 
 // 실제 브라우저 IP를 SHA-256 해시한다(raw IP는 저장하지 않음). 서버 액션의 headers()에
 // 담긴 x-forwarded-for(Vercel 엣지가 세팅한 클라이언트 IP)를 쓴다 — Postgres의
@@ -32,6 +40,7 @@ export type AnalyticsEventInput = {
 // 실패해도 화면 동작에 영향을 주면 안 되므로 절대 throw하지 않는다.
 export async function trackAnalyticsEvent(input: AnalyticsEventInput): Promise<void> {
   try {
+    if (await isAdminRequest()) return; // 어드민 활동은 수집하지 않음
     const headerList = await headers();
     const userAgent = headerList.get("user-agent");
     const ip = headerList.get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown";
@@ -69,6 +78,7 @@ export async function trackAnalyticsDwell(
   durationMs: number,
 ): Promise<void> {
   try {
+    if (await isAdminRequest()) return; // 어드민 활동은 수집하지 않음
     const supabase = await createClient();
     const { error } = await supabase.rpc("analytics_track_dwell", {
       p_session_id: sessionId,

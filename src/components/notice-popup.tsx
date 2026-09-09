@@ -114,7 +114,7 @@ export function NoticePopup({
                 <button
                   type="button"
                   onClick={handleDismissToday}
-                  className="flex-1 rounded-[4px] border border-[#0a0a0a] bg-white px-7 py-3 text-[16px] font-medium text-[#0a0a0a]"
+                  className="shrink-0 whitespace-nowrap rounded-[4px] border border-[#0a0a0a] bg-white px-5 py-3 text-[16px] font-medium text-[#0a0a0a]"
                 >
                   오늘 하루 안보기
                 </button>

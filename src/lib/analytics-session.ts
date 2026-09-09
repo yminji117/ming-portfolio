@@ -44,3 +44,24 @@ export function getAnalyticsDeviceCategory(): string {
   if (w < 1024) return "tablet";
   return "desktop";
 }
+
+// "이 브라우저를 통계에서 제외" — 유동 IP가 바뀌어도 이 브라우저의 방문은 계속 빠지도록,
+// 세션이 아닌 localStorage에 플래그를 저장한다(탭 종료 후에도 유지). 시크릿창/캐시 삭제 시 초기화.
+const EXCLUDE_KEY = "mj_analytics_excluded";
+
+export function isBrowserExcludedFromAnalytics(): boolean {
+  try {
+    return localStorage.getItem(EXCLUDE_KEY) === "1";
+  } catch {
+    return false;
+  }
+}
+
+export function setBrowserExcludedFromAnalytics(excluded: boolean): void {
+  try {
+    if (excluded) localStorage.setItem(EXCLUDE_KEY, "1");
+    else localStorage.removeItem(EXCLUDE_KEY);
+  } catch {
+    // localStorage 접근 불가 — 무시(트래킹 기본값은 '수집')
+  }
+}

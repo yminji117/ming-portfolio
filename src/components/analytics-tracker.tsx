@@ -3,7 +3,11 @@
 import { useEffect, useRef } from "react";
 import { usePathname } from "next/navigation";
 import { trackAnalyticsDwell, trackAnalyticsEvent } from "@/lib/analytics-track";
-import { getAnalyticsDeviceCategory, getOrCreateAnalyticsSession } from "@/lib/analytics-session";
+import {
+  getAnalyticsDeviceCategory,
+  getOrCreateAnalyticsSession,
+  isBrowserExcludedFromAnalytics,
+} from "@/lib/analytics-session";
 
 // 화면에는 아무것도 렌더링하지 않는 방문 기록 컴포넌트. 경로가 바뀔 때마다(최초 진입 포함)
 // pageview 이벤트를 서버로 보낸다. React StrictMode의 이중 effect 실행은 ref로 걸러진다
@@ -21,6 +25,10 @@ export function AnalyticsTracker() {
 
   useEffect(() => {
     if (!pathname || lastTrackedPath.current === pathname) return;
+    // 어드민 화면(/admin)은 통계에서 제외 — 운영 활동은 방문 통계에 넣지 않는다.
+    if (pathname.startsWith("/admin")) return;
+    // 이 브라우저가 통계 제외로 표시돼 있으면 아무 것도 보내지 않는다(유동 IP와 무관하게 안정적).
+    if (isBrowserExcludedFromAnalytics()) return;
     lastTrackedPath.current = pathname;
 
     const session = getOrCreateAnalyticsSession();
@@ -48,6 +56,7 @@ export function AnalyticsTracker() {
 
   useEffect(() => {
     function onVisibilityChange() {
+      if (isBrowserExcludedFromAnalytics()) return;
       if (document.visibilityState === "hidden") {
         if (sessionId.current && currentPath.current) {
           trackAnalyticsDwell(

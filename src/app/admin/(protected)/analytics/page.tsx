@@ -11,6 +11,7 @@ import {
   getAnalyticsTopPages,
   getAnalyticsTrafficSources,
 } from "@/lib/analytics";
+import { ExcludeBrowserToggle } from "@/components/admin/exclude-browser-toggle";
 import { ExcludeIpForm } from "@/components/admin/exclude-ip-form";
 import { excludeCurrentVisitor, removeExcludedVisitor } from "./actions";
 
@@ -207,10 +208,18 @@ export default async function AdminAnalyticsPage() {
           통계 제외 IP
         </h2>
         <p className="text-[13px] text-[var(--color-text-muted)]">
-          지금 접속한 IP를 빼거나, 아는 IP를 직접 입력해 추가할 수 있어요. 그 IP의 과거 기록도
-          함께 삭제되며(되돌릴 수 없어요) 앞으로도 집계되지 않아요. 네트워크(집·모바일 등)마다
-          IP가 달라서 각각 등록해야 해요.
+          내 방문이 통계에 섞이지 않게 빼요. 가장 확실한 건 아래 <b>&ldquo;이 브라우저 제외&rdquo;</b>예요 —
+          유동 IP가 바뀌어도 이 브라우저 방문은 계속 빠져요. IP 방식은 특정 IP(예: 고정 IP·스패머)를
+          막을 때 쓰고, 그 IP의 과거 기록도 함께 삭제돼요(되돌릴 수 없어요).
         </p>
+
+        <ExcludeBrowserToggle />
+
+        <div className="flex items-center gap-3">
+          <span className="h-px flex-1 bg-[var(--color-line)]" />
+          <span className="text-[12px] text-[var(--color-text-muted)]">IP로 제외</span>
+          <span className="h-px flex-1 bg-[var(--color-line)]" />
+        </div>
 
         <form action={excludeCurrentVisitor} className="flex flex-wrap items-center gap-2">
           <input
