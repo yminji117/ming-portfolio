@@ -96,7 +96,7 @@ export function NoticePopup({
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.96 }}
             transition={{ duration: 0.15, ease: [0.16, 1, 0.3, 1] }}
-            className="flex w-full max-w-[424px] flex-col items-center gap-6 rounded-[10px] bg-white px-10 py-9 text-center font-[family-name:var(--font-body)] text-[#0a0a0a]"
+            className="flex w-full max-w-[424px] flex-col items-center gap-6 rounded-[10px] bg-white px-6 py-8 text-center font-[family-name:var(--font-body)] text-[#0a0a0a] sm:px-10 sm:py-9"
           >
             <div className="flex flex-col items-center gap-2.5">
               <span className="text-[48px] leading-none" aria-hidden="true">
@@ -114,7 +114,7 @@ export function NoticePopup({
                 <button
                   type="button"
                   onClick={handleDismissToday}
-                  className="shrink-0 whitespace-nowrap rounded-[4px] border border-[#0a0a0a] bg-white px-5 py-3 text-[16px] font-medium text-[#0a0a0a]"
+                  className="min-w-0 flex-1 basis-0 rounded-[4px] border border-[#0a0a0a] bg-white px-3 py-3 text-[16px] font-medium text-[#0a0a0a]"
                 >
                   오늘 하루 안보기
                 </button>
@@ -122,7 +122,7 @@ export function NoticePopup({
                   ref={confirmRef}
                   type="button"
                   onClick={handleClose}
-                  className="flex-1 rounded-[4px] border border-[#013dff] bg-[#0a0a0a] px-7 py-3 text-[16px] font-medium text-white"
+                  className="min-w-0 flex-1 basis-0 rounded-[4px] border border-[#013dff] bg-[#0a0a0a] px-3 py-3 text-[16px] font-medium text-white"
                 >
                   확인
                 </button>

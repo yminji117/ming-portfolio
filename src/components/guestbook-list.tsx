@@ -362,8 +362,8 @@ function GuestbookRow({
       )}
 
       {stage === "mismatch" && (
-        <GuestbookModal maxWidthClass="max-w-[310px]" onDismiss={closeModal}>
-          <p className="whitespace-nowrap p-[10px] text-center text-[16px] font-medium text-[#0a0a0a]">
+        <GuestbookModal maxWidthClass="max-w-[380px]" onDismiss={closeModal}>
+          <p className="whitespace-nowrap p-[10px] text-center text-[16px] font-medium leading-[24px] text-[#0a0a0a]">
             아이디와 비밀번호를 확인해 주세요.
           </p>
           <div className="mt-[27px] flex w-full">
