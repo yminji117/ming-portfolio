@@ -50,6 +50,7 @@ export async function getProjectsPage(
     .from("projects")
     .select("*", { count: "exact" })
     .eq("category", category)
+    .eq("status", "published")
     .is("deleted_at", null)
     .order("is_pinned", { ascending: false })
     .order("start_date", { ascending: false, nullsFirst: false })
@@ -68,11 +69,13 @@ export async function getProjectCategoryCounts(): Promise<
       .from("projects")
       .select("id", { count: "exact", head: true })
       .eq("category", "professional")
+      .eq("status", "published")
       .is("deleted_at", null),
     supabase
       .from("projects")
       .select("id", { count: "exact", head: true })
       .eq("category", "side")
+      .eq("status", "published")
       .is("deleted_at", null),
   ]);
   if (professional.error)
@@ -104,6 +107,7 @@ export async function getProjectBySlug(slug: string): Promise<Project | null> {
     .from("projects")
     .select("*")
     .eq("slug", slug)
+    .eq("status", "published")
     .is("deleted_at", null)
     .maybeSingle();
   if (error) console.error("getProjectBySlug failed:", error.message);
@@ -120,6 +124,7 @@ export async function getAdjacentProjects(
     .from("projects")
     .select("slug, title")
     .eq("category", category)
+    .eq("status", "published")
     .is("deleted_at", null)
     .order("is_pinned", { ascending: false })
     .order("start_date", { ascending: false, nullsFirst: false })
@@ -159,6 +164,7 @@ export async function getStudiesPage(
   const { data, error, count } = await supabase
     .from("studies")
     .select("*", { count: "exact" })
+    .eq("status", "published")
     .is("deleted_at", null)
     .order("is_pinned", { ascending: false })
     .order("start_date", { ascending: false, nullsFirst: false })
@@ -174,6 +180,7 @@ export async function getStudyBySlug(slug: string): Promise<Study | null> {
     .from("studies")
     .select("*")
     .eq("slug", slug)
+    .eq("status", "published")
     .is("deleted_at", null)
     .maybeSingle();
   if (error) console.error("getStudyBySlug failed:", error.message);
@@ -187,6 +194,7 @@ export async function getAdjacentStudies(
   const { data, error } = await supabase
     .from("studies")
     .select("slug, title")
+    .eq("status", "published")
     .is("deleted_at", null)
     .order("is_pinned", { ascending: false })
     .order("start_date", { ascending: false, nullsFirst: false })
@@ -314,7 +322,8 @@ function deriveAutoCurrentlyLabel(endDate: string | null): "doing" | "done" {
   return endDate < todayIso() ? "done" : "doing";
 }
 
-// Works(Professional/Side)·Study 중 게시된(미삭제) 항목을 Currently Doing 형태로 변환한다.
+// Works(Professional/Side)·Study 중 미삭제 항목을 Currently Doing 형태로 변환한다(Draft 포함).
+// Draft는 아직 공개 상세 페이지가 없으므로 ref_slug를 비워 링크 없이 제목만 노출한다.
 // 이미 수동 항목이 ref_type/ref_id로 연결해둔 프로젝트/스터디는 중복 노출을 막기 위해 제외한다.
 async function buildAutoCurrentlyDoingItems(
   excludeProjectIds: Set<string>,
@@ -325,13 +334,11 @@ async function buildAutoCurrentlyDoingItems(
     await Promise.all([
       supabase
         .from("projects")
-        .select("id, slug, title, category, start_date, end_date")
-        .eq("status", "published")
+        .select("id, slug, title, category, status, start_date, end_date")
         .is("deleted_at", null),
       supabase
         .from("studies")
-        .select("id, slug, title, start_date, end_date")
-        .eq("status", "published")
+        .select("id, slug, title, status, start_date, end_date")
         .is("deleted_at", null),
     ]);
   if (projectsError) console.error("buildAutoCurrentlyDoingItems(projects) failed:", projectsError.message);
@@ -348,7 +355,7 @@ async function buildAutoCurrentlyDoingItems(
       end_date: p.end_date,
       ref_type: "project" as const,
       ref_id: p.id,
-      ref_slug: p.slug,
+      ref_slug: p.status === "published" ? p.slug : null,
       is_visible: true,
       order: null,
     }));
@@ -364,7 +371,7 @@ async function buildAutoCurrentlyDoingItems(
       end_date: s.end_date,
       ref_type: "study" as const,
       ref_id: s.id,
-      ref_slug: s.slug,
+      ref_slug: s.status === "published" ? s.slug : null,
       is_visible: true,
       order: null,
     }));
