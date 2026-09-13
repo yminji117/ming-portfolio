@@ -9,10 +9,10 @@ import type { CurrentlyCategory, CurrentlyDoing, CurrentlyLabel } from "@/lib/ty
 type FilterOption<T extends string> = { value: T; label: string };
 
 // Figma '최종' node 229:741 — 닫힌 트리거/기본 옵션 라벨은 "카테고리 All" / "상태 All"로 표시되고,
-// 나머지 옵션은 값 이름만 표시된다(Woke/Study/Side, 진행중/대기/완료).
+// 나머지 옵션은 값 이름만 표시된다(Work/Study/Side, 진행중/대기/완료).
 const CATEGORY_OPTIONS: FilterOption<"all" | CurrentlyCategory>[] = [
   { value: "all", label: "카테고리 All" },
-  { value: "works", label: "Woke" },
+  { value: "works", label: "Work" },
   { value: "study", label: "Study" },
   { value: "side", label: "Side" },
 ];

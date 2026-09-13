@@ -1,6 +1,6 @@
 import localFont from "next/font/local";
 
-// Figma '최종' 시안의 대형 헤딩(PORTFOLIO/Woke/Professionel/Study/Side/PROJECT)에 쓰인
+// Figma '최종' 시안의 대형 헤딩(PORTFOLIO/Work/Professional/Study/Side/PROJECT)에 쓰인
 // NanumSquare Neo Bold/ExtraBold. 본문은 기존 Pretendard를 그대로 쓴다.
 export const nanumSquareNeo = localFont({
   variable: "--font-display",

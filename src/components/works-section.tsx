@@ -28,7 +28,7 @@ export function WorksSection({
           PROJECT
         </p>
         <div className="container-app relative">
-          <SectionHeading eyebrow="Woke" title="Professionel" moreHref={moreHref} theme="dark" />
+          <SectionHeading eyebrow="Work" title="Professional" moreHref={moreHref} theme="dark" />
           <WorksProfessionalGrid projects={projects} industryOrder={industryOrder ?? []} />
         </div>
       </section>
@@ -38,7 +38,7 @@ export function WorksSection({
   return (
     <section className="pt-15 pb-20 lg:pt-[80px] lg:pb-[160px]">
       <div className="container-app">
-        <SectionHeading eyebrow="Woke" title="Side" moreHref={moreHref} theme="light" />
+        <SectionHeading eyebrow="Work" title="Side" moreHref={moreHref} theme="light" />
         <WorksSideGrid projects={projects} />
       </div>
     </section>
