@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowRightIcon, ExpandCircleRightIcon } from "@/components/icons";
+import { ArrowRightIcon } from "@/components/icons";
 import { ContentBlocks } from "@/components/content-blocks";
 import { ContentProtect } from "@/components/content-protect";
 import { Footer } from "@/components/footer";
@@ -52,25 +52,12 @@ export default async function StudyDetailPage(
       <main className="flex-1 pt-16 lg:pt-[60px]">
         <ContentProtect className="container-app flex flex-col gap-10 pt-4 pb-10 lg:gap-16 lg:pb-16">
           <div className="flex flex-col gap-10">
-            <div className="flex items-center justify-between gap-4">
-              <h1
-                className="font-[family-name:var(--font-display)] font-extrabold leading-tight tracking-tight text-[var(--color-text)]"
-                style={{ fontSize: "var(--fs-display-lg)" }}
-              >
-                {study.title}
-              </h1>
-              {study.external_url && (
-                <a
-                  href={study.external_url}
-                  target="_blank"
-                  rel="noreferrer noopener"
-                  aria-label="외부 링크로 이동"
-                  className="arrow-btn arrow-btn-lg shrink-0 text-[var(--color-text)]"
-                >
-                  <ExpandCircleRightIcon className="size-full" />
-                </a>
-              )}
-            </div>
+            <h1
+              className="font-[family-name:var(--font-display)] font-extrabold leading-tight tracking-tight text-[var(--color-text)]"
+              style={{ fontSize: "var(--fs-display-lg)" }}
+            >
+              {study.title}
+            </h1>
 
             <div className="grid grid-cols-1 gap-10 lg:grid-cols-[360px_1fr] lg:gap-10">
               <dl className="flex flex-col gap-5 lg:border-r lg:border-[var(--color-line)] lg:pr-8">
@@ -106,6 +93,21 @@ export default async function StudyDetailPage(
                       {sortStudyTagsForDisplay(study.tags, categoryOrder).map((tag) => (
                         <Tag key={tag}>{tag}</Tag>
                       ))}
+                    </dd>
+                  </div>
+                )}
+                {study.external_url && (
+                  <div className="flex flex-col gap-1.5">
+                    <dt className="text-[length:var(--fs-caption)] text-[var(--color-text-muted)]">바로가기</dt>
+                    <dd>
+                      <a
+                        href={study.external_url}
+                        target="_blank"
+                        rel="noreferrer noopener"
+                        className="flex h-10 w-full items-center justify-center rounded-[4px] bg-[var(--color-ink)] text-[length:var(--fs-body)] font-medium text-white transition-opacity duration-[var(--dur-fast)] hover:opacity-90"
+                      >
+                        {study.link_label || "바로 이동"}
+                      </a>
                     </dd>
                   </div>
                 )}

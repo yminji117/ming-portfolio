@@ -46,6 +46,7 @@ function toInput(project?: Project): ProjectInput {
     tools: project?.tools ?? [],
     team: project?.team ?? null,
     external_url: project?.external_url ?? null,
+    link_label: project?.link_label ?? null,
     overview: project?.overview ?? null,
     main_tasks: project?.main_tasks ?? null,
     result: project?.result ?? null,
@@ -271,6 +272,12 @@ export function ProjectForm({
           label="외부 링크"
           value={input.external_url ?? ""}
           onChange={(v) => set("external_url", v || null)}
+        />
+        <TextField
+          label="바로가기 버튼 문구"
+          hint="비워두면 '바로 이동'으로 표시돼요"
+          value={input.link_label ?? ""}
+          onChange={(v) => set("link_label", v || null)}
         />
       </FormSection>
 

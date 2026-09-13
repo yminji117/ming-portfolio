@@ -42,6 +42,7 @@ function toInput(study?: Study): StudyInput {
     tags: study?.tags ?? [],
     external_url: study?.external_url ?? null,
     related_url: study?.related_url ?? null,
+    link_label: study?.link_label ?? null,
     start_date: study?.start_date ?? null,
     end_date: study?.end_date ?? null,
     body: study?.body ?? { steps: [], blocks: [] },
@@ -235,6 +236,12 @@ export function StudyForm({
           hint="채워두면 상세 페이지 '소속' 항목에 밑줄이 생기고 클릭 시 이동해요 (소속을 안 썼으면 노출되지 않아요)"
           value={input.related_url ?? ""}
           onChange={(v) => set("related_url", v || null)}
+        />
+        <TextField
+          label="바로가기 버튼 문구"
+          hint="비워두면 '바로 이동'으로 표시돼요"
+          value={input.link_label ?? ""}
+          onChange={(v) => set("link_label", v || null)}
         />
       </FormSection>
 

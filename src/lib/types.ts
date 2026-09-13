@@ -33,6 +33,7 @@ export interface Project {
   tools: string[];
   team: string | null;
   external_url: string | null;
+  link_label: string | null;
   overview: string | null;
   main_tasks: string[] | null;
   result: string | null;
@@ -70,6 +71,7 @@ export interface Study {
   tags: string[];
   external_url: string | null;
   related_url: string | null;
+  link_label: string | null;
   start_date: string | null;
   end_date: string | null;
   body: StudyBody | null;

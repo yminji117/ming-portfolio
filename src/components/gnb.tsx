@@ -122,9 +122,9 @@ export function Gnb() {
           <div className="hidden justify-self-end lg:flex">
             <Link
               href="/here"
-              className="group inline-flex items-center gap-1.5 rounded-[4px] bg-[var(--color-accent)] px-4 py-2 text-[length:var(--fs-body)] font-medium text-[var(--color-accent-ink)] transition-transform duration-[var(--dur-base)] ease-[var(--ease-out)] hover:scale-[1.02] active:scale-[0.98]"
+              className="group inline-flex items-center gap-1.5 rounded-[4px] bg-[var(--color-accent)] px-4 py-2 font-[family-name:var(--font-display)] text-[14px] font-medium text-[var(--color-accent-ink)] transition-transform duration-[var(--dur-base)] ease-[var(--ease-out)] hover:scale-[1.02] active:scale-[0.98]"
             >
-              here
+              한마디 남기기
               <span className="transition-transform duration-[var(--dur-base)] ease-[var(--ease-out)] group-hover:translate-x-0.5">
                 →
               </span>
@@ -174,7 +174,7 @@ export function Gnb() {
               onClick={() => setMenuOpen(false)}
               className="font-[family-name:var(--font-display)] text-4xl font-extrabold text-[var(--color-accent)]"
             >
-              here →
+              한마디 남기기 →
             </Link>
           </div>
         </div>

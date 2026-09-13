@@ -39,7 +39,7 @@ export function WorksSection({
     <section className="pt-15 pb-20 lg:pt-[80px] lg:pb-[160px]">
       <div className="container-app">
         <SectionHeading eyebrow="Work" title="Side" moreHref={moreHref} theme="light" />
-        <WorksSideGrid projects={projects} />
+        <WorksSideGrid projects={projects} industryOrder={industryOrder ?? []} />
       </div>
     </section>
   );

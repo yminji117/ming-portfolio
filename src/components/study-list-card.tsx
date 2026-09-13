@@ -4,7 +4,7 @@ import { DEFAULT_THUMBNAIL, formatProjectRange, sortStudyTagsForDisplay } from "
 import type { Study } from "@/lib/types";
 
 // Study 리스트 카드는 항상 내부 상세 페이지로 이동한다 — 외부 링크(external_url)는
-// 상세 페이지 안의 동그란 화살표 버튼(ExpandCircleRightIcon)에서만 연결한다.
+// 상세 페이지 왼쪽 메타 목록의 "바로가기" 버튼에서만 연결한다.
 export function StudyListCard({
   study,
   categoryOrder,

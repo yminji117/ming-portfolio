@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowRightIcon, ExpandCircleRightIcon } from "@/components/icons";
+import { ArrowRightIcon } from "@/components/icons";
 import { ContentBlocks } from "@/components/content-blocks";
 import { ContentProtect } from "@/components/content-protect";
 import { Footer } from "@/components/footer";
@@ -69,25 +69,12 @@ export default async function ProjectDetailPage(
               )}
             </div>
 
-            <div className="flex items-center justify-between gap-4">
-              <h1
-                className="font-[family-name:var(--font-display)] font-extrabold leading-tight tracking-tight text-[var(--color-text)]"
-                style={{ fontSize: "var(--fs-display-lg)" }}
-              >
-                {project.title}
-              </h1>
-              {project.external_url && (
-                <a
-                  href={project.external_url}
-                  target="_blank"
-                  rel="noreferrer noopener"
-                  aria-label="외부 링크로 이동"
-                  className="arrow-btn arrow-btn-lg shrink-0 text-[var(--color-text)]"
-                >
-                  <ExpandCircleRightIcon className="size-full" />
-                </a>
-              )}
-            </div>
+            <h1
+              className="font-[family-name:var(--font-display)] font-extrabold leading-tight tracking-tight text-[var(--color-text)]"
+              style={{ fontSize: "var(--fs-display-lg)" }}
+            >
+              {project.title}
+            </h1>
 
             <div className="grid grid-cols-1 gap-10 lg:grid-cols-[360px_1fr] lg:gap-10">
               <dl className="flex flex-col gap-5 lg:border-r lg:border-[var(--color-line)] lg:pr-8">
@@ -137,6 +124,18 @@ export default async function ProjectDetailPage(
                         <Tag key={tool}>{tool}</Tag>
                       ))}
                     </div>
+                  </MetaRow>
+                )}
+                {project.external_url && (
+                  <MetaRow label="바로가기">
+                    <a
+                      href={project.external_url}
+                      target="_blank"
+                      rel="noreferrer noopener"
+                      className="flex h-10 w-full items-center justify-center rounded-[4px] bg-[var(--color-ink)] text-[length:var(--fs-body)] font-medium text-white transition-opacity duration-[var(--dur-fast)] hover:opacity-90"
+                    >
+                      {project.link_label || "바로 이동"}
+                    </a>
                   </MetaRow>
                 )}
               </dl>

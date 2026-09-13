@@ -45,6 +45,7 @@ export default async function Home() {
     getCategories(),
   ]);
   const professionalOrder = categories.filter((c) => c.scope === "work_professional").map((c) => c.name);
+  const sideOrder = categories.filter((c) => c.scope === "work_side").map((c) => c.name);
   const studyOrder = categories.filter((c) => c.scope === "study").map((c) => c.name);
 
   // TEMP: '+N' 배지 예시 확인용 — 확인 끝나면 제거
@@ -83,6 +84,7 @@ export default async function Home() {
           theme="light"
           projects={sideProjects}
           moreHref="/works?tab=side"
+          industryOrder={sideOrder}
         />
         <AboutSummary about={about} careers={careers} />
         <CurrentlyDoingSection items={currentlyDoing} />
