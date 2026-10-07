@@ -35,8 +35,8 @@ export default async function Home() {
     categories,
   ] = await Promise.all([
     getFeaturedProjects("professional", 5),
-    getFeaturedProjects("side", 2),
-    getFeaturedStudies(4),
+    getFeaturedProjects("side", 4),
+    getFeaturedStudies(6),
     getAbout(),
     getLatestCompanyCareers(3),
     getCurrentlyDoing(settings?.currently_limit ?? 6),
