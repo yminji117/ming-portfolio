@@ -12,6 +12,7 @@ import { syncFeaturedItem } from "@/lib/featured-sync";
 import {
   CheckboxField,
   DateRangeField,
+  FieldLabel,
   FormSection,
   SelectField,
   TextAreaField,
@@ -24,6 +25,7 @@ import { ImageUploadField } from "@/components/admin/image-upload-field";
 import { ChipsMultiSelectField } from "@/components/admin/chips-multi-select-field";
 import { StudyFormatField } from "@/components/admin/study-format-field";
 import { StudyStepsEditor } from "@/components/admin/study-steps-editor";
+import { moveItem } from "@/lib/array-utils";
 import { cleanContentBlocks } from "@/lib/clean-content-blocks";
 import { FEATURED_CAP_STUDY } from "@/lib/featured-caps";
 import { getStudyFormatOptions } from "@/lib/format";
@@ -76,6 +78,19 @@ export function StudyForm({
 
   function set<K extends keyof StudyInput>(key: K, value: StudyInput[K]) {
     setInput((prev) => ({ ...prev, [key]: value }));
+  }
+
+  // 메인/목록/상세에 노출되는 태그 순서는 전역 카테고리 순서가 아니라 이 항목에 저장된
+  // tags 배열 순서를 그대로 따른다(src/lib/format.ts의 sortStudyTagsForDisplay) — 그래서
+  // 항목별로 순서를 바꿀 수 있도록 카테고리 태그만 따로 ↑/↓ 재정렬 UI를 둔다.
+  const formatOptions = getStudyFormatOptions();
+  const categoryTags = input.tags.filter((t) => !formatOptions.includes(t));
+  const formatTags = input.tags.filter((t) => formatOptions.includes(t));
+
+  function moveCategoryTag(index: number, direction: -1 | 1) {
+    const next = moveItem(categoryTags, index, direction);
+    if (next === categoryTags) return;
+    set("tags", [...next, ...formatTags]);
   }
 
   const draftBlocksFeature = input.status !== "published";
@@ -224,6 +239,37 @@ export function StudyForm({
           excludeOptions={getStudyFormatOptions()}
           onChange={(v) => set("tags", v)}
         />
+        {categoryTags.length > 1 && (
+          <div className="flex flex-col gap-1.5 sm:col-span-2">
+            <FieldLabel hint="맨 앞 태그가 메인/목록에서 대표로 노출돼요">노출 순서</FieldLabel>
+            <div className="flex flex-wrap gap-1.5">
+              {categoryTags.map((tag, i) => (
+                <span
+                  key={tag}
+                  className="inline-flex items-center gap-1 rounded-full border border-[var(--color-line)] bg-[#fafbfd] py-1 pr-1 pl-3 text-[13px] text-[var(--color-text)]"
+                >
+                  {tag}
+                  <button
+                    type="button"
+                    disabled={i === 0}
+                    onClick={() => moveCategoryTag(i, -1)}
+                    className="h-6 w-6 rounded-full text-[12px] text-[var(--color-text-muted)] hover:bg-[#eceef3] disabled:opacity-30"
+                  >
+                    ↑
+                  </button>
+                  <button
+                    type="button"
+                    disabled={i === categoryTags.length - 1}
+                    onClick={() => moveCategoryTag(i, 1)}
+                    className="h-6 w-6 rounded-full text-[12px] text-[var(--color-text-muted)] hover:bg-[#eceef3] disabled:opacity-30"
+                  >
+                    ↓
+                  </button>
+                </span>
+              ))}
+            </div>
+          </div>
+        )}
         <StudyFormatField values={input.tags} onChange={(v) => set("tags", v)} />
         <TextField
           label="외부 링크"

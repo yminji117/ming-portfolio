@@ -86,7 +86,7 @@ export function StudyListClient({
           해당 카테고리의 스터디가 없어요.
         </p>
       ) : (
-        <StudyListGrid studies={filtered} categoryOrder={categoryOrder} />
+        <StudyListGrid studies={filtered} />
       )}
 
       {hasMore && (

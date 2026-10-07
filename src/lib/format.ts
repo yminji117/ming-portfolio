@@ -110,19 +110,15 @@ export function sortStudyCategories(categories: string[], order: string[]): stri
   });
 }
 
-// Front에 노출되는 Study 태그 배지 순서 — 카테고리(정해진 값이든 어드민에서 직접 입력한
-// 커스텀 값이든)가 항상 형태(Online/Offline)보다 앞에 오도록 정렬한다. 어드민에서 어떤
-// 순서로 선택했는지와 무관하다. 형태가 아닌 값은 전부 "카테고리"로 취급해, 목록에 없는
-// 커스텀 카테고리도 형태보다 뒤로 밀리지 않는다.
-export function sortStudyTagsForDisplay(tags: string[], order: string[]): string[] {
-  const rank = (tag: string) => {
-    const formatIndex = STUDY_FORMAT_OPTIONS.indexOf(tag);
-    if (formatIndex !== -1) return order.length + 1 + formatIndex;
-    const categoryIndex = order.indexOf(tag);
-    if (categoryIndex !== -1) return categoryIndex;
-    return order.length; // 커스텀 카테고리 — 정해진 카테고리들 뒤, 형태보다는 앞
-  };
-  return [...tags].sort((a, b) => rank(a) - rank(b));
+// Front에 노출되는 Study 태그 배지 순서 — 카테고리는 어드민이 항목별로 선택한(=저장된
+// tags 배열) 순서를 그대로 쓰고, 형태(Online/Offline)만 항상 맨 뒤로 보낸다. 전역 카테고리
+// 순서(/admin/categories)는 여기 관여하지 않는다 — 항목마다 대표 태그가 다를 수 있어서다.
+export function sortStudyTagsForDisplay(tags: string[]): string[] {
+  const categoryTags = tags.filter((tag) => !STUDY_FORMAT_OPTIONS.includes(tag));
+  const formatTags = tags
+    .filter((tag) => STUDY_FORMAT_OPTIONS.includes(tag))
+    .sort((a, b) => STUDY_FORMAT_OPTIONS.indexOf(a) - STUDY_FORMAT_OPTIONS.indexOf(b));
+  return [...categoryTags, ...formatTags];
 }
 
 export function formatYear(isoDate: string | null): string {

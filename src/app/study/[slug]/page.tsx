@@ -8,7 +8,7 @@ import { Footer } from "@/components/footer";
 import { Gnb } from "@/components/gnb";
 import { ProjectGallery } from "@/components/project-gallery";
 import { Tag } from "@/components/tag";
-import { getAbout, getAdjacentStudies, getCategories, getStudyBySlug } from "@/lib/data";
+import { getAbout, getAdjacentStudies, getStudyBySlug } from "@/lib/data";
 import { formatCareerRange, sortStudyTagsForDisplay } from "@/lib/format";
 
 export async function generateMetadata(
@@ -36,14 +36,12 @@ export default async function StudyDetailPage(
   const study = await getStudyBySlug(slug);
   if (!study) notFound();
 
-  const [{ prev, next }, about, allCategories] = await Promise.all([
+  const [{ prev, next }, about] = await Promise.all([
     getAdjacentStudies(study.slug),
     getAbout(),
-    getCategories(),
   ]);
 
   const period = formatCareerRange(study.start_date, study.end_date);
-  const categoryOrder = allCategories.filter((c) => c.scope === "study").map((c) => c.name);
   const galleryUrls = study.gallery_urls ?? [];
 
   return (
@@ -90,7 +88,7 @@ export default async function StudyDetailPage(
                   <div className="flex flex-col gap-1.5">
                     <dt className="text-[length:var(--fs-caption)] text-[var(--color-text-muted)]">카테고리</dt>
                     <dd className="flex flex-wrap gap-1.5">
-                      {sortStudyTagsForDisplay(study.tags, categoryOrder).map((tag) => (
+                      {sortStudyTagsForDisplay(study.tags).map((tag) => (
                         <Tag key={tag}>{tag}</Tag>
                       ))}
                     </dd>

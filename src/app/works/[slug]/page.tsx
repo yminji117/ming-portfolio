@@ -126,16 +126,30 @@ export default async function ProjectDetailPage(
                     </div>
                   </MetaRow>
                 )}
-                {project.external_url && (
+                {(project.external_url || project.secondary_url) && (
                   <MetaRow label="바로가기">
-                    <a
-                      href={project.external_url}
-                      target="_blank"
-                      rel="noreferrer noopener"
-                      className="flex h-10 w-full items-center justify-center rounded-[4px] bg-[var(--color-ink)] text-[length:var(--fs-body)] font-medium text-white transition-opacity duration-[var(--dur-fast)] hover:opacity-90"
-                    >
-                      {project.link_label || "바로 이동"}
-                    </a>
+                    <div className="flex flex-col gap-3">
+                      {project.external_url && (
+                        <a
+                          href={project.external_url}
+                          target="_blank"
+                          rel="noreferrer noopener"
+                          className="flex h-10 w-full items-center justify-center rounded-[4px] bg-[var(--color-ink)] text-[length:var(--fs-body)] font-medium text-white transition-opacity duration-[var(--dur-fast)] hover:opacity-90"
+                        >
+                          {project.link_label || "바로 이동"}
+                        </a>
+                      )}
+                      {project.secondary_url && (
+                        <a
+                          href={project.secondary_url}
+                          target="_blank"
+                          rel="noreferrer noopener"
+                          className="flex h-10 w-full items-center justify-center rounded-[4px] bg-[var(--color-ink)] text-[length:var(--fs-body)] font-medium text-white transition-opacity duration-[var(--dur-fast)] hover:opacity-90"
+                        >
+                          {project.secondary_link_label || "바로 이동"}
+                        </a>
+                      )}
+                    </div>
                   </MetaRow>
                 )}
               </dl>

@@ -34,6 +34,8 @@ export interface Project {
   team: string | null;
   external_url: string | null;
   link_label: string | null;
+  secondary_url: string | null;
+  secondary_link_label: string | null;
   overview: string | null;
   main_tasks: string[] | null;
   result: string | null;

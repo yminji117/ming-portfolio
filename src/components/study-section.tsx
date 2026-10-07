@@ -13,11 +13,9 @@ import type { Study } from "@/lib/types";
 export function StudySection({
   studies,
   moreHref,
-  categoryOrder,
 }: {
   studies: Study[];
   moreHref: string;
-  categoryOrder: string[];
 }) {
   const [openIndex, setOpenIndex] = useState(0);
 
@@ -35,7 +33,6 @@ export function StudySection({
                 study={study}
                 isOpen={i === openIndex}
                 onSelect={() => setOpenIndex(i)}
-                categoryOrder={categoryOrder}
               />
             </Reveal>
           ))}
@@ -53,18 +50,16 @@ function StudyItem({
   study,
   isOpen,
   onSelect,
-  categoryOrder,
 }: {
   study: Study;
   isOpen: boolean;
   onSelect: () => void;
-  categoryOrder: string[];
 }) {
   const steps = study.body?.steps ?? [];
   const hasSteps = steps.length > 0;
   // 메인 Study 영역의 화살표는 외부 링크 여부와 상관없이 항상 상세 페이지로 이동한다.
   const detailHref = `/study/${study.slug}`;
-  const tag = sortStudyTagsForDisplay(study.tags, categoryOrder)[0];
+  const tag = sortStudyTagsForDisplay(study.tags)[0];
 
   // 모바일(태그+펼치기 버튼 한 줄)과 데스크탑(태그+타이틀 한 줄) 둘 다에서 재사용.
   const tagElement = tag ? (
